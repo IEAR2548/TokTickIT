@@ -6,16 +6,16 @@ interface HealthResponse {
 }
 
 export default function App() {
-  const [healthData, setHealthData] = useState<HealthResponse | null>(null)
-  const [loading, setLoading] = useState<boolean>(false)
-  const [error, setError] = useState<string | null>(null)
+  const [healthData, setHealthData] = useState<HealthResponse | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchHealthStatus = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch('/api/health')
+      const res = await fetch('/api/health');
       if (!res.ok) {
         throw new Error(`Server error: HTTP ${res.status}`);
       }
