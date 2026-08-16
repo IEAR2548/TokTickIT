@@ -14,7 +14,7 @@
 | `feature/1-project-foundation` → `lab1-staging` | [#5](https://github.com/IEAR2548/TokTickIT/pull/5) | Its ok! Feature 1 has done. Ready for do next step. :) | Thank you, Mr. In. |
 | `feature/2-health-check` → `lab1-staging` | [#6](https://github.com/IEAR2548/TokTickIT/pull/6) | All features can run correctly and meet the all acceptance criteria. Ready to merge krub. | – |
 | `feature/3-category-seed` → `lab1-staging` | [#7](https://github.com/IEAR2548/TokTickIT/pull/7) | ✅ Category model มี id, unique name, createdAt ครบ<br>✅ Migration สร้างตาราง Category สำเร็จ<br>✅ Seed insert ครบ 4 categories ตรงชื่อ<br>✅ รัน seed ซ้ำ 3 รอบแล้วไม่มีข้อมูลซ้ำ (ยังคง 4 แถว)<br>✅ ไม่พบ .env หรือรหัสผ่านจริงถูก commit<br>Good job Mr.Ear. U have been approved for merge. | – |
-| `feature/4-category-list` → `lab1-staging` | [#8](https://github.com/IEAR2548/TokTickIT/pull/8) | Pending – PR not yet reviewed | – |
+| `feature/4-category-list` → `lab1-staging` | [#8](https://github.com/IEAR2548/TokTickIT/pull/8) | ✅ GET /api/categories ดึงจาก PostgreSQL ผ่าน Prisma จริง (ไม่ hardcode)<br>✅ ลำดับ id/name คงที่ทุกครั้งที่เรียก (มี orderBy)<br>✅ มี Supertest ทดสอบ endpoint และผ่าน<br>✅ React แสดงข้อมูลจาก API จริง ไม่ hardcode<br>✅ มี loading state ที่สังเกตเห็นได้จริง<br>✅ มี error state ที่มีข้อความเป็นประโยชน์เมื่อ backend ล่ม<br>✅ มี Vitest ทดสอบพฤติกรรม UI category list และผ่าน | Thank you for your effort, Mr.Jetanin. |
 
 ### 2. PRs I Reviewed FOR My Partner
 
