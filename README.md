@@ -1,65 +1,136 @@
-# TokTickIT - IT Service Desk Application (Lab 1)
+# TokTickIT - IT Service Desk Application (Lab 01)
 
-TokTickIT is an IT service desk web application for handling Account & Access, Hardware, Software, and Network requests.
-Lab 1 demonstrates a full-stack vertical slice proving that every layer of the tech stack works:
-**React UI → Express REST API → Prisma ORM → PostgreSQL DB**
+TokTickIT is an IT Service Desk web application designed for handling IT support requests such as Account & Access, Hardware, Software, and Network issues.
 
-## Project Structure
+Lab 01 demonstrates a complete full-stack **vertical slice** proving integration across all layers of the technology stack:
+$$\text{React UI (Vite)} \longrightarrow \text{Express REST API} \longrightarrow \text{Prisma ORM} \longrightarrow \text{PostgreSQL Database}$$
+
+---
+
+## 🏗️ Project Architecture & Tech Stack
+
+- **Frontend (`client/`)**: React 18, TypeScript, Vite, Bootstrap 5, `@testing-library/react`, Vitest
+- **Backend (`server/`)**: Node.js, Express, TypeScript, Prisma ORM (v7 with `@prisma/adapter-pg`), Supertest, Vitest
+- **Database**: PostgreSQL
+- **Testing Tools**: Vitest (UI & Integration tests), Supertest (HTTP assertions)
+
+---
+
+## 📁 Project Directory Structure
 
 ```text
 toktickit/
-├── client/          # React + TypeScript + Vite + Bootstrap UI
-├── server/          # Node.js + Express + TypeScript REST API & Prisma ORM
-│   ├── prisma/      # Prisma Schema & Database Seeder
-│   ├── src/         # Server source code
-│   └── tests/       # API integration tests (Supertest + Vitest)
-│       └── lab-01/
+├── client/                      # Frontend Application (React + TypeScript + Vite)
+│   ├── src/
+│   │   ├── App.tsx              # Main UI component handling system status & categories
+│   │   └── tests/
+│   │       └── lab-01/          # UI Component Tests (Vitest + Testing Library)
+│   │           ├── CategoryList.test.tsx
+│   │           ├── ErrorHandling.test.tsx
+│   │           ├── Heading.test.tsx
+│   │           └── HealthStatus.test.tsx
+│   ├── package.json
+│   └── vite.config.ts
+├── server/                      # Backend REST API (Express + TypeScript + Prisma)
+│   ├── prisma/                  # Prisma Schema & Database Seeder
+│   │   ├── schema.prisma        # Category model schema
+│   │   └── seed.ts              # Idempotent seed script
+│   ├── src/
+│   │   ├── app.ts               # Express application routes & Prisma client setup
+│   │   └── index.ts             # Server entry point
+│   ├── tests/
+│   │   └── lab-01/              # API Integration Tests (Supertest + Vitest)
+│   │       ├── categories.test.ts
+│   │       └── health.test.ts
+│   ├── prisma.config.ts         # Prisma v7 environment configuration
+│   └── package.json
 ├── docs/
-│   └── lab-01/      # Course documentation (ai_use.md, reviewer.md, tests.md)
-├── .gitignore
-└── README.md
+│   └── lab-01/                  # Lab 01 Documentation
+│       ├── ai_use.md            # AI prompt reflections & usage logs
+│       ├── reviewer.md          # Peer reviewer details & PR links
+│       └── tests.md             # Required automated test matrix summary
+├── README.md
+└── .gitignore
 ```
 
-## Tech Stack
-- **Frontend**: React 18, TypeScript, Vite, Bootstrap 5
-- **Backend**: Node.js, Express, TypeScript, Prisma ORM
-- **Database**: PostgreSQL
-- **Testing**: Vitest (Client UI tests & Server unit tests), Supertest (API integration tests)
+---
 
-## Setup & Running Instructions
+## 🚀 API Endpoints Summary
+
+| Method | Endpoint | Description | Expected Response |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/health` | System health check endpoint | `HTTP 200` — `{ "status": "ok", "service": "TokTickIT API" }` |
+| `GET` | `/api/categories` | Retrieve IT request categories | `HTTP 200` — Array of 4 categories: `[{"id": 1, "name": "Account and Access"}, ...]` |
+
+---
+
+## ⚙️ Setup & Running Instructions
 
 ### 1. Prerequisites
-- Node.js (v18+ recommended)
-- PostgreSQL database server running locally
+- **Node.js** (v18 or higher)
+- **PostgreSQL** database server running locally
+
+---
 
 ### 2. Backend Setup (`server/`)
-```bash
-cd server
-npm install
-# Copy .env.example to .env and adjust DATABASE_URL
-cp .env.example .env
-# Run Prisma migration & seed database
-npx prisma migrate dev --name init
-npx prisma db seed
-# Start development server
-npm run dev
-```
+
+1. Navigate to the server folder and install dependencies:
+   ```bash
+   cd server
+   npm install
+   ```
+
+2. Configure environment variables in `server/.env`:
+   ```env
+   DATABASE_URL="postgresql://<user>:<password>@localhost:5432/toktickit?schema=public"
+   PORT=5000
+   ```
+
+3. Run Prisma migration and seed the database:
+   ```bash
+   # Apply database migrations
+   npx prisma migrate dev --name init
+
+   # Seed initial IT categories
+   npx prisma db seed
+   ```
+
+4. Start the backend development server:
+   ```bash
+   npm run dev
+   ```
+   The server runs on `http://localhost:5000`.
+
+---
 
 ### 3. Frontend Setup (`client/`)
-```bash
-cd client
-npm install
-# Start Vite development server
-npm run dev
-```
 
-### 4. Running Tests
+1. Open a new terminal, navigate to the client folder, and install dependencies:
+   ```bash
+   cd client
+   npm install
+   ```
+
+2. Start the Vite development server:
+   ```bash
+   npm run dev
+   ```
+   The frontend runs on `http://localhost:5173`.
+
+---
+
+## 🧪 Running Automated Tests
+
+### Server API Integration Tests (Supertest)
 ```bash
-# In server directory:
 cd server
-npm run test
-
-# In client directory:
-cd client
-npm run test
+npm test
 ```
+Verifies endpoints (`/api/health`, `/api/categories`) returning HTTP 200 and expected payload structure.
+
+### Client UI Component Tests (Vitest + React Testing Library)
+```bash
+cd client
+npm test
+```
+Verifies UI header rendering, loading states, category list rendering, and API error handling state.
