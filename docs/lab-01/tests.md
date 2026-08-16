@@ -6,11 +6,12 @@ This document lists the required automated tests for Lab 1 to verify that the To
 
 | Test ID | Test File (`tests/lab-01/`) | Tool | Test Description
 | :--- | :--- | :--- | :--- |
-| **API-01** | `server/tests/lab-01/.ts` | Supertest |
-| **API-02** | `server/tests/lab-01/.ts` | Supertest |
-| **UI-01** | `client/src/tests/lab-01/.tsx` | Vitest |
-| **UI-02** | `client/src/tests/lab-01/.tsx` | Vitest |
-| **UI-03** | `client/src/tests/lab-01/.tsx` | Vitest |
+| **API-01** | `server/tests/lab-01/health.test.ts` | Supertest | Health endpoint returns 200 and expected JSON |
+| **API-02** | `server/tests/lab-01/categories.test.ts` | Supertest | Categories endpoint returns the four seeded categories |
+| **UI-01** | `client/src/tests/lab-01/Heading.test.tsx` | Vitest | TokTickIT heading renders |
+| **UI-02** | `client/src/tests/lab-01/CategoryList.test.tsx` | Vitest | Loading state changes to category list |
+| **UI-03** | `client/src/tests/lab-01/ErrorHandling.test.tsx` | Vitest | API failure displays a useful error message |
+| **UI-04** | `client/src/tests/lab-01/HealthStatus.test.tsx` | Vitest | TokTickIT display system status as Online |
 
 ## Test Execution Commands
 
