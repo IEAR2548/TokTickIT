@@ -1,0 +1,19 @@
+# Lab 2 AI Use and Reflection
+
+## LLM Used
+
+I used the **Antigravity** coding agent through my Google Cloud Platform account. I mainly used **Claude Sonnet 4.6 and Gemini 3.7 Flash** as the LLM.
+
+---
+
+## Key Prompts Table
+
+The following table documents 6-10 selected key prompts used during Lab 2. These represent the most impactful interactions with the AI assistant during specification, design, and implementation phases.
+
+| # | Prompt Name | Actual Prompt Text | Purpose / Outcome |
+|---|---|---|---|
+| 1 | **Plan Lab 2 Implementation** | "ช่วยอธิบายงานที่ต้องทำทั้งหมดในเอกสาร lab_02_sheet อย่างละเอียด และขอ workflow ตั้งแต่ต้นจนจบงานไม่ตกหล่นแม้แต่อย่างเดียว พร้อมบอกหน้าที่อ้างอิงมา" | ทำให้เข้าใจ และดึงใจความสำคัญออกมาว่าต้องทำอะไรก่อนหลังเป็นขั้นเป็นตอน |
+| 2 | **Plan Lab 2 Implementation** | "เขียนไฟล์ specifiationmd, ai-use.md, test.md และ ui-spec.md ใน docs/lab-02/ ตามเอกสาร docs/lab-02/Lab_02_labsheet.pdf เขียนอย่างถูกต้อง รอบคอบ ไม่ตกหล่นตามเอกสาร และระบุในแชทนี้ด้วยว่าอ้างอิงตามเอกสารหน้าไหนแต่ไม่ต้องระบุในไฟล์" | เพื่อให้แชทเอไอเขียนเอกสารตามที่กำหนดไว้ใน Lab 2 |
+
+## Reflection
+My Reflection:
