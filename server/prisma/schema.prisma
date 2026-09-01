@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
 }
 
@@ -7,8 +7,94 @@ datasource db {
   provider = "postgresql"
 }
 
+model DevRequester {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  tickets Ticket[]
+
+  @@index([isActive])
+}
+
 model Category {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique
-  createdAt  DateTime  @default(now())
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  tickets Ticket[]
+}
+
+model RelatedSystem {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  tickets Ticket[]
+}
+
+enum RequestedPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TicketStatus {
+  NEW
+}
+
+model Ticket {
+  id           Int    @id @default(autoincrement())
+  ticketNumber String @unique
+
+  requesterId Int
+  requester   DevRequester @relation(fields: [requesterId], references: [id])
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  relatedSystemId Int
+  relatedSystem   RelatedSystem @relation(fields: [relatedSystemId], references: [id])
+
+  summary     String
+  description String
+
+  requestedPriority RequestedPriority
+  currentStatus     TicketStatus      @default(NEW)
+
+  attachments Attachment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([requesterId])
+  @@index([categoryId])
+  @@index([currentStatus])
+  @@index([createdAt])
+}
+
+model Attachment {
+  id Int @id @default(autoincrement())
+
+  ticketId Int
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+
+  originalName String
+  storageKey   String   @unique
+  mimeType     String
+  sizeBytes    Int
+
+  isRemoved     Boolean   @default(false)
+  removalReason String?
+  removedAt     DateTime?
+
+  uploadedAt DateTime @default(now())
+
+  @@index([ticketId])
+  @@index([isRemoved])
 }
