@@ -37,6 +37,7 @@ Tests are written as failing tests first, then the minimum implementation is add
 | API-19 | API | AC-18, BR-18 | GET /api/attachments/:id/download for a removed attachment | 404 or 403; no file bytes returned | `server/tests/lab-02/attachments.api.test.ts` | |
 | API-20 | API | BR-20 | PATCH /api/attachments/:id/remove with empty removalReason | 400; `VALIDATION_ERROR`; attachment not removed | `server/tests/lab-02/attachments.api.test.ts` | |
 | API-21 | API | AC-22, BR-04 | GET /api/requesters | Inactive Requester is absent from response | `server/tests/lab-02/create-ticket.api.test.ts` | |
+| SEED-01 | Integration | BR-04, Sec 7 | Seed data idempotency & reference data verification | 6 tests pass: no duplicates on re-seed, 4 categories, 6+ related systems, 4 active & 1 inactive requesters, correct emails, inactive filter | `server/tests/lab-02/seed-idempotency.test.ts` | PASSED |
 | UI-01 | UI Component | AC-04 | Submit without entering Summary | Field-level error message appears below Summary field; API not called | `client/src/tests/lab-02/CreateTicket.test.tsx` | |
 | UI-02 | UI Component | AC-05, BR-14 | Submit button is disabled while request is in flight | Button has `disabled` attribute during submission | `client/src/tests/lab-02/CreateTicket.test.tsx` | |
 | UI-03 | UI Component | AC-19, BR-13 | Backend returns 500 during submission | Error callout shown; all form values retained | `client/src/tests/lab-02/CreateTicket.test.tsx` | |
@@ -91,7 +92,7 @@ Tests are written as failing tests first, then the minimum implementation is add
 | AC-19 | UI-03 |
 | AC-20 | RESP-01, RESP-04 |
 | AC-21 | RESP-02, RESP-03 |
-| AC-22 | API-21 |
+| AC-22 | API-21, SEED-01 |
 | AC-23 | UI-13, E2E-02 |
 
 ---
@@ -174,10 +175,22 @@ npx playwright test e2e/lab-02 --reporter=html
 
 ## 6. Final Results
 
-To be completed after implementation. Record the actual test run output below.
+### Actual Test Run Output
+
+```text
+ ✓ tests/lab-02/seed-idempotency.test.ts (6) 14487ms
+   ✓ Seed idempotency (6) 14486ms
+     ✓ does not create duplicate rows when run twice 14424ms
+     ✓ seeds exactly the 4 required categories
+     ✓ seeds at least 6 active related systems
+     ✓ seeds at least 4 active and 1 inactive requester
+     ✓ seeds the correct active requester emails from specification
+     ✓ inactive requester is not returned when filtering by isActive
+```
 
 | Test ID | Final Status | Notes |
 |---|---|---|
+| SEED-01 | PASSED | 6/6 tests passed (14.49s) in `server/tests/lab-02/seed-idempotency.test.ts` |
 | UNIT-01 | | |
 | UNIT-02 | | |
 | UNIT-03 | | |
