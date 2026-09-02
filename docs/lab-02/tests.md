@@ -36,7 +36,7 @@ Tests are written as failing tests first, then the minimum implementation is add
 | API-18 | API | AC-17, FR-12 | PATCH /api/attachments/:id/remove with valid reason | 200; `isRemoved = true`; `removalReason` and `removedAt` stored | `server/tests/lab-02/attachments.api.test.ts` | |
 | API-19 | API | AC-18, BR-18 | GET /api/attachments/:id/download for a removed attachment | 404 or 403; no file bytes returned | `server/tests/lab-02/attachments.api.test.ts` | |
 | API-20 | API | BR-20 | PATCH /api/attachments/:id/remove with empty removalReason | 400; `VALIDATION_ERROR`; attachment not removed | `server/tests/lab-02/attachments.api.test.ts` | |
-| API-21 | API | AC-22, BR-04 | GET /api/requesters | Inactive Requester is absent from response | `server/tests/lab-02/create-ticket.api.test.ts` | |
+| API-21 | API | AC-22, BR-04 | GET /api/requesters | Inactive Requester is absent from response | `server/tests/lab-02/requesters.api.test.ts` | PASSED |
 | SEED-01 | Integration | BR-04, Sec 7 | Seed data idempotency & reference data verification | 6 tests pass: no duplicates on re-seed, 4 categories, 6+ related systems, 4 active & 1 inactive requesters, correct emails, inactive filter | `server/tests/lab-02/seed-idempotency.test.ts` | PASSED |
 | UI-01 | UI Component | AC-04 | Submit without entering Summary | Field-level error message appears below Summary field; API not called | `client/src/tests/lab-02/CreateTicket.test.tsx` | |
 | UI-02 | UI Component | AC-05, BR-14 | Submit button is disabled while request is in flight | Button has `disabled` attribute during submission | `client/src/tests/lab-02/CreateTicket.test.tsx` | |
@@ -49,7 +49,7 @@ Tests are written as failing tests first, then the minimum implementation is add
 | UI-09 | UI Component | AC-16 | Attachment upload success in Ticket Detail | New attachment row appears in active list with Download button | `client/src/tests/lab-02/AttachmentSection.test.tsx` | |
 | UI-10 | UI Component | AC-17 | Soft-remove attachment with reason | Attachment moves to removed list; Download button absent; reason and date shown | `client/src/tests/lab-02/AttachmentSection.test.tsx` | |
 | UI-11 | UI Component | AC-07 | Add Attachment disabled when 5 active | Add Attachment button is disabled and shows tooltip | `client/src/tests/lab-02/AttachmentSection.test.tsx` | |
-| UI-12 | UI Component | AC-02 | Redirect to Requester Selection when no Requester context | Navigation to My Tickets redirects to Selection screen | `client/src/tests/lab-02/MyTickets.test.tsx` | |
+| UI-12 | UI Component | AC-02 | Redirect to Requester Selection when no Requester context | Navigation to My Tickets redirects to Selection screen | `client/src/tests/lab-02/RequesterGuard.test.tsx` | PASSED |
 | UI-13 | UI Component | AC-23, BR-05 | Switch Requester | My Tickets reloads and shows only new Requester's data | `client/src/tests/lab-02/MyTickets.test.tsx` | |
 | UI-STYLE-01 | UI Style | ui-spec.md | Primary green `#006B3C` applied to app header and primary buttons | Computed background-color matches `#006B3C` | `client/src/tests/lab-02/MyTickets.test.tsx` | |
 | UI-STYLE-02 | UI Style | ui-spec.md sec 5 | Required-field asterisk present on all required fields in Create Ticket | All required field labels contain `*` | `client/src/tests/lab-02/CreateTicket.test.tsx` | |
@@ -178,6 +178,7 @@ npx playwright test e2e/lab-02 --reporter=html
 ### Actual Test Run Output
 
 ```text
+# server — seed
  ✓ tests/lab-02/seed-idempotency.test.ts (6) 14487ms
    ✓ Seed idempotency (6) 14486ms
      ✓ does not create duplicate rows when run twice 14424ms
@@ -186,11 +187,38 @@ npx playwright test e2e/lab-02 --reporter=html
      ✓ seeds at least 4 active and 1 inactive requester
      ✓ seeds the correct active requester emails from specification
      ✓ inactive requester is not returned when filtering by isActive
+
+# server — requesters API
+ ✓ tests/lab-02/requesters.api.test.ts (3) 463ms
+   ✓ GET /api/requesters (3) 463ms
+     ✓ returns only active requesters (BR-04)
+     ✓ returns each requester with id, name, and email only
+     ✓ returns an empty array (not an error) when no active requesters exist
+
+# client — RequesterSelection screen
+ ✓ src/tests/lab-02/RequesterSelect.test.tsx (5) 312ms
+   ✓ RequesterSelection screen (5)
+     ✓ shows a loading state while requesters are being fetched
+     ✓ populates the dropdown with active requesters and excludes inactive ones (AC-21)
+     ✓ shows an empty state when no active requesters exist
+     ✓ shows a safe failure state with retry when the API call fails
+     ✓ disables Continue until a requester is chosen, then enables it (AC-22 precondition)
+
+# client — RequesterGuard
+ ✓ src/tests/lab-02/RequesterGuard.test.tsx (1) 64ms
+   ✓ RequesterGuard (1)
+     ✓ redirects to the Requester Selection screen when no requester is selected (AC-02)
+
+# client — RequesterBadge
+ ✓ src/tests/lab-02/RequesterBadge.test.tsx (1) 204ms
+   ✓ RequesterBadge (1)
+     ✓ shows the current requester name and navigates to selection on Change Requester
 ```
 
 | Test ID | Final Status | Notes |
 |---|---|---|
 | SEED-01 | PASSED | 6/6 tests passed (14.49s) in `server/tests/lab-02/seed-idempotency.test.ts` |
+| API-21 | PASSED | 3/3 tests passed (463ms) in `server/tests/lab-02/requesters.api.test.ts` — also covers BR-04 shape check and BR-25 empty-array |
 | UNIT-01 | | |
 | UNIT-02 | | |
 | UNIT-03 | | |
@@ -215,7 +243,7 @@ npx playwright test e2e/lab-02 --reporter=html
 | API-18 | | |
 | API-19 | | |
 | API-20 | | |
-| API-21 | | |
+| API-21 | PASSED | 3/3 — see Actual Test Run Output |
 | UI-01 | | |
 | UI-02 | | |
 | UI-03 | | |
@@ -227,7 +255,7 @@ npx playwright test e2e/lab-02 --reporter=html
 | UI-09 | | |
 | UI-10 | | |
 | UI-11 | | |
-| UI-12 | | |
+| UI-12 | PASSED | 1/1 — `client/src/tests/lab-02/RequesterGuard.test.tsx` |
 | UI-13 | | |
 | UI-STYLE-01 | | |
 | UI-STYLE-02 | | |
