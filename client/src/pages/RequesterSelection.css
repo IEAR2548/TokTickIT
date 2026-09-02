@@ -1,0 +1,105 @@
+.requester-select-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-primary, #006b3c);
+    padding: 16px;
+}
+
+.requester-select-card {
+    background: var(--color-surface, #ffffff);
+    border: 1px solid var(--color-surface-border, #d9e5de);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px var(--color-surface-shadow, rgba(0, 107, 60, 0.08));
+    max-width: 480px;
+    width: 100%;
+    padding: 32px;
+}
+
+.requester-select-title {
+    color: var(--color-primary, #006b3c);
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 8px;
+}
+
+.requester-select-subtitle {
+    color: var(--color-text-secondary, #4a6357);
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0 0 24px;
+}
+
+.requester-select-loading,
+.requester-select-empty,
+.requester-select-error {
+    background: var(--color-pale-green, #eaf6ef);
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 14px;
+    color: var(--color-text-primary, #1a2e23);
+}
+
+.requester-select-error {
+    background: var(--color-error-bg, #fef2f2);
+    color: var(--color-error, #b91c1c);
+}
+
+.field-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary, #1a2e23);
+    margin-bottom: 8px;
+}
+
+.field-select {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--color-field-editable-border, #b0c8bc);
+    border-radius: 6px;
+    background: var(--color-field-editable-bg, #ffffff);
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.field-select:focus {
+    outline: none;
+    border: 2px solid var(--color-primary, #006b3c);
+}
+
+.requester-select-info {
+    font-size: 12px;
+    color: var(--color-text-secondary, #4a6357);
+    margin-bottom: 24px;
+}
+
+.btn {
+    height: 40px;
+    padding: 0 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    width: 100%;
+}
+
+.btn-primary {
+    background: var(--color-primary, #006b3c);
+    color: #ffffff;
+}
+
+.btn-primary:disabled {
+    background: var(--color-field-readonly-bg, #d1ddd8);
+    color: var(--color-text-secondary, #7a9e8c);
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: #ffffff;
+    color: var(--color-primary, #006b3c);
+    border: 1px solid var(--color-primary, #006b3c);
+}
