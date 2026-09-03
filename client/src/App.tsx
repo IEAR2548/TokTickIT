@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import { RequesterProvider } from "./context/RequesterContext";
-import { RequesterGuard } from "./components/RequesterGuard";
+import { RequesterBadge } from "./components/RequesterBadge";
 import { RequesterSelection } from "./pages/RequesterSelection";
 
 interface HealthResponse {
@@ -52,8 +52,10 @@ export default function App() {
   };
 
   return (
-    <RequesterProvider>
-      <Routes>
+    <BrowserRouter>
+      <RequesterProvider>
+        <RequesterBadge />
+        <Routes>
         {/* หน้าเลือก Requester */}
         <Route path="/select-requester" element={<RequesterSelection />} />
 
@@ -112,18 +114,12 @@ export default function App() {
           }
         />
 
-        {/* ตัวอย่าง Route ที่ต้องผ่าน RequesterGuard ในอนาคต */}
-        {/* 
-        <Route 
-          path="/my-tickets" 
-          element={
-            <RequesterGuard>
-              <div>My Tickets Page</div>
-            </RequesterGuard>
-          } 
-        /> 
+        {/* Routes ที่ต้องผ่าน RequesterGuard — เปิดเมื่อ implement แต่ละหน้า */}
+        {/* Example:
+        <Route path="/my-tickets" element={<RequesterGuard><div>My Tickets Page</div></RequesterGuard>} />
         */}
-      </Routes>
-    </RequesterProvider>
+        </Routes>
+      </RequesterProvider>
+    </BrowserRouter>
   );
 }
