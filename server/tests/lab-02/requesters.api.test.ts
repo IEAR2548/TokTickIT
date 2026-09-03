@@ -17,7 +17,18 @@ describe("GET /api/requesters", () => {
     });
 
     afterAll(async () => {
-        await prisma.devRequester.deleteMany({});
+        // Only remove the rows this suite created — do not wipe the whole table
+        await prisma.devRequester.deleteMany({
+            where: {
+                email: {
+                    in: [
+                        "alice.tanaka@example.com",
+                        "bob.chavez@example.com",
+                        "eve.former@example.com",
+                    ],
+                },
+            },
+        });
         await prisma.$disconnect();
     });
 
