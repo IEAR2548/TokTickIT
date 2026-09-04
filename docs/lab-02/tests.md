@@ -14,8 +14,8 @@ Tests are written as failing tests first, then the minimum implementation is add
 |---|---|---|---|---|---|---|
 | UNIT-01 | Unit | BR-01 | Ticket Number generator returns `TK-YYYYMMDD-NNNN` format | String matches regex `^TK-\d{8}-\d{4}$` | `server/tests/lab-02/ticket-number.unit.test.ts` | PASSED |
 | UNIT-02 | Unit | BR-01 | Two tickets created on the same day have different Ticket Numbers | Numbers differ and both match format | `server/tests/lab-02/ticket-number.unit.test.ts` | PASSED |
-| UNIT-03 | Unit | BR-07, BR-08 | Validation utility trims whitespace from Summary and Description before checking length | Trimmed values pass min-length; untrimmed spaces do not add to length | `server/tests/lab-02/validation.unit.test.ts` | |
-| UNIT-04 | Unit | BR-22 | Filename sanitizer removes path traversal sequences | Output contains no `../`, no absolute path indicators | `server/tests/lab-02/file-sanitizer.unit.test.ts` | |
+| UNIT-03 | Unit | BR-07, BR-08 | Validation utility trims whitespace from Summary and Description before checking length | Trimmed values pass min-length; untrimmed spaces do not add to length | `server/tests/lab-02/validation.unit.test.ts` | PASSED |
+| UNIT-04 | Unit | BR-22 | Filename sanitizer removes path traversal sequences | Output contains no `../`, no absolute path indicators | `server/tests/lab-02/file-sanitizer.unit.test.ts` | PASSED |
 | API-01 | API | AC-01, FR-04 | POST /api/tickets with valid body | 201; one Ticket saved in DB; official Ticket Number returned | `server/tests/lab-02/create-ticket.api.test.ts` | PASSED |
 | API-02 | API | AC-04, BR-07 | POST /api/tickets with empty Summary | 400; `fields.summary` error present; no Ticket created | `server/tests/lab-02/create-ticket.api.test.ts` | PASSED |
 | API-03 | API | AC-04, BR-07 | POST /api/tickets with Summary shorter than 5 chars | 400; `fields.summary` error present | `server/tests/lab-02/create-ticket.api.test.ts` | PASSED |
@@ -220,6 +220,27 @@ npx playwright test e2e/lab-02 --reporter=html
      ✓ returns a string matching TK-YYYYMMDD-NNNN (UNIT-01, BR-01)
      ✓ returns increasing, unique numbers across sequential calls (UNIT-02)
 
+# server — validation unit test
+ ✓ tests/lab-02/validation.unit.test.ts (4) 5ms
+   ✓ validateCreateTicket (UNIT-03, BR-07, BR-08) (4)
+     ✓ trims whitespace from summary and description before checking length
+     ✓ does not count untrimmed spaces towards minimum length for summary (min 5 chars)
+     ✓ does not count untrimmed spaces towards minimum length for description (min 10 chars)
+     ✓ rejects non-string summary or description
+
+# server — file-sanitizer unit test
+ ✓ tests/lab-02/file-sanitizer.unit.test.ts (4) 6ms
+   ✓ fileSanitizer (UNIT-04, BR-22) (4)
+     ✓ removes path traversal sequences like ../ and ..\
+     ✓ removes absolute path indicators
+     ✓ preserves safe filenames and extensions
+     ✓ falls back to attachment when empty or traversal-only
+
+# server — related-systems API
+ ✓ tests/lab-02/related-systems.api.test.ts (1) 347ms
+   ✓ GET /api/related-systems (1)
+     ✓ returns active related systems
+
 # server — create-ticket API
  ✓ tests/lab-02/create-ticket.api.test.ts (9) 634ms
    ✓ POST /api/tickets (9)
@@ -261,8 +282,8 @@ npx playwright test e2e/lab-02 --reporter=html
 | API-21 | PASSED | 3/3 tests passed (463ms) in `server/tests/lab-02/requesters.api.test.ts` — also covers BR-04 shape check and BR-25 empty-array |
 | UNIT-01 | PASSED | 2/2 in `server/tests/lab-02/ticket-number.unit.test.ts` — TK-YYYYMMDD-NNNN format |
 | UNIT-02 | PASSED | Sequential unique number generation per day |
-| UNIT-03 | | |
-| UNIT-04 | | |
+| UNIT-03 | PASSED | 4/4 in `server/tests/lab-02/validation.unit.test.ts` — whitespace trimming before min-length check (BR-07, BR-08) |
+| UNIT-04 | PASSED | 4/4 in `server/tests/lab-02/file-sanitizer.unit.test.ts` — path traversal stripping per BR-22 |
 | API-01 | PASSED | 9/9 in `server/tests/lab-02/create-ticket.api.test.ts` — 201 + Ticket Number |
 | API-02 | PASSED | Empty summary rejected with 400 VALIDATION_ERROR |
 | API-03 | PASSED | Summary < 5 chars rejected with 400 VALIDATION_ERROR |
