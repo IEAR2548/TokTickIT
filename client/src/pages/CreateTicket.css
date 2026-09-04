@@ -25,6 +25,58 @@
     border: 1px solid var(--color-field-readonly-border, #c8ddd5);
     border-radius: 6px;
     color: var(--color-text-secondary, #4a6357);
+    box-sizing: border-box;
+}
+
+.priority-field-group {
+    margin-bottom: 24px;
+}
+
+.create-ticket-form input:not(.field-readonly),
+.create-ticket-form select,
+.create-ticket-form textarea {
+    width: 100%;
+    border: 1px solid var(--color-field-editable-border, #b0c8bc);
+    background: var(--color-field-editable-bg, #ffffff);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--color-text-primary, #1a2e23);
+    box-sizing: border-box;
+}
+
+.create-ticket-form input:not(.field-readonly),
+.create-ticket-form select {
+    height: 40px;
+    padding: 0 12px;
+}
+
+.create-ticket-form textarea {
+    min-height: 120px;
+    padding: 10px 12px;
+    resize: vertical;
+}
+
+.create-ticket-form input:focus,
+.create-ticket-form select:focus,
+.create-ticket-form textarea:focus {
+    outline: 2px solid var(--color-primary, #006b3c);
+    outline-offset: -1px;
+}
+
+.create-ticket-form input[aria-invalid="true"],
+.create-ticket-form select[aria-invalid="true"],
+.create-ticket-form textarea[aria-invalid="true"] {
+    border-color: var(--color-error, #b91c1c);
+    background-color: var(--color-error-bg, #fef2f2);
+}
+
+.create-ticket-form input:disabled,
+.create-ticket-form select:disabled,
+.create-ticket-form textarea:disabled {
+    background-color: #f3f6f4;
+    border-color: #d1ddd8;
+    cursor: not-allowed;
 }
 
 .field-error {

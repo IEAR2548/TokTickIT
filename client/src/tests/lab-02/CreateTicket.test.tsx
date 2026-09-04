@@ -46,7 +46,8 @@ describe("CreateTicket screen", () => {
         const createSpy = vi.spyOn(ticketsApi, "createTicket");
         renderScreen();
 
-        await screen.findByLabelText(/category/i);
+        await screen.findByRole("option", { name: "Hardware" });
+        await screen.findByRole("option", { name: "Corporate Laptop" });
         await userEvent.click(screen.getByRole("button", { name: /submit ticket/i }));
 
         expect(await screen.findByText(/Summary must be between 5 and 200 characters|Summary is required/i)).toBeInTheDocument();
@@ -124,7 +125,8 @@ describe("CreateTicket screen", () => {
     // UI-STYLE-02: Required field asterisks
     it("displays required asterisks on all required field labels (UI-STYLE-02)", async () => {
         renderScreen();
-        await screen.findByLabelText(/category/i);
+        await screen.findByRole("option", { name: "Hardware" });
+        await screen.findByRole("option", { name: "Corporate Laptop" });
 
         const requiredLabels = [
             /category/i,
@@ -143,7 +145,8 @@ describe("CreateTicket screen", () => {
     // UI-STYLE-03: Distinct background on read-only fields
     it("renders read-only fields with distinct styling (UI-STYLE-03)", async () => {
         renderScreen();
-        await screen.findByLabelText(/category/i);
+        await screen.findByRole("option", { name: "Hardware" });
+        await screen.findByRole("option", { name: "Corporate Laptop" });
 
         const readonlyInputs = screen.getAllByRole("textbox").filter(el => el.hasAttribute("readonly"));
         expect(readonlyInputs.length).toBeGreaterThanOrEqual(1);
@@ -151,7 +154,8 @@ describe("CreateTicket screen", () => {
 });
 
 async function fillValidForm() {
-    await screen.findByLabelText(/category/i);
+    await screen.findByRole("option", { name: "Hardware" });
+    await screen.findByRole("option", { name: "Corporate Laptop" });
     await userEvent.selectOptions(screen.getByLabelText(/category/i), "1");
     await userEvent.selectOptions(screen.getByLabelText(/related system/i), "1");
     await userEvent.selectOptions(screen.getByLabelText(/requested priority/i), "MEDIUM");

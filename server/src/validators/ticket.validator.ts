@@ -49,13 +49,13 @@ export function validateCreateTicket(input: Partial<CreateTicketInput>): FieldEr
         errors.relatedSystemId = "Related System is required.";
     }
 
-    const summary = (input.summary ?? "").trim();
-    if (summary.length < 5 || summary.length > 200) {
+    const summary = typeof input.summary === "string" ? input.summary.trim() : "";
+    if (typeof input.summary !== "string" || summary.length < 5 || summary.length > 200) {
         errors.summary = "Summary must be between 5 and 200 characters.";
     }
 
-    const description = (input.description ?? "").trim();
-    if (description.length < 10 || description.length > 5000) {
+    const description = typeof input.description === "string" ? input.description.trim() : "";
+    if (typeof input.description !== "string" || description.length < 10 || description.length > 5000) {
         errors.description = "Description must be between 10 and 5000 characters.";
     }
 

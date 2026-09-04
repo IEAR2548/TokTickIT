@@ -136,11 +136,11 @@ export function CreateTicket() {
                     </div>
                 )}
                 <div className="success-actions">
-                    <Button variant="secondary" onClick={() => navigate("/my-tickets")}>
+                    <Button variant="primary" onClick={() => navigate("/my-tickets")}>
                         View Ticket
                     </Button>
                     <Button
-                        variant="tertiary"
+                        variant="secondary"
                         onClick={() => {
                             setForm(INITIAL_FORM);
                             setPendingAttachments([]);
@@ -189,6 +189,7 @@ export function CreateTicket() {
                         aria-label="Category"
                         value={form.categoryId}
                         onChange={(e) => updateField("categoryId", e.target.value)}
+                        disabled={submitting}
                         aria-invalid={!!fieldErrors.categoryId}
                         aria-describedby="category-error"
                     >
@@ -211,6 +212,7 @@ export function CreateTicket() {
                         aria-label="Related System"
                         value={form.relatedSystemId}
                         onChange={(e) => updateField("relatedSystemId", e.target.value)}
+                        disabled={submitting}
                         aria-invalid={!!fieldErrors.relatedSystemId}
                         aria-describedby="relatedSystem-error"
                     >
@@ -223,28 +225,29 @@ export function CreateTicket() {
                     </select>
                     <FieldError id="relatedSystem-error" message={fieldErrors.relatedSystemId} />
                 </div>
-
-                <div>
-                    <FieldLabel htmlFor="requestedPriority" required>
-                        Requested Priority
-                    </FieldLabel>
-                    <select
-                        id="requestedPriority"
-                        aria-label="Requested Priority"
-                        value={form.requestedPriority}
-                        onChange={(e) => updateField("requestedPriority", e.target.value as Priority)}
-                        aria-invalid={!!fieldErrors.requestedPriority}
-                        aria-describedby="priority-error"
-                    >
-                        <option value="">Select…</option>
-                        <option value="LOW">Low</option>
-                        <option value="MEDIUM">Medium</option>
-                        <option value="HIGH">High</option>
-                        <option value="CRITICAL">Critical</option>
-                    </select>
-                    <FieldError id="priority-error" message={fieldErrors.requestedPriority} />
-                </div>
             </section>
+
+            <div className="priority-field-group">
+                <FieldLabel htmlFor="requestedPriority" required>
+                    Requested Priority
+                </FieldLabel>
+                <select
+                    id="requestedPriority"
+                    aria-label="Requested Priority"
+                    value={form.requestedPriority}
+                    onChange={(e) => updateField("requestedPriority", e.target.value as Priority)}
+                    disabled={submitting}
+                    aria-invalid={!!fieldErrors.requestedPriority}
+                    aria-describedby="priority-error"
+                >
+                    <option value="">Select…</option>
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                    <option value="CRITICAL">Critical</option>
+                </select>
+                <FieldError id="priority-error" message={fieldErrors.requestedPriority} />
+            </div>
 
             <div>
                 <FieldLabel htmlFor="summary" required>
@@ -255,6 +258,7 @@ export function CreateTicket() {
                     aria-label="Summary"
                     value={form.summary}
                     onChange={(e) => updateField("summary", e.target.value)}
+                    disabled={submitting}
                     aria-invalid={!!fieldErrors.summary}
                     aria-describedby="summary-error"
                 />
@@ -271,28 +275,33 @@ export function CreateTicket() {
                     rows={6}
                     value={form.description}
                     onChange={(e) => updateField("description", e.target.value)}
+                    disabled={submitting}
                     aria-invalid={!!fieldErrors.description}
                     aria-describedby="description-error"
                 />
                 <FieldError id="description-error" message={fieldErrors.description} />
             </div>
 
-            <AttachmentUploader files={pendingAttachments} onChange={setPendingAttachments} />
-
-            {apiError && (
-                <div className="create-ticket-api-error" role="alert">
-                    {apiError}
-                </div>
-            )}
+            <AttachmentUploader
+                files={pendingAttachments}
+                onChange={setPendingAttachments}
+                disabled={submitting}
+            />
 
             <div className="form-actions">
-                <Button type="button" variant="secondary" onClick={() => navigate(-1)}>
+                <Button type="button" variant="secondary" onClick={() => navigate(-1)} disabled={submitting}>
                     Cancel
                 </Button>
                 <Button type="submit" variant="primary" busy={submitting}>
                     Submit Ticket
                 </Button>
             </div>
+
+            {apiError && (
+                <div className="create-ticket-api-error" role="alert">
+                    {apiError}
+                </div>
+            )}
         </form>
     );
-}
+}

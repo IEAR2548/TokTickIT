@@ -76,7 +76,7 @@
     margin-bottom: 24px;
 }
 
-.btn {
+.requester-select-card .btn {
     height: 40px;
     padding: 0 20px;
     border-radius: 6px;
@@ -87,19 +87,13 @@
     width: 100%;
 }
 
-.btn-primary {
+.requester-select-card .btn-primary {
     background: var(--color-primary, #006b3c);
     color: #ffffff;
 }
 
-.btn-primary:disabled {
+.requester-select-card .btn-primary:disabled {
     background: var(--color-field-readonly-bg, #d1ddd8);
     color: var(--color-text-secondary, #7a9e8c);
     cursor: not-allowed;
-}
-
-.btn-secondary {
-    background: #ffffff;
-    color: var(--color-primary, #006b3c);
-    border: 1px solid var(--color-primary, #006b3c);
 }

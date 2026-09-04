@@ -2,9 +2,6 @@ import { prisma } from "../lib/prisma";
 import { generateUniqueTicketNumber } from "./ticketNumber.service";
 import { CreateTicketInput } from "../validators/ticket.validator";
 
-// Ref: docs/lab-02/specification.md BR-01, BR-02, BR-04, BR-09, BR-10
-// Ref: docs/lab-02/api-spec.md Section 4
-
 export class RequesterNotFoundError extends Error {
     constructor() {
         super("Requester does not match an active Requester");
@@ -61,4 +58,86 @@ export async function createTicket(input: CreateTicketInput) {
     });
 
     return ticket;
-}
+}
+
+export interface ListTicketsOptions {
+    requesterId: number;
+    search?: string;
+    categoryId?: number;
+    status?: string;
+    sortBy?: "createdAt" | "updatedAt";
+    sortOrder?: "asc" | "desc";
+    page?: number;
+    pageSize?: number;
+}
+
+export async function listTickets(options: ListTicketsOptions) {
+    const requester = await prisma.devRequester.findUnique({
+        where: { id: options.requesterId },
+    });
+    if (!requester || !requester.isActive) {
+        throw new RequesterNotFoundError();
+    }
+
+    const where: any = {
+        requesterId: options.requesterId,
+    };
+
+    if (options.categoryId) {
+        where.categoryId = options.categoryId;
+    }
+
+    if (options.status) {
+        where.currentStatus = options.status;
+    }
+
+    if (options.search && options.search.trim() !== "") {
+        const searchTerm = options.search.trim();
+        where.OR = [
+            { ticketNumber: { contains: searchTerm, mode: "insensitive" } },
+            { summary: { contains: searchTerm, mode: "insensitive" } },
+        ];
+    }
+
+    const page = options.page && options.page >= 1 ? options.page : 1;
+    const pageSize = options.pageSize ?? 10;
+    const skip = (page - 1) * pageSize;
+    const sortBy = options.sortBy ?? "createdAt";
+    const sortOrder = options.sortOrder ?? "desc";
+
+    const [tickets, total] = await Promise.all([
+        prisma.ticket.findMany({
+            where,
+            select: {
+                id: true,
+                ticketNumber: true,
+                summary: true,
+                category: { select: { id: true, name: true } },
+                relatedSystem: { select: { id: true, name: true } },
+                requestedPriority: true,
+                currentStatus: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+            orderBy: [
+                { [sortBy]: sortOrder },
+                { id: "desc" }, // BR-23: secondary sort to break ties
+            ],
+            skip,
+            take: pageSize,
+        }),
+        prisma.ticket.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / pageSize);
+
+    return {
+        tickets,
+        pagination: {
+            page,
+            pageSize,
+            total,
+            totalPages,
+        },
+    };
+}

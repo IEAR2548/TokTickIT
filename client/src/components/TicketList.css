@@ -1,0 +1,121 @@
+.ticket-list {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--color-surface, #ffffff);
+    border: 1px solid var(--color-surface-border, #d9e5de);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.ticket-list thead th {
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary, #4a6357);
+    background: var(--color-pale-green, #eaf6ef);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-surface-border, #d9e5de);
+}
+
+.ticket-list-row td {
+    padding: 14px 16px;
+    border-top: 1px solid var(--color-surface-border, #d9e5de);
+    font-size: 14px;
+    vertical-align: middle;
+    color: var(--color-text-primary, #1a2e23);
+    transition: background-color 0.15s ease;
+}
+
+.ticket-list-row:hover td {
+    background-color: #f9fbf9;
+}
+
+.ticket-list-row a {
+    color: var(--color-primary, #006b3c);
+    font-weight: 600;
+    text-decoration: none;
+    font-family: monospace, monospace;
+    font-size: 13px;
+}
+
+.ticket-list-row a:hover {
+    text-decoration: underline;
+    color: var(--color-secondary, #0b7a46);
+}
+
+.badge {
+    display: inline-block;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.badge-status-new {
+    background: var(--color-pale-green, #eaf6ef);
+    color: var(--color-primary, #006b3c);
+}
+
+.badge-priority-low {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.badge-priority-medium {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.badge-priority-high {
+    background: var(--color-warning-bg, #fffbeb);
+    color: var(--color-warning, #b45309);
+}
+
+.badge-priority-critical {
+    background: var(--color-error-bg, #fef2f2);
+    color: var(--color-error, #b91c1c);
+}
+
+/* Mobile: collapse table into a stacked card list */
+@media (max-width: 767px) {
+
+    .ticket-list,
+    .ticket-list tbody,
+    .ticket-list tr,
+    .ticket-list td {
+        display: block;
+        width: 100%;
+    }
+
+    .ticket-list thead {
+        display: none;
+    }
+
+    .ticket-list-row {
+        border: 1px solid var(--color-surface-border, #d9e5de);
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+    }
+
+    .ticket-list-row td {
+        border-top: none;
+        padding: 4px 0;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .ticket-list-row td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--color-text-secondary, #4a6357);
+        font-size: 12px;
+    }
+}

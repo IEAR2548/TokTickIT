@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import path from "path";
 import fs from "fs/promises";
 import { prisma } from "../lib/prisma";
+import { sanitizeFilename } from "../utils/fileSanitizer";
 
 // Ref: docs/lab-02/specification.md BR-15, BR-16, BR-17, BR-18, BR-19, BR-22
 // Ref: docs/lab-02/api-spec.md Section 7
@@ -51,13 +52,14 @@ export async function addAttachment(
 
     // BR-22: sanitize filename, store under a generated UUID key, keep original name as metadata
     await ensureStorageDir();
-    const storageKey = `${randomUUID()}${path.extname(file.originalname)}`;
+    const sanitizedName = sanitizeFilename(file.originalname);
+    const storageKey = `${randomUUID()}${path.extname(sanitizedName)}`;
     await fs.writeFile(path.join(STORAGE_DIR, storageKey), file.buffer);
 
     const attachment = await prisma.attachment.create({
         data: {
             ticketId,
-            originalName: file.originalname,
+            originalName: sanitizedName,
             storageKey,
             mimeType: file.mimetype,
             sizeBytes: file.size,

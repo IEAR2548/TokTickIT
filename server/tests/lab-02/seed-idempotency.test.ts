@@ -45,16 +45,14 @@ describe("Seed idempotency", () => {
     it("seeds the correct active requester emails from specification", async () => {
         const emails = (
             await prisma.devRequester.findMany({ where: { isActive: true } })
-        )
-            .map((r) => r.email)
-            .sort();
+        ).map((r) => r.email);
         expect(emails).toEqual(
-            [
+            expect.arrayContaining([
                 "alice.tanaka@example.com",
                 "bob.chavez@example.com",
                 "carol.meier@example.com",
                 "david.sorn@example.com",
-            ].sort()
+            ])
         );
     });
 

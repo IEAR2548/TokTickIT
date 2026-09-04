@@ -18,7 +18,6 @@ export class TicketValidationError extends Error {
     }
 }
 
-// Ref: docs/lab-02/api-spec.md Section 4 POST /api/tickets
 export async function createTicket(requesterId: number, payload: CreateTicketPayload) {
     const res = await fetch("/api/tickets", {
         method: "POST",
@@ -40,7 +39,6 @@ export async function createTicket(requesterId: number, payload: CreateTicketPay
     return body.ticket ?? body.data;
 }
 
-// Ref: docs/lab-02/api-spec.md Section 7 POST /api/tickets/:id/attachments
 export async function uploadAttachment(requesterId: number, ticketId: number, file: File) {
     const form = new FormData();
     form.append("requesterId", String(requesterId));
@@ -58,4 +56,85 @@ export async function uploadAttachment(requesterId: number, ticketId: number, fi
     }
 
     return body.attachment ?? body.data;
-}
+}
+
+export interface TicketListItem {
+    id: number;
+    ticketNumber: string;
+    summary: string;
+    category: { id: number; name: string };
+    relatedSystem: { id: number; name: string };
+    requestedPriority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+    currentStatus: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface PaginationMeta {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+}
+
+export interface MyTicketsResponse {
+    tickets: TicketListItem[];
+    pagination: PaginationMeta;
+}
+
+export interface FetchMyTicketsParams {
+    search?: string;
+    categoryId?: number | string;
+    status?: string;
+    sortBy?: "createdAt" | "updatedAt";
+    sortOrder?: "asc" | "desc";
+    page?: number;
+    pageSize?: number;
+}
+
+export async function fetchMyTickets(
+    requesterId: number,
+    params: FetchMyTicketsParams = {}
+): Promise<MyTicketsResponse> {
+    const query = new URLSearchParams();
+    query.set("requesterId", String(requesterId));
+
+    if (params.search && params.search.trim()) {
+        query.set("search", params.search.trim());
+    }
+    if (params.categoryId !== undefined && params.categoryId !== null && String(params.categoryId) !== "") {
+        query.set("categoryId", String(params.categoryId));
+    }
+    if (params.status && params.status.trim()) {
+        query.set("status", params.status.trim());
+    }
+    if (params.sortBy) {
+        query.set("sortBy", params.sortBy);
+    }
+    if (params.sortOrder) {
+        query.set("sortOrder", params.sortOrder);
+    }
+    if (params.page !== undefined && params.page !== null) {
+        query.set("page", String(params.page));
+    }
+    if (params.pageSize !== undefined && params.pageSize !== null) {
+        query.set("pageSize", String(params.pageSize));
+    }
+
+    const res = await fetch(`/api/tickets?${query.toString()}`);
+    const body = await res.json();
+
+    if (!res.ok) {
+        throw new Error(body.message ?? body.error ?? "Failed to fetch tickets");
+    }
+
+    return {
+        tickets: body.tickets ?? [],
+        pagination: body.pagination ?? {
+            page: Number(params.page) || 1,
+            pageSize: Number(params.pageSize) || 10,
+            total: 0,
+            totalPages: 0,
+        },
+    };
+}

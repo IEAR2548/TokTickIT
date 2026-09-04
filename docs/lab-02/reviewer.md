@@ -17,7 +17,12 @@ List all Pull Requests you reviewed for your partner or team member.
 | `feature/11-lab2-docs` → `lab2-staging` | [#20](https://github.com/IEAR2548/TokTickIT/pull/20) | Its ok. All docs are complete. | thanks Mr.Jetanin. | Approved |
 | `feature/12-lab2-db-schema` → `lab2-staging` | [#21](https://github.com/IEAR2548/TokTickIT/pull/21) | Verified schema.prisma and migration 20260901182421_init_lab2_schema against specification.md, api-spec.md, and ui-spec.md. Models, enums, indexes, and seed idempotency all passed 100%. | thanks Mr.Jetanin | Approved |
 | `feature/13-lab2-requester-context` → `lab2-staging` | [#22](https://github.com/IEAR2548/TokTickIT/pull/22) | ✅ Approved<br><br>• **Server:** เพิ่ม GET /api/requesters ตามโครงสร้าง Service-Controller-Route กรองเฉพาะ isActive: true และ expose เฉพาะ id, name, email ผ่าน DTO<br>• **Client State:** เพิ่ม RequesterContext (พร้อม sessionStorage) และ RequesterGuard สำหรับ redirect ไปหน้าเลือก requester<br>• **Client UI:** เพิ่มหน้า RequesterSelection (ครบทั้ง 4 states: Loading / Empty / Failure+Retry / Ready) และ RequesterBadge ใน App Shell<br>• **Routing:** ต่อ react-router-dom เข้ากับ App.tsx ด้วย `<BrowserRouter>`<br>• **Tests:** Server 11/11 ✅ \| Client 11/11 ✅ \| vite build ✅ | Thank you for your effort, Mr.Jetanin. | Approved |
-| `feature/14-lab2-create-ticket` → `lab2-staging` | [#23](https://github.com/IEAR2548/TokTickIT/pull/23) | | | |
+| `feature/14-lab2-create-ticket` → `lab2-staging` | [#23](https://github.com/IEAR2548/TokTickIT/pull/23) | Server: เพิ่ม GET /api/related-systems ตาม Service-Controller-Route pattern และ mount ใน app.ts เรียบร้อย ทำให้หน้าเว็บจริงโหลดตัวเลือก Related System ได้สมบูรณ์<br>Client: ปรับปรุงตาม BR-21 ให้แสดง Warning Box แจ้งเตือนไฟล์ที่อัปโหลดไม่สำเร็จบนหน้า Success State<br>Tests & Build: Server 29/29 tests ✅ \| Client 18/18 tests ✅ \| vite build (797ms) ✅ | Thanks for your efforts. You are such a good man, Mr.Jetanin. | Approved |
+| `feature/15-lab2-my-tickets` → `lab2-staging` | [#24](https://github.com/IEAR2548/TokTickIT/pull/24) | |  |  |
+| `feature/16-lab2-` → `lab2-staging` | [#25](https://github.com/IEAR2548/TokTickIT/pull/25) | |  |  |
+| `feature/17-lab2-` → `lab2-staging` | [#26](https://github.com/IEAR2548/TokTickIT/pull/26) | |  |  |
+| `feature/18-lab2-` → `lab2-staging` | [#27](https://github.com/IEAR2548/TokTickIT/pull/27) | |  |  |
+| `feature/19-lab2-` → `lab2-staging` | [#28](https://github.com/IEAR2548/TokTickIT/pull/28) | |  |  |
 
 ---
 
@@ -33,4 +38,4 @@ List all Pull Requests you authored that received peer review.
 | `feature/2-requester-context` → `lab2-staging` | [#20](https://github.com/jetanin/toktickit/pull/20) | Your schema looks great—it's ready for the next step. | thank u kub | Approved |
 | `feature/3-tickets-and-attachments` → `lab2-staging` | [#23](https://github.com/jetanin/toktickit/pull/23) | Verified all Backend APIs (/api/tickets, /api/attachments, and reference data) and Frontend screens (CreateTicket, MyTickets, TicketDetail). Validations, ownership isolation, attachment lifecycle, pagination, and Zen Green responsive layout are fully implemented. All 50 server tests and 20 client tests passed. | Thanks kub Mr.Paphangkorn. | Approved |
 | `feature/4-responsive-qa` → `lab2-staging` | [#24](https://github.com/jetanin/toktickit/pull/24) | | | |
-| `feature/5-` → `lab2-staging` | [#23](https://github.com/jetanin/toktickit/pull/23) | | | |
+| `feature/5-e2e-release` → `lab2-staging` | [#25](https://github.com/jetanin/toktickit/pull/25) | E2E Tests: Passed (requester-ticket-flow.spec.ts covers all acceptance criteria)<br>Config & Fixes: Playwright auto-start & bug fixes (Badge, Tablet responsive, DB pool) ready<br>Docs: ai-use.md and evidence complete<br>Pending only PR URL & Reviewer comments in reviewer.md before final merge. Great job! | Thank you for your contribution! | Approved |
