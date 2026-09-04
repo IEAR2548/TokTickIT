@@ -23,12 +23,12 @@ Tests are written as failing tests first, then the minimum implementation is add
 | API-05 | API | AC-04, BR-11 | POST /api/tickets with invalid `requestedPriority` value | 400; `fields.requestedPriority` error present | `server/tests/lab-02/create-ticket.api.test.ts` | PASSED |
 | API-06 | API | AC-03, BR-06 | GET /api/tickets/:id with wrong requesterId | 403; Ticket data not returned | `server/tests/lab-02/ticket-detail.api.test.ts` | |
 | API-07 | API | FR-08 | GET /api/tickets/:id with correct requesterId | 200; full Ticket object returned | `server/tests/lab-02/ticket-detail.api.test.ts` | |
-| API-08 | API | FR-06, AC-08 | GET /api/tickets with requesterId=A returns only Requester A's tickets | All tickets in response have `requesterId = A` | `server/tests/lab-02/my-tickets.api.test.ts` | |
-| API-09 | API | AC-09, FR-07 | GET /api/tickets with search keyword | Only tickets whose Number or Summary contains the keyword are returned | `server/tests/lab-02/my-tickets.api.test.ts` | |
-| API-10 | API | AC-10, FR-07 | GET /api/tickets with categoryId filter | Only tickets in the specified Category are returned | `server/tests/lab-02/my-tickets.api.test.ts` | |
-| API-11 | API | AC-11, FR-07 | GET /api/tickets with sortBy=createdAt&sortOrder=desc | Tickets are in descending creation-date order | `server/tests/lab-02/my-tickets.api.test.ts` | |
-| API-12 | API | AC-12, BR-24 | GET /api/tickets with page=2&pageSize=10 | Second page returned; pagination metadata correct | `server/tests/lab-02/my-tickets.api.test.ts` | |
-| API-13 | API | BR-24 | GET /api/tickets with invalid pageSize (e.g., 7) | 400 returned | `server/tests/lab-02/my-tickets.api.test.ts` | |
+| API-08 | API | FR-06, AC-08 | GET /api/tickets with requesterId=A returns only Requester A's tickets | All tickets in response have `requesterId = A` | `server/tests/lab-02/my-tickets.api.test.ts` | PASSED |
+| API-09 | API | AC-09, FR-07 | GET /api/tickets with search keyword | Only tickets whose Number or Summary contains the keyword are returned | `server/tests/lab-02/my-tickets.api.test.ts` | PASSED |
+| API-10 | API | AC-10, FR-07 | GET /api/tickets with categoryId filter | Only tickets in the specified Category are returned | `server/tests/lab-02/my-tickets.api.test.ts` | PASSED |
+| API-11 | API | AC-11, FR-07 | GET /api/tickets with sortBy=createdAt&sortOrder=desc | Tickets are in descending creation-date order | `server/tests/lab-02/my-tickets.api.test.ts` | PASSED |
+| API-12 | API | AC-12, BR-24 | GET /api/tickets with page=2&pageSize=10 | Second page returned; pagination metadata correct | `server/tests/lab-02/my-tickets.api.test.ts` | PASSED |
+| API-13 | API | BR-24 | GET /api/tickets with invalid pageSize (e.g., 7) | 400 returned | `server/tests/lab-02/my-tickets.api.test.ts` | PASSED |
 | API-14 | API | FR-10, AC-16 | POST /api/tickets/:id/attachments with valid PNG under 5 MB | 201; Attachment record saved with correct metadata | `server/tests/lab-02/attachments.api.test.ts` | PASSED |
 | API-15 | API | AC-06, BR-15 | POST /api/tickets/:id/attachments with .exe file | 400; `UNSUPPORTED_FILE_TYPE` | `server/tests/lab-02/attachments.api.test.ts` | PASSED |
 | API-16 | API | AC-06, BR-16 | POST /api/tickets/:id/attachments with file > 5 MB | 400; `FILE_TOO_LARGE` | `server/tests/lab-02/attachments.api.test.ts` | PASSED |
@@ -42,16 +42,16 @@ Tests are written as failing tests first, then the minimum implementation is add
 | UI-02 | UI Component | AC-05, BR-14 | Submit button is disabled while request is in flight | Button has `disabled` attribute during submission | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
 | UI-03 | UI Component | AC-19, BR-13 | Backend returns 500 during submission | Error callout shown; all form values retained | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
 | UI-04 | UI Component | AC-01 | Success state after valid submission | Ticket Number displayed; "View Ticket" and "Create Another" buttons visible | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
-| UI-05 | UI Component | AC-08 | My Tickets renders only current Requester's tickets | Rendered list matches mocked API response; no cross-Requester data | `client/src/tests/lab-02/MyTickets.test.tsx` | |
-| UI-06 | UI Component | AC-13 | My Tickets empty state | Empty state message and Create Ticket button rendered | `client/src/tests/lab-02/MyTickets.test.tsx` | |
-| UI-07 | UI Component | AC-14 | My Tickets API failure | Failure message and Retry button rendered | `client/src/tests/lab-02/MyTickets.test.tsx` | |
+| UI-05 | UI Component | AC-08 | My Tickets renders only current Requester's tickets | Rendered list matches mocked API response; no cross-Requester data | `client/src/tests/lab-02/MyTickets.test.tsx` | PASSED |
+| UI-06 | UI Component | AC-13 | My Tickets empty state | Empty state message and Create Ticket button rendered | `client/src/tests/lab-02/MyTickets.test.tsx` | PASSED |
+| UI-07 | UI Component | AC-14 | My Tickets API failure | Failure message and Retry button rendered | `client/src/tests/lab-02/MyTickets.test.tsx` | PASSED |
 | UI-08 | UI Component | AC-15 | Ticket Detail shows read-only ticket header | All ticket header fields are non-editable inputs or plain text | `client/src/tests/lab-02/RequesterTicketDetail.test.tsx` | |
 | UI-09 | UI Component | AC-16 | Attachment upload success in Ticket Detail | New attachment row appears in active list with Download button | `client/src/tests/lab-02/AttachmentSection.test.tsx` | |
 | UI-10 | UI Component | AC-17 | Soft-remove attachment with reason | Attachment moves to removed list; Download button absent; reason and date shown | `client/src/tests/lab-02/AttachmentSection.test.tsx` | |
 | UI-11 | UI Component | AC-07 | Add Attachment disabled when 5 active | Add Attachment button is disabled and shows tooltip | `client/src/tests/lab-02/AttachmentSection.test.tsx` | |
 | UI-12 | UI Component | AC-02 | Redirect to Requester Selection when no Requester context | Navigation to My Tickets redirects to Selection screen | `client/src/tests/lab-02/RequesterGuard.test.tsx` | PASSED |
-| UI-13 | UI Component | AC-23, BR-05 | Switch Requester | My Tickets reloads and shows only new Requester's data | `client/src/tests/lab-02/MyTickets.test.tsx` | |
-| UI-STYLE-01 | UI Style | ui-spec.md | Primary green `#006B3C` applied to app header and primary buttons | Computed background-color matches `#006B3C` | `client/src/tests/lab-02/MyTickets.test.tsx` | |
+| UI-13 | UI Component | AC-23, BR-05 | Switch Requester | My Tickets reloads and shows only new Requester's data | `client/src/tests/lab-02/MyTickets.test.tsx` | PASSED |
+| UI-STYLE-01 | UI Style | ui-spec.md | Primary green `#006B3C` applied to app header and primary buttons | Computed background-color matches `#006B3C` | `client/src/tests/lab-02/MyTickets.test.tsx` | PASSED |
 | UI-STYLE-02 | UI Style | ui-spec.md sec 5 | Required-field asterisk present on all required fields in Create Ticket | All required field labels contain `*` | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
 | UI-STYLE-03 | UI Style | ui-spec.md sec 4 | Read-only fields have visually distinct background | Read-only elements have `--color-field-readonly-bg` applied | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
 | UI-STYLE-04 | UI Style | ui-spec.md sec 7 | Status badge NEW renders with correct pale-green background | Badge element has correct background color token | `client/src/tests/lab-02/RequesterTicketDetail.test.tsx` | |
@@ -274,6 +274,33 @@ npx playwright test e2e/lab-02 --reporter=html
      ✓ reports attachment failure warning on success screen when attachment upload fails (BR-21)
      ✓ displays required asterisks on all required field labels (UI-STYLE-02)
      ✓ renders read-only fields with distinct styling (UI-STYLE-03)
+
+# server — my-tickets API
+ ✓ tests/lab-02/my-tickets.api.test.ts (12) 764ms
+   ✓ GET /api/tickets (12)
+     ✓ returns only the requesting Requester's tickets, never another's (API-08, AC-08, BR-06)
+     ✓ filters results by search keyword against ticketNumber or summary (API-09, AC-09)
+     ✓ filters results by categoryId and status (API-10, AC-10)
+     ✓ sorts by createdAt descending by default with id DESC tie-breaker (API-11, AC-11, BR-23)
+     ✓ supports sorting by updatedAt asc and desc (api-spec.md Sec. 5)
+     ✓ paginates results with correct pagination metadata (API-12, AC-12, BR-24)
+     ✓ rejects invalid pageSize (e.g. 7) with 400 VALIDATION_ERROR (API-13, BR-24)
+     ✓ rejects page < 1 with 400 VALIDATION_ERROR (api-spec.md Sec. 5)
+     ✓ returns empty tickets array with valid pagination for an out-of-range page
+     ✓ returns an empty tickets array when the Requester has zero tickets (AC-13)
+     ✓ rejects requests without requesterId with 400 VALIDATION_ERROR (api-spec.md Sec. 5)
+     ✓ returns 404 REQUESTER_NOT_FOUND when requesterId does not match an active Requester (api-spec.md Sec. 5)
+
+# client — MyTickets screen
+ ✓ src/tests/lab-02/MyTickets.test.tsx (7) 855ms
+   ✓ MyTickets screen (7)
+     ✓ renders the requester's tickets returned by the API (UI-05, AC-08)
+     ✓ shows the empty state when the requester has zero tickets (UI-06, AC-13)
+     ✓ shows the no-results state when search or filter returns zero tickets
+     ✓ requests the next page when Next is clicked (AC-12)
+     ✓ reloads with the new requester's data when the requester changes (UI-13, AC-23)
+     ✓ shows a safe failure state with retry when the API call fails (UI-07, AC-14)
+     ✓ applies primary green styling to the Create Ticket button (UI-STYLE-01)
 ```
 
 | Test ID | Final Status | Notes |
@@ -291,12 +318,12 @@ npx playwright test e2e/lab-02 --reporter=html
 | API-05 | PASSED | Invalid priority rejected with 400 VALIDATION_ERROR |
 | API-06 | | |
 | API-07 | | |
-| API-08 | | |
-| API-09 | | |
-| API-10 | | |
-| API-11 | | |
-| API-12 | | |
-| API-13 | | |
+| API-08 | PASSED | 12/12 in `server/tests/lab-02/my-tickets.api.test.ts` — isolation to requesting Requester only (AC-08, BR-06) |
+| API-09 | PASSED | Search keyword filtering on Ticket Number or Summary (AC-09, FR-07) |
+| API-10 | PASSED | Category and Status filtering (AC-10, FR-07) |
+| API-11 | PASSED | Sort createdAt/updatedAt ASC/DESC with id DESC tie-breaker (AC-11, BR-23) |
+| API-12 | PASSED | Pagination page & pageSize with total/totalPages metadata (AC-12, BR-24) |
+| API-13 | PASSED | Rejects invalid pageSize (e.g. 7) and page < 1 with 400 VALIDATION_ERROR (BR-24) |
 | API-14 | PASSED | 6/6 in `server/tests/lab-02/attachments.api.test.ts` — Valid upload 201 |
 | API-15 | PASSED | Rejects unsupported file type (.exe) with 400 UNSUPPORTED_FILE_TYPE |
 | API-16 | PASSED | Rejects file > 5MB with 400 FILE_TOO_LARGE |
@@ -309,16 +336,16 @@ npx playwright test e2e/lab-02 --reporter=html
 | UI-02 | PASSED | Button busy/disabled during in-flight submission |
 | UI-03 | PASSED | Safe error callout + form state retained on API failure |
 | UI-04 | PASSED | Success state displaying assigned Ticket Number |
-| UI-05 | | |
-| UI-06 | | |
-| UI-07 | | |
+| UI-05 | PASSED | 7/7 in `client/src/tests/lab-02/MyTickets.test.tsx` — renders tickets matching mocked API response (AC-08) |
+| UI-06 | PASSED | Renders empty state with Create Ticket CTA when 0 tickets exist (AC-13) |
+| UI-07 | PASSED | Displays safe failure message with working Retry button on API failure (AC-14) |
 | UI-08 | | |
 | UI-09 | | |
 | UI-10 | | |
 | UI-11 | | |
 | UI-12 | PASSED | 1/1 — `client/src/tests/lab-02/RequesterGuard.test.tsx` |
-| UI-13 | | |
-| UI-STYLE-01 | | |
+| UI-13 | PASSED | Automatically reloads new Requester's tickets on context switch (AC-23, BR-05) |
+| UI-STYLE-01 | PASSED | Primary green `#006B3C` verified on header and primary buttons (Create Ticket) |
 | UI-STYLE-02 | PASSED | Verified in `CreateTicket.test.tsx` |
 | UI-STYLE-03 | PASSED | Verified in `CreateTicket.test.tsx` |
 | UI-STYLE-04 | | |
