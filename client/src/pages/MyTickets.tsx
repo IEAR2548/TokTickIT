@@ -105,13 +105,8 @@ export function MyTickets() {
                     <p className="my-tickets-subtitle">View and track all of your support requests.</p>
                 </div>
                 <div className="my-tickets-header-actions">
-                    <Button type="button" variant="tertiary" onClick={clearFilters}>
-                        Clear Filters
-                    </Button>
-                    <Link to="/create-ticket">
-                        <Button type="button" variant="primary">
-                            + Create Ticket
-                        </Button>
+                    <Link to="/create-ticket" className="btn btn-primary my-tickets-create-btn">
+                        + Create Ticket
                     </Link>
                 </div>
             </div>
@@ -175,6 +170,12 @@ export function MyTickets() {
                     <option value="desc">Descending</option>
                     <option value="asc">Ascending</option>
                 </select>
+
+                {(filters.search || filters.categoryId || filters.status) && (
+                    <button type="button" className="filter-clear-link" onClick={clearFilters}>
+                        Clear Filters
+                    </button>
+                )}
             </form>
 
             {state === "loading" && (
@@ -195,10 +196,8 @@ export function MyTickets() {
             {isEmpty && (
                 <div className="my-tickets-empty" data-testid="my-tickets-empty">
                     <p>You haven't created any tickets yet.</p>
-                    <Link to="/create-ticket">
-                        <Button type="button" variant="primary">
-                            Create Ticket
-                        </Button>
+                    <Link to="/create-ticket" className="btn btn-primary">
+                        Create Ticket
                     </Link>
                 </div>
             )}

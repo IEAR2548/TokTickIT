@@ -1,15 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
-  --primary-color: #1b5e20;
-  --secondary-color: #2e7d32;
-  --bg-light: #f8f9fa;
+  --color-primary: #006B3C;
+  --color-secondary: #0B7A46;
+  --color-pale-green: #EAF6EF;
+  --color-page-bg: #F5F7F6;
+  --color-surface: #FFFFFF;
+  --color-surface-border: #D9E5DE;
+  --color-surface-shadow: rgba(0, 107, 60, 0.08);
+  --color-text-primary: #1A2E23;
+  --color-text-secondary: #4A6357;
+  --color-text-placeholder: #7A9E8C;
+  --color-field-editable-bg: #FFFFFF;
+  --color-field-editable-border: #B0C8BC;
+  --color-field-readonly-bg: #EEF4F1;
+  --color-field-readonly-border: #C8DDD5;
+  --color-error: #B91C1C;
+  --color-error-bg: #FEF2F2;
+  --color-warning: #B45309;
+  --color-warning-bg: #FFFBEB;
+  --color-success: #15803D;
+  --color-success-bg: #DCFCE7;
+
+  /* Legacy aliases for Lab 1 compatibility */
+  --primary-color: #006B3C;
+  --secondary-color: #0B7A46;
+  --bg-light: #F5F7F6;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f4f6f8;
-  color: #333;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--color-page-bg, #F5F7F6);
+  color: var(--color-text-primary, #1A2E23);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* Base button styles matching ui-spec.md Section 6 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  text-decoration: none;
+  box-sizing: border-box;
+  line-height: 1;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background-color: var(--color-primary, #006B3C) !important;
+  color: #FFFFFF !important;
+  border-color: var(--color-primary, #006B3C) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-secondary, #0B7A46) !important;
+  border-color: var(--color-secondary, #0B7A46) !important;
+  color: #FFFFFF !important;
+}
+
+.btn-secondary {
+  background-color: #FFFFFF !important;
+  color: var(--color-primary, #006B3C) !important;
+  border-color: var(--color-primary, #006B3C) !important;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--color-pale-green, #EAF6EF) !important;
+  color: var(--color-primary, #006B3C) !important;
+}
+
+.btn-tertiary {
+  background: transparent !important;
+  color: var(--color-primary, #006B3C) !important;
+  border-color: transparent !important;
+  padding: 0 8px;
+}
+
+.btn-tertiary:hover:not(:disabled) {
+  color: var(--color-secondary, #0B7A46) !important;
+  text-decoration: underline;
+}
+
+.btn:disabled,
+.btn[disabled] {
+  background-color: #D1DDD8 !important;
+  color: #7A9E8C !important;
+  border-color: transparent !important;
+  cursor: not-allowed !important;
+  opacity: 0.85;
+}
+
+/* Lab 1 backward compatibility styles */
 .brand-header {
   background-color: var(--primary-color);
   color: white;

@@ -1,16 +1,25 @@
-/* Ref: docs/lab-02/ui-spec.md section 13 (My Tickets Screen Layout) */
+/* Ref: docs/lab-02/ui-spec.md section 11 (My Tickets Screen Layout) */
 
 .my-tickets-page {
     max-width: 1140px;
     margin: 0 auto;
-    padding: 24px 16px;
+    padding: 32px 16px;
 }
 
 .my-tickets-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 16px;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+}
+
+.my-tickets-header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--color-text-primary, #1a2e23);
+    margin: 0;
+    letter-spacing: -0.01em;
 }
 
 .my-tickets-subtitle {
@@ -21,18 +30,34 @@
 
 .my-tickets-header-actions {
     display: flex;
+    align-items: center;
     gap: 12px;
+}
+
+.my-tickets-create-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 40px !important;
+    padding: 0 20px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
 }
 
 .my-tickets-filters {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
+    align-items: center;
     background: var(--color-surface, #ffffff);
     border: 1px solid var(--color-surface-border, #d9e5de);
     border-radius: 8px;
     padding: 16px;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .my-tickets-filters input,
@@ -40,12 +65,42 @@
     height: 40px;
     padding: 0 12px;
     border: 1px solid var(--color-field-editable-border, #b0c8bc);
+    background: var(--color-field-editable-bg, #ffffff);
     border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--color-text-primary, #1a2e23);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.my-tickets-filters input:focus,
+.my-tickets-filters select:focus {
+    outline: none;
+    border-color: var(--color-primary, #006b3c);
+    box-shadow: 0 0 0 2px rgba(0, 107, 60, 0.2);
 }
 
 .my-tickets-filters input {
     flex: 1;
-    min-width: 220px;
+    min-width: 240px;
+}
+
+.filter-clear-link {
+    background: transparent;
+    border: none;
+    color: var(--color-primary, #006b3c);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+.filter-clear-link:hover {
+    color: var(--color-secondary, #0b7a46);
+    background: var(--color-pale-green, #eaf6ef);
 }
 
 .my-tickets-loading,
@@ -53,13 +108,23 @@
 .my-tickets-no-results,
 .my-tickets-error {
     background: var(--color-pale-green, #eaf6ef);
+    border: 1px solid var(--color-surface-border, #d9e5de);
     border-radius: 8px;
-    padding: 32px;
+    padding: 40px 24px;
     text-align: center;
+    font-size: 15px;
+    color: var(--color-text-primary, #1a2e23);
+}
+
+.my-tickets-empty p,
+.my-tickets-no-results p,
+.my-tickets-error p {
+    margin: 0 0 16px;
 }
 
 .my-tickets-error {
     background: var(--color-error-bg, #fef2f2);
+    border-color: #fca5a5;
     color: var(--color-error, #b91c1c);
 }
 
@@ -67,9 +132,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 16px;
+    margin-top: 20px;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 16px;
 }
 
 .pagination-controls {
@@ -78,9 +143,26 @@
     gap: 12px;
 }
 
+.pagination-controls .btn {
+    min-width: 88px;
+    height: 36px;
+    padding: 0 14px;
+    font-size: 13px;
+}
+
+.pagination-current {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-primary, #1a2e23);
+    white-space: nowrap;
+    min-width: 80px;
+    text-align: center;
+}
+
 .pagination-summary {
     font-size: 13px;
     color: var(--color-text-secondary, #4a6357);
+    white-space: nowrap;
 }
 
 .visually-hidden {
@@ -94,15 +176,27 @@
 @media (max-width: 767px) {
     .my-tickets-header {
         flex-direction: column;
-        gap: 12px;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .my-tickets-create-btn {
+        width: 100%;
     }
 
     .my-tickets-filters {
         flex-direction: column;
+        align-items: stretch;
     }
 
     .my-tickets-filters input,
     .my-tickets-filters select {
         width: 100%;
+        min-width: unset;
+    }
+
+    .pagination {
+        flex-direction: column;
+        align-items: center;
     }
 }

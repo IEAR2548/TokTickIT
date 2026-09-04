@@ -11,11 +11,14 @@ interface TicketListProps {
 }
 
 function formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-    });
+    if (!iso) return "—";
+    try {
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return iso;
+        return d.toISOString().slice(0, 10);
+    } catch {
+        return iso;
+    }
 }
 
 export function TicketList({ tickets, categoryNamesById }: TicketListProps) {

@@ -1,32 +1,50 @@
 .ticket-list {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     background: var(--color-surface, #ffffff);
     border: 1px solid var(--color-surface-border, #d9e5de);
     border-radius: 8px;
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .ticket-list thead th {
     text-align: left;
     font-size: 12px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
     color: var(--color-text-secondary, #4a6357);
     background: var(--color-pale-green, #eaf6ef);
     padding: 12px 16px;
+    border-bottom: 1px solid var(--color-surface-border, #d9e5de);
 }
 
 .ticket-list-row td {
-    padding: 12px 16px;
+    padding: 14px 16px;
     border-top: 1px solid var(--color-surface-border, #d9e5de);
     font-size: 14px;
+    vertical-align: middle;
+    color: var(--color-text-primary, #1a2e23);
+    transition: background-color 0.15s ease;
+}
+
+.ticket-list-row:hover td {
+    background-color: #f9fbf9;
 }
 
 .ticket-list-row a {
-    color: var(--color-secondary, #0b7a46);
+    color: var(--color-primary, #006b3c);
     font-weight: 600;
     text-decoration: none;
+    font-family: monospace, monospace;
+    font-size: 13px;
+}
+
+.ticket-list-row a:hover {
+    text-decoration: underline;
+    color: var(--color-secondary, #0b7a46);
 }
 
 .badge {
