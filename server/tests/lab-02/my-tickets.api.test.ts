@@ -3,10 +3,6 @@ import request from "supertest";
 import app from "../../src/app";
 import { prisma } from "../../src/lib/prisma";
 
-// Ref: docs/lab-02/api-spec.md Section 5 "GET /api/tickets"
-// Ref: docs/lab-02/specification.md BR-06, BR-23, BR-24, FR-06, FR-07, AC-08 through AC-13
-// Ref: docs/lab-02/tests.md API-08 through API-13
-
 let requesterA: number;
 let requesterB: number;
 let inactiveRequesterId: number;
@@ -91,7 +87,6 @@ describe("GET /api/tickets", () => {
         await prisma.$disconnect();
     });
 
-    // API-08: FR-06, AC-08, BR-06
     it("returns only the requesting Requester's tickets, never another's (API-08, AC-08, BR-06)", async () => {
         await prisma.ticket.deleteMany({});
         await createTicket({ requesterId: requesterA, summary: "A ticket one" });
@@ -104,7 +99,6 @@ describe("GET /api/tickets", () => {
         expect(res.body.tickets).toHaveLength(2);
         expect(res.body.tickets.every((t: { summary: string }) => t.summary.startsWith("A ticket"))).toBe(true);
 
-        // Verify shape per api-spec.md Section 5
         const first = res.body.tickets[0];
         expect(first).toHaveProperty("id");
         expect(first).toHaveProperty("ticketNumber");
@@ -119,7 +113,6 @@ describe("GET /api/tickets", () => {
         expect(first).toHaveProperty("updatedAt");
     });
 
-    // API-09: AC-09, FR-07
     it("filters results by search keyword against ticketNumber or summary (API-09, AC-09)", async () => {
         await prisma.ticket.deleteMany({});
         await createTicket({ requesterId: requesterA, ticketNumber: "TK-20260904-0010", summary: "Laptop battery drains quickly" });
@@ -138,7 +131,6 @@ describe("GET /api/tickets", () => {
         expect(resNumber.body.tickets[0].ticketNumber).toBe("TK-20260904-0020");
     });
 
-    // API-10: AC-10, FR-07
     it("filters results by categoryId and status (API-10, AC-10)", async () => {
         await prisma.ticket.deleteMany({});
         await createTicket({ requesterId: requesterA, categoryId: hardwareCategoryId, summary: "Hardware ticket" });
@@ -152,7 +144,6 @@ describe("GET /api/tickets", () => {
         expect(res.body.tickets[0].currentStatus).toBe("NEW");
     });
 
-    // API-11: AC-11, FR-07, BR-23
     it("sorts by createdAt descending by default with id DESC tie-breaker (API-11, AC-11, BR-23)", async () => {
         await prisma.ticket.deleteMany({});
         const first = await createTicket({
@@ -192,7 +183,6 @@ describe("GET /api/tickets", () => {
         expect(resAsc.body.tickets[1].id).toBe(t2.id);
     });
 
-    // API-12: AC-12, BR-24
     it("paginates results with correct pagination metadata (API-12, AC-12, BR-24)", async () => {
         await prisma.ticket.deleteMany({});
         for (let i = 0; i < 15; i++) {
@@ -211,7 +201,6 @@ describe("GET /api/tickets", () => {
         });
     });
 
-    // API-13: BR-24
     it("rejects invalid pageSize (e.g. 7) with 400 VALIDATION_ERROR (API-13, BR-24)", async () => {
         const res = await request(app).get(`/api/tickets?requesterId=${requesterA}&pageSize=7`);
 
