@@ -11,13 +11,15 @@ const MAX_FILES = 5;
 interface AttachmentUploaderProps {
     files: File[];
     onChange: (files: File[]) => void;
+    disabled?: boolean;
 }
 
-export function AttachmentUploader({ files, onChange }: AttachmentUploaderProps) {
+export function AttachmentUploader({ files, onChange, disabled = false }: AttachmentUploaderProps) {
     const [error, setError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     function handleSelect(e: ChangeEvent<HTMLInputElement>) {
+        if (disabled) return;
         const selected = e.target.files ? Array.from(e.target.files) : [];
         setError(null);
 
@@ -42,6 +44,7 @@ export function AttachmentUploader({ files, onChange }: AttachmentUploaderProps)
     }
 
     function removeFile(index: number) {
+        if (disabled) return;
         onChange(files.filter((_, i) => i !== index));
     }
 
@@ -57,7 +60,7 @@ export function AttachmentUploader({ files, onChange }: AttachmentUploaderProps)
                 multiple
                 accept={ALLOWED_TYPES.join(",")}
                 onChange={handleSelect}
-                disabled={files.length >= MAX_FILES}
+                disabled={disabled || files.length >= MAX_FILES}
             />
 
             {error && (
@@ -74,7 +77,12 @@ export function AttachmentUploader({ files, onChange }: AttachmentUploaderProps)
                             <span className="attachment-file-size">
                                 {(file.size / 1024).toFixed(0)} KB
                             </span>
-                            <button type="button" aria-label={`Remove ${file.name}`} onClick={() => removeFile(i)}>
+                            <button
+                                type="button"
+                                aria-label={`Remove ${file.name}`}
+                                onClick={() => removeFile(i)}
+                                disabled={disabled}
+                            >
                                 ✕
                             </button>
                         </li>
@@ -83,4 +91,4 @@ export function AttachmentUploader({ files, onChange }: AttachmentUploaderProps)
             )}
         </div>
     );
-}
+}
