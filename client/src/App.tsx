@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import { RequesterProvider } from "./context/RequesterContext";
+import { RequesterGuard } from "./components/RequesterGuard";
 import { RequesterBadge } from "./components/RequesterBadge";
 import { RequesterSelection } from "./pages/RequesterSelection";
+import { CreateTicket } from "./pages/CreateTicket";
 
 interface HealthResponse {
   status: string;
@@ -56,66 +58,67 @@ export default function App() {
       <RequesterProvider>
         <RequesterBadge />
         <Routes>
-        {/* หน้าเลือก Requester */}
-        <Route path="/select-requester" element={<RequesterSelection />} />
+          {/* หน้าเลือก Requester */}
+          <Route path="/select-requester" element={<RequesterSelection />} />
 
-        <Route
-          path="/"
-          element={
-            <div className="container mt-5 text-center mb-5" style={{ maxWidth: 480 }}>
-              <h1 className="display-4 fw-bold mb-4">TokTickIT</h1>
+          <Route
+            path="/"
+            element={
+              <div className="container mt-5 text-center mb-5" style={{ maxWidth: 480 }}>
+                <h1 className="display-4 fw-bold mb-4">TokTickIT</h1>
 
-              <button
-                className="btn btn-primary btn-lg mb-4"
-                onClick={handleCheckSystem}
-                disabled={state === 'loading'}
-              >
-                Check System
-              </button>
-
-              {state === 'loading' && (
-                <div
-                  className="alert alert-secondary d-flex justify-content-center align-items-center"
-                  data-testid="loading-state"
+                <button
+                  className="btn btn-primary btn-lg mb-4"
+                  onClick={handleCheckSystem}
+                  disabled={state === 'loading'}
                 >
-                  <div className="spinner-border spinner-border-sm me-2" role="status">
-                    <span className="visually-hidden">Loading...</span>
+                  Check System
+                </button>
+
+                {state === 'loading' && (
+                  <div
+                    className="alert alert-secondary d-flex justify-content-center align-items-center"
+                    data-testid="loading-state"
+                  >
+                    <div className="spinner-border spinner-border-sm me-2" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                    loading...
                   </div>
-                  loading...
-                </div>
-              )}
+                )}
 
-              {state === 'error' && (
-                <div className="alert alert-danger text-start" data-testid="error-state">
-                  <p className="mb-0">
-                    <strong>System Status: Offline</strong>
-                  </p>
-                  <p className="mb-0">{errorMessage}</p>
-                </div>
-              )}
-
-              {state === 'success' && (
-                <div className="text-start">
-                  <div className="alert alert-success" data-testid="success-state">
-                    <strong>System Status: Online</strong>
+                {state === 'error' && (
+                  <div className="alert alert-danger text-start" data-testid="error-state">
+                    <p className="mb-0">
+                      <strong>System Status: Offline</strong>
+                    </p>
+                    <p className="mb-0">{errorMessage}</p>
                   </div>
+                )}
 
-                  <h2 className="fs-5 fw-bold">Supported Request Categories</h2>
-                  <ul className="list-group mb-3" data-testid="category-list">
-                    {categories.map((cat) => (
-                      <li key={cat.id} className="list-group-item">
-                        {cat.name}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          }
-        />
+                {state === 'success' && (
+                  <div className="text-start">
+                    <div className="alert alert-success" data-testid="success-state">
+                      <strong>System Status: Online</strong>
+                    </div>
 
-        {/* Routes ที่ต้องผ่าน RequesterGuard — เปิดเมื่อ implement แต่ละหน้า */}
-        {/* Example:
+                    <h2 className="fs-5 fw-bold">Supported Request Categories</h2>
+                    <ul className="list-group mb-3" data-testid="category-list">
+                      {categories.map((cat) => (
+                        <li key={cat.id} className="list-group-item">
+                          {cat.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            }
+          />
+
+          <Route path="/create-ticket" element={<RequesterGuard><CreateTicket /></RequesterGuard>} />
+          {/* Routes ที่ต้องผ่าน RequesterGuard — เปิดเมื่อ implement แต่ละหน้า */}
+          {/* Example:
         <Route path="/my-tickets" element={<RequesterGuard><div>My Tickets Page</div></RequesterGuard>} />
         */}
         </Routes>
