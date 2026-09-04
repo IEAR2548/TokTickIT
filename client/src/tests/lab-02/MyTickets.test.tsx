@@ -59,7 +59,7 @@ describe("MyTickets screen", () => {
 
         expect(await screen.findByText("TK-20260824-0001")).toBeInTheDocument();
         expect(screen.getByText("Laptop battery drains quickly")).toBeInTheDocument();
-        expect(screen.getByText("Hardware")).toBeInTheDocument();
+        expect(screen.getByRole("cell", { name: "Hardware" })).toBeInTheDocument();
         expect(screen.getByText("NEW")).toBeInTheDocument();
     });
 

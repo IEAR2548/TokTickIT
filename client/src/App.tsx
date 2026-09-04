@@ -6,6 +6,7 @@ import { RequesterGuard } from "./components/RequesterGuard";
 import { RequesterBadge } from "./components/RequesterBadge";
 import { RequesterSelection } from "./pages/RequesterSelection";
 import { CreateTicket } from "./pages/CreateTicket";
+import { MyTickets } from "./pages/MyTickets";
 
 interface HealthResponse {
   status: string;
@@ -117,10 +118,7 @@ export default function App() {
           />
 
           <Route path="/create-ticket" element={<RequesterGuard><CreateTicket /></RequesterGuard>} />
-          {/* Routes ที่ต้องผ่าน RequesterGuard — เปิดเมื่อ implement แต่ละหน้า */}
-          {/* Example:
-        <Route path="/my-tickets" element={<RequesterGuard><div>My Tickets Page</div></RequesterGuard>} />
-        */}
+          <Route path="/my-tickets" element={<RequesterGuard><MyTickets /></RequesterGuard>} />
         </Routes>
       </RequesterProvider>
     </BrowserRouter>

@@ -1,0 +1,108 @@
+/* Ref: docs/lab-02/ui-spec.md section 13 (My Tickets Screen Layout) */
+
+.my-tickets-page {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 24px 16px;
+}
+
+.my-tickets-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.my-tickets-subtitle {
+    color: var(--color-text-secondary, #4a6357);
+    font-size: 14px;
+    margin: 4px 0 0;
+}
+
+.my-tickets-header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.my-tickets-filters {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: var(--color-surface, #ffffff);
+    border: 1px solid var(--color-surface-border, #d9e5de);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.my-tickets-filters input,
+.my-tickets-filters select {
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--color-field-editable-border, #b0c8bc);
+    border-radius: 6px;
+}
+
+.my-tickets-filters input {
+    flex: 1;
+    min-width: 220px;
+}
+
+.my-tickets-loading,
+.my-tickets-empty,
+.my-tickets-no-results,
+.my-tickets-error {
+    background: var(--color-pale-green, #eaf6ef);
+    border-radius: 8px;
+    padding: 32px;
+    text-align: center;
+}
+
+.my-tickets-error {
+    background: var(--color-error-bg, #fef2f2);
+    color: var(--color-error, #b91c1c);
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.pagination-summary {
+    font-size: 13px;
+    color: var(--color-text-secondary, #4a6357);
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+}
+
+@media (max-width: 767px) {
+    .my-tickets-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .my-tickets-filters {
+        flex-direction: column;
+    }
+
+    .my-tickets-filters input,
+    .my-tickets-filters select {
+        width: 100%;
+    }
+}
