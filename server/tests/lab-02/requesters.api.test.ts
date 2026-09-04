@@ -6,6 +6,8 @@ import { prisma } from "../../src/lib/prisma";
 describe("GET /api/requesters", () => {
     beforeAll(async () => {
         // Ensure a known, deterministic seed state for this test suite
+        await prisma.attachment.deleteMany({});
+        await prisma.ticket.deleteMany({});
         await prisma.devRequester.deleteMany({});
         await prisma.devRequester.createMany({
             data: [
@@ -18,6 +20,8 @@ describe("GET /api/requesters", () => {
 
     afterAll(async () => {
         // Only remove the rows this suite created — do not wipe the whole table
+        await prisma.attachment.deleteMany({});
+        await prisma.ticket.deleteMany({});
         await prisma.devRequester.deleteMany({
             where: {
                 email: {

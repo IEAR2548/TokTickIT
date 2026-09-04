@@ -1,3 +1,4 @@
+import { describe, it, expect, afterAll } from "vitest";
 import { execSync } from "child_process";
 import { prisma } from "../../src/lib/prisma";
 
