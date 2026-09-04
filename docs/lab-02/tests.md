@@ -12,15 +12,15 @@ Tests are written as failing tests first, then the minimum implementation is add
 
 | Test ID | Type | Requirement / AC | What It Tests | Expected Result | Automated Test File | Final Status |
 |---|---|---|---|---|---|---|
-| UNIT-01 | Unit | BR-01 | Ticket Number generator returns `TK-YYYYMMDD-NNNN` format | String matches regex `^TK-\d{8}-\d{4}$` | `server/tests/lab-02/ticket-number.unit.test.ts` | |
-| UNIT-02 | Unit | BR-01 | Two tickets created on the same day have different Ticket Numbers | Numbers differ and both match format | `server/tests/lab-02/ticket-number.unit.test.ts` | |
+| UNIT-01 | Unit | BR-01 | Ticket Number generator returns `TK-YYYYMMDD-NNNN` format | String matches regex `^TK-\d{8}-\d{4}$` | `server/tests/lab-02/ticket-number.unit.test.ts` | PASSED |
+| UNIT-02 | Unit | BR-01 | Two tickets created on the same day have different Ticket Numbers | Numbers differ and both match format | `server/tests/lab-02/ticket-number.unit.test.ts` | PASSED |
 | UNIT-03 | Unit | BR-07, BR-08 | Validation utility trims whitespace from Summary and Description before checking length | Trimmed values pass min-length; untrimmed spaces do not add to length | `server/tests/lab-02/validation.unit.test.ts` | |
 | UNIT-04 | Unit | BR-22 | Filename sanitizer removes path traversal sequences | Output contains no `../`, no absolute path indicators | `server/tests/lab-02/file-sanitizer.unit.test.ts` | |
-| API-01 | API | AC-01, FR-04 | POST /api/tickets with valid body | 201; one Ticket saved in DB; official Ticket Number returned | `server/tests/lab-02/create-ticket.api.test.ts` | |
-| API-02 | API | AC-04, BR-07 | POST /api/tickets with empty Summary | 400; `fields.summary` error present; no Ticket created | `server/tests/lab-02/create-ticket.api.test.ts` | |
-| API-03 | API | AC-04, BR-07 | POST /api/tickets with Summary shorter than 5 chars | 400; `fields.summary` error present | `server/tests/lab-02/create-ticket.api.test.ts` | |
-| API-04 | API | AC-04, BR-08 | POST /api/tickets with Description shorter than 10 chars | 400; `fields.description` error present | `server/tests/lab-02/create-ticket.api.test.ts` | |
-| API-05 | API | AC-04, BR-11 | POST /api/tickets with invalid `requestedPriority` value | 400; `fields.requestedPriority` error present | `server/tests/lab-02/create-ticket.api.test.ts` | |
+| API-01 | API | AC-01, FR-04 | POST /api/tickets with valid body | 201; one Ticket saved in DB; official Ticket Number returned | `server/tests/lab-02/create-ticket.api.test.ts` | PASSED |
+| API-02 | API | AC-04, BR-07 | POST /api/tickets with empty Summary | 400; `fields.summary` error present; no Ticket created | `server/tests/lab-02/create-ticket.api.test.ts` | PASSED |
+| API-03 | API | AC-04, BR-07 | POST /api/tickets with Summary shorter than 5 chars | 400; `fields.summary` error present | `server/tests/lab-02/create-ticket.api.test.ts` | PASSED |
+| API-04 | API | AC-04, BR-08 | POST /api/tickets with Description shorter than 10 chars | 400; `fields.description` error present | `server/tests/lab-02/create-ticket.api.test.ts` | PASSED |
+| API-05 | API | AC-04, BR-11 | POST /api/tickets with invalid `requestedPriority` value | 400; `fields.requestedPriority` error present | `server/tests/lab-02/create-ticket.api.test.ts` | PASSED |
 | API-06 | API | AC-03, BR-06 | GET /api/tickets/:id with wrong requesterId | 403; Ticket data not returned | `server/tests/lab-02/ticket-detail.api.test.ts` | |
 | API-07 | API | FR-08 | GET /api/tickets/:id with correct requesterId | 200; full Ticket object returned | `server/tests/lab-02/ticket-detail.api.test.ts` | |
 | API-08 | API | FR-06, AC-08 | GET /api/tickets with requesterId=A returns only Requester A's tickets | All tickets in response have `requesterId = A` | `server/tests/lab-02/my-tickets.api.test.ts` | |
@@ -29,19 +29,19 @@ Tests are written as failing tests first, then the minimum implementation is add
 | API-11 | API | AC-11, FR-07 | GET /api/tickets with sortBy=createdAt&sortOrder=desc | Tickets are in descending creation-date order | `server/tests/lab-02/my-tickets.api.test.ts` | |
 | API-12 | API | AC-12, BR-24 | GET /api/tickets with page=2&pageSize=10 | Second page returned; pagination metadata correct | `server/tests/lab-02/my-tickets.api.test.ts` | |
 | API-13 | API | BR-24 | GET /api/tickets with invalid pageSize (e.g., 7) | 400 returned | `server/tests/lab-02/my-tickets.api.test.ts` | |
-| API-14 | API | FR-10, AC-16 | POST /api/tickets/:id/attachments with valid PNG under 5 MB | 201; Attachment record saved with correct metadata | `server/tests/lab-02/attachments.api.test.ts` | |
-| API-15 | API | AC-06, BR-15 | POST /api/tickets/:id/attachments with .exe file | 400; `UNSUPPORTED_FILE_TYPE` | `server/tests/lab-02/attachments.api.test.ts` | |
-| API-16 | API | AC-06, BR-16 | POST /api/tickets/:id/attachments with file > 5 MB | 400; `FILE_TOO_LARGE` | `server/tests/lab-02/attachments.api.test.ts` | |
-| API-17 | API | AC-07, BR-17 | POST /api/tickets/:id/attachments when 5 already active | 400; `ATTACHMENT_LIMIT_REACHED` | `server/tests/lab-02/attachments.api.test.ts` | |
+| API-14 | API | FR-10, AC-16 | POST /api/tickets/:id/attachments with valid PNG under 5 MB | 201; Attachment record saved with correct metadata | `server/tests/lab-02/attachments.api.test.ts` | PASSED |
+| API-15 | API | AC-06, BR-15 | POST /api/tickets/:id/attachments with .exe file | 400; `UNSUPPORTED_FILE_TYPE` | `server/tests/lab-02/attachments.api.test.ts` | PASSED |
+| API-16 | API | AC-06, BR-16 | POST /api/tickets/:id/attachments with file > 5 MB | 400; `FILE_TOO_LARGE` | `server/tests/lab-02/attachments.api.test.ts` | PASSED |
+| API-17 | API | AC-07, BR-17 | POST /api/tickets/:id/attachments when 5 already active | 400; `ATTACHMENT_LIMIT_REACHED` | `server/tests/lab-02/attachments.api.test.ts` | PASSED |
 | API-18 | API | AC-17, FR-12 | PATCH /api/attachments/:id/remove with valid reason | 200; `isRemoved = true`; `removalReason` and `removedAt` stored | `server/tests/lab-02/attachments.api.test.ts` | |
 | API-19 | API | AC-18, BR-18 | GET /api/attachments/:id/download for a removed attachment | 404 or 403; no file bytes returned | `server/tests/lab-02/attachments.api.test.ts` | |
 | API-20 | API | BR-20 | PATCH /api/attachments/:id/remove with empty removalReason | 400; `VALIDATION_ERROR`; attachment not removed | `server/tests/lab-02/attachments.api.test.ts` | |
 | API-21 | API | AC-22, BR-04 | GET /api/requesters | Inactive Requester is absent from response | `server/tests/lab-02/requesters.api.test.ts` | PASSED |
 | SEED-01 | Integration | BR-04, Sec 7 | Seed data idempotency & reference data verification | 6 tests pass: no duplicates on re-seed, 4 categories, 6+ related systems, 4 active & 1 inactive requesters, correct emails, inactive filter | `server/tests/lab-02/seed-idempotency.test.ts` | PASSED |
-| UI-01 | UI Component | AC-04 | Submit without entering Summary | Field-level error message appears below Summary field; API not called | `client/src/tests/lab-02/CreateTicket.test.tsx` | |
-| UI-02 | UI Component | AC-05, BR-14 | Submit button is disabled while request is in flight | Button has `disabled` attribute during submission | `client/src/tests/lab-02/CreateTicket.test.tsx` | |
-| UI-03 | UI Component | AC-19, BR-13 | Backend returns 500 during submission | Error callout shown; all form values retained | `client/src/tests/lab-02/CreateTicket.test.tsx` | |
-| UI-04 | UI Component | AC-01 | Success state after valid submission | Ticket Number displayed; "View Ticket" and "Create Another" buttons visible | `client/src/tests/lab-02/CreateTicket.test.tsx` | |
+| UI-01 | UI Component | AC-04 | Submit without entering Summary | Field-level error message appears below Summary field; API not called | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
+| UI-02 | UI Component | AC-05, BR-14 | Submit button is disabled while request is in flight | Button has `disabled` attribute during submission | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
+| UI-03 | UI Component | AC-19, BR-13 | Backend returns 500 during submission | Error callout shown; all form values retained | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
+| UI-04 | UI Component | AC-01 | Success state after valid submission | Ticket Number displayed; "View Ticket" and "Create Another" buttons visible | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
 | UI-05 | UI Component | AC-08 | My Tickets renders only current Requester's tickets | Rendered list matches mocked API response; no cross-Requester data | `client/src/tests/lab-02/MyTickets.test.tsx` | |
 | UI-06 | UI Component | AC-13 | My Tickets empty state | Empty state message and Create Ticket button rendered | `client/src/tests/lab-02/MyTickets.test.tsx` | |
 | UI-07 | UI Component | AC-14 | My Tickets API failure | Failure message and Retry button rendered | `client/src/tests/lab-02/MyTickets.test.tsx` | |
@@ -52,8 +52,8 @@ Tests are written as failing tests first, then the minimum implementation is add
 | UI-12 | UI Component | AC-02 | Redirect to Requester Selection when no Requester context | Navigation to My Tickets redirects to Selection screen | `client/src/tests/lab-02/RequesterGuard.test.tsx` | PASSED |
 | UI-13 | UI Component | AC-23, BR-05 | Switch Requester | My Tickets reloads and shows only new Requester's data | `client/src/tests/lab-02/MyTickets.test.tsx` | |
 | UI-STYLE-01 | UI Style | ui-spec.md | Primary green `#006B3C` applied to app header and primary buttons | Computed background-color matches `#006B3C` | `client/src/tests/lab-02/MyTickets.test.tsx` | |
-| UI-STYLE-02 | UI Style | ui-spec.md sec 5 | Required-field asterisk present on all required fields in Create Ticket | All required field labels contain `*` | `client/src/tests/lab-02/CreateTicket.test.tsx` | |
-| UI-STYLE-03 | UI Style | ui-spec.md sec 4 | Read-only fields have visually distinct background | Read-only elements have `--color-field-readonly-bg` applied | `client/src/tests/lab-02/CreateTicket.test.tsx` | |
+| UI-STYLE-02 | UI Style | ui-spec.md sec 5 | Required-field asterisk present on all required fields in Create Ticket | All required field labels contain `*` | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
+| UI-STYLE-03 | UI Style | ui-spec.md sec 4 | Read-only fields have visually distinct background | Read-only elements have `--color-field-readonly-bg` applied | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
 | UI-STYLE-04 | UI Style | ui-spec.md sec 7 | Status badge NEW renders with correct pale-green background | Badge element has correct background color token | `client/src/tests/lab-02/RequesterTicketDetail.test.tsx` | |
 | RESP-01 | Responsive | AC-20 | Desktop 992 px+: no horizontal overflow | `document.body.scrollWidth <= window.innerWidth` | `e2e/lab-02/requester-ticket-flow.spec.ts` | |
 | RESP-02 | Responsive | AC-21 | Mobile 375 px: fields stack vertically; no horizontal scroll | Single-column layout; `scrollWidth <= innerWidth` | `e2e/lab-02/requester-ticket-flow.spec.ts` | |
@@ -213,21 +213,60 @@ npx playwright test e2e/lab-02 --reporter=html
  ✓ src/tests/lab-02/RequesterBadge.test.tsx (1) 204ms
    ✓ RequesterBadge (1)
      ✓ shows the current requester name and navigates to selection on Change Requester
+
+# server — ticket-number unit test
+ ✓ tests/lab-02/ticket-number.unit.test.ts (2) 411ms
+   ✓ generateTicketNumber (2)
+     ✓ returns a string matching TK-YYYYMMDD-NNNN (UNIT-01, BR-01)
+     ✓ returns increasing, unique numbers across sequential calls (UNIT-02)
+
+# server — create-ticket API
+ ✓ tests/lab-02/create-ticket.api.test.ts (9) 634ms
+   ✓ POST /api/tickets (9)
+     ✓ creates a ticket with valid data and returns 201 with official Ticket Number (API-01, AC-01, BR-01, BR-02)
+     ✓ creates a ticket with CRITICAL priority (BR-11)
+     ✓ rejects a ticket with empty Summary (API-02, AC-04, BR-07)
+     ✓ rejects a ticket with Summary shorter than 5 chars (API-03, AC-04, BR-07)
+     ✓ rejects a ticket with Description shorter than 10 chars (API-04, AC-04, BR-08)
+     ✓ rejects a ticket with invalid requestedPriority value (API-05, AC-04, BR-11)
+     ✓ returns 404 when requesterId does not match an active Requester
+     ✓ returns 404 when categoryId does not exist
+     ✓ returns 404 when relatedSystemId does not exist
+
+# server — attachments API
+ ✓ tests/lab-02/attachments.api.test.ts (6) 566ms
+   ✓ POST /api/tickets/:id/attachments (6)
+     ✓ uploads a valid PNG under 5MB and returns 201 (API-14, AC-16)
+     ✓ rejects an unsupported file type with 400 UNSUPPORTED_FILE_TYPE (API-15, AC-06, BR-15)
+     ✓ rejects a file larger than 5MB with 400 FILE_TOO_LARGE (API-16, AC-06, BR-16)
+     ✓ rejects upload if ticket belongs to another requester with 403 FORBIDDEN
+     ✓ rejects upload if ticket does not exist with 404 NOT_FOUND
+     ✓ rejects the 6th active attachment on a ticket with 400 ATTACHMENT_LIMIT_REACHED (API-17, AC-07, BR-17)
+
+# client — CreateTicket screen
+ ✓ src/tests/lab-02/CreateTicket.test.tsx (6) 4784ms
+   ✓ CreateTicket screen (6)
+     ✓ shows a field-level error and does not call the API when Summary is empty (UI-01, AC-04)
+     ✓ shows a busy, disabled Submit button while the request is in flight (UI-02, AC-05, BR-14)
+     ✓ shows the generated Ticket Number, View Ticket, and Create Another buttons on success (UI-04, AC-01)
+     ✓ shows a safe error callout and preserves entered values when the API fails (UI-03, AC-19, BR-13)
+     ✓ displays required asterisks on all required field labels (UI-STYLE-02)
+     ✓ renders read-only fields with distinct styling (UI-STYLE-03)
 ```
 
 | Test ID | Final Status | Notes |
 |---|---|---|
 | SEED-01 | PASSED | 6/6 tests passed (14.49s) in `server/tests/lab-02/seed-idempotency.test.ts` |
 | API-21 | PASSED | 3/3 tests passed (463ms) in `server/tests/lab-02/requesters.api.test.ts` — also covers BR-04 shape check and BR-25 empty-array |
-| UNIT-01 | | |
-| UNIT-02 | | |
+| UNIT-01 | PASSED | 2/2 in `server/tests/lab-02/ticket-number.unit.test.ts` — TK-YYYYMMDD-NNNN format |
+| UNIT-02 | PASSED | Sequential unique number generation per day |
 | UNIT-03 | | |
 | UNIT-04 | | |
-| API-01 | | |
-| API-02 | | |
-| API-03 | | |
-| API-04 | | |
-| API-05 | | |
+| API-01 | PASSED | 9/9 in `server/tests/lab-02/create-ticket.api.test.ts` — 201 + Ticket Number |
+| API-02 | PASSED | Empty summary rejected with 400 VALIDATION_ERROR |
+| API-03 | PASSED | Summary < 5 chars rejected with 400 VALIDATION_ERROR |
+| API-04 | PASSED | Description < 10 chars rejected with 400 VALIDATION_ERROR |
+| API-05 | PASSED | Invalid priority rejected with 400 VALIDATION_ERROR |
 | API-06 | | |
 | API-07 | | |
 | API-08 | | |
@@ -236,18 +275,18 @@ npx playwright test e2e/lab-02 --reporter=html
 | API-11 | | |
 | API-12 | | |
 | API-13 | | |
-| API-14 | | |
-| API-15 | | |
-| API-16 | | |
-| API-17 | | |
+| API-14 | PASSED | 6/6 in `server/tests/lab-02/attachments.api.test.ts` — Valid upload 201 |
+| API-15 | PASSED | Rejects unsupported file type (.exe) with 400 UNSUPPORTED_FILE_TYPE |
+| API-16 | PASSED | Rejects file > 5MB with 400 FILE_TOO_LARGE |
+| API-17 | PASSED | Rejects 6th active attachment with 400 ATTACHMENT_LIMIT_REACHED |
 | API-18 | | |
 | API-19 | | |
 | API-20 | | |
 | API-21 | PASSED | 3/3 — see Actual Test Run Output |
-| UI-01 | | |
-| UI-02 | | |
-| UI-03 | | |
-| UI-04 | | |
+| UI-01 | PASSED | 6/6 in `client/src/tests/lab-02/CreateTicket.test.tsx` — Empty summary validation |
+| UI-02 | PASSED | Button busy/disabled during in-flight submission |
+| UI-03 | PASSED | Safe error callout + form state retained on API failure |
+| UI-04 | PASSED | Success state displaying assigned Ticket Number |
 | UI-05 | | |
 | UI-06 | | |
 | UI-07 | | |
@@ -258,8 +297,8 @@ npx playwright test e2e/lab-02 --reporter=html
 | UI-12 | PASSED | 1/1 — `client/src/tests/lab-02/RequesterGuard.test.tsx` |
 | UI-13 | | |
 | UI-STYLE-01 | | |
-| UI-STYLE-02 | | |
-| UI-STYLE-03 | | |
+| UI-STYLE-02 | PASSED | Verified in `CreateTicket.test.tsx` |
+| UI-STYLE-03 | PASSED | Verified in `CreateTicket.test.tsx` |
 | UI-STYLE-04 | | |
 | RESP-01 | | |
 | RESP-02 | | |
