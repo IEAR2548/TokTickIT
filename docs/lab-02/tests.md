@@ -244,12 +244,13 @@ npx playwright test e2e/lab-02 --reporter=html
      ✓ rejects the 6th active attachment on a ticket with 400 ATTACHMENT_LIMIT_REACHED (API-17, AC-07, BR-17)
 
 # client — CreateTicket screen
- ✓ src/tests/lab-02/CreateTicket.test.tsx (6) 4784ms
-   ✓ CreateTicket screen (6)
+ ✓ src/tests/lab-02/CreateTicket.test.tsx (7) 6355ms
+   ✓ CreateTicket screen (7)
      ✓ shows a field-level error and does not call the API when Summary is empty (UI-01, AC-04)
      ✓ shows a busy, disabled Submit button while the request is in flight (UI-02, AC-05, BR-14)
      ✓ shows the generated Ticket Number, View Ticket, and Create Another buttons on success (UI-04, AC-01)
      ✓ shows a safe error callout and preserves entered values when the API fails (UI-03, AC-19, BR-13)
+     ✓ reports attachment failure warning on success screen when attachment upload fails (BR-21)
      ✓ displays required asterisks on all required field labels (UI-STYLE-02)
      ✓ renders read-only fields with distinct styling (UI-STYLE-03)
 ```
@@ -283,7 +284,7 @@ npx playwright test e2e/lab-02 --reporter=html
 | API-19 | | |
 | API-20 | | |
 | API-21 | PASSED | 3/3 — see Actual Test Run Output |
-| UI-01 | PASSED | 6/6 in `client/src/tests/lab-02/CreateTicket.test.tsx` — Empty summary validation |
+| UI-01 | PASSED | 7/7 in `client/src/tests/lab-02/CreateTicket.test.tsx` — Empty summary validation, covers BR-21 warning |
 | UI-02 | PASSED | Button busy/disabled during in-flight submission |
 | UI-03 | PASSED | Safe error callout + form state retained on API failure |
 | UI-04 | PASSED | Success state displaying assigned Ticket Number |
