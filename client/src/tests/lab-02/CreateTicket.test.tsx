@@ -99,6 +99,28 @@ describe("CreateTicket screen", () => {
         );
     });
 
+    // BR-21: Warning on attachment failure without rolling back ticket
+    it("reports attachment failure warning on success screen when attachment upload fails (BR-21)", async () => {
+        vi.spyOn(ticketsApi, "createTicket").mockResolvedValue({
+            id: 1,
+            ticketNumber: "TK-20260904-0001",
+        });
+        vi.spyOn(ticketsApi, "uploadAttachment").mockRejectedValue(new Error("Upload failed"));
+
+        renderScreen();
+        await fillValidForm();
+
+        const fileInput = screen.getByLabelText(/attachments/i);
+        const testFile = new File(["dummy content"], "broken.png", { type: "image/png" });
+        await userEvent.upload(fileInput, testFile);
+
+        await userEvent.click(screen.getByRole("button", { name: /submit ticket/i }));
+
+        expect(await screen.findByText("TK-20260904-0001")).toBeInTheDocument();
+        expect(screen.getByText(/attachment\(s\) failed to upload/i)).toBeInTheDocument();
+        expect(screen.getByText("broken.png")).toBeInTheDocument();
+    });
+
     // UI-STYLE-02: Required field asterisks
     it("displays required asterisks on all required field labels (UI-STYLE-02)", async () => {
         renderScreen();

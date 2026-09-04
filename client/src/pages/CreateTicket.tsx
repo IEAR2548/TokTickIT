@@ -44,6 +44,7 @@ export function CreateTicket() {
         null
     );
     const [pendingAttachments, setPendingAttachments] = useState<File[]>([]);
+    const [attachmentWarnings, setAttachmentWarnings] = useState<string[]>([]);
 
     useEffect(() => {
         fetchCategories().then(setCategories).catch(() => setCategories([]));
@@ -80,6 +81,7 @@ export function CreateTicket() {
         if (Object.keys(errors).length > 0) return;
 
         setApiError(null);
+        setAttachmentWarnings([]);
         setSubmitting(true); // BR-14/AC-05: busy + disabled during in-flight request
 
         try {
@@ -91,15 +93,17 @@ export function CreateTicket() {
                 requestedPriority: form.requestedPriority as "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
             });
 
-            // BR-24: attachments are attempted after ticket creation; failures don't roll back the ticket
+            // BR-21: attachments are attempted after ticket creation; failures don't roll back the ticket
+            const failedFiles: string[] = [];
             for (const file of pendingAttachments) {
                 try {
                     await uploadAttachment(selectedRequester.id, ticket.id, file);
                 } catch {
-                    // Non-blocking attachment upload
+                    failedFiles.push(file.name);
                 }
             }
 
+            setAttachmentWarnings(failedFiles);
             setSuccessTicket(ticket);
         } catch (err) {
             if (err instanceof TicketValidationError) {
@@ -119,6 +123,18 @@ export function CreateTicket() {
             <div className="create-ticket-success">
                 <h2>Ticket Created</h2>
                 <p className="success-ticket-number">{successTicket.ticketNumber}</p>
+                {attachmentWarnings.length > 0 && (
+                    <div className="attachment-warning-box" role="alert">
+                        <p className="attachment-warning-title">
+                            Ticket created successfully, but the following attachment(s) failed to upload:
+                        </p>
+                        <ul className="attachment-warning-list">
+                            {attachmentWarnings.map((name) => (
+                                <li key={name}>{name}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
                 <div className="success-actions">
                     <Button variant="secondary" onClick={() => navigate("/my-tickets")}>
                         View Ticket
@@ -128,6 +144,7 @@ export function CreateTicket() {
                         onClick={() => {
                             setForm(INITIAL_FORM);
                             setPendingAttachments([]);
+                            setAttachmentWarnings([]);
                             setSuccessTicket(null);
                         }}
                     >
