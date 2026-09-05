@@ -21,8 +21,8 @@ Tests are written as failing tests first, then the minimum implementation is add
 | API-03 | API | AC-04, BR-07 | POST /api/tickets with Summary shorter than 5 chars | 400; `fields.summary` error present | `server/tests/lab-02/create-ticket.api.test.ts` | PASSED |
 | API-04 | API | AC-04, BR-08 | POST /api/tickets with Description shorter than 10 chars | 400; `fields.description` error present | `server/tests/lab-02/create-ticket.api.test.ts` | PASSED |
 | API-05 | API | AC-04, BR-11 | POST /api/tickets with invalid `requestedPriority` value | 400; `fields.requestedPriority` error present | `server/tests/lab-02/create-ticket.api.test.ts` | PASSED |
-| API-06 | API | AC-03, BR-06 | GET /api/tickets/:id with wrong requesterId | 403; Ticket data not returned | `server/tests/lab-02/ticket-detail.api.test.ts` | |
-| API-07 | API | FR-08 | GET /api/tickets/:id with correct requesterId | 200; full Ticket object returned | `server/tests/lab-02/ticket-detail.api.test.ts` | |
+| API-06 | API | AC-03, BR-06 | GET /api/tickets/:id with wrong requesterId | 403; Ticket data not returned | `server/tests/lab-02/ticket-detail.api.test.ts` | PASSED |
+| API-07 | API | FR-08 | GET /api/tickets/:id with correct requesterId | 200; full Ticket object returned | `server/tests/lab-02/ticket-detail.api.test.ts` | PASSED |
 | API-08 | API | FR-06, AC-08 | GET /api/tickets with requesterId=A returns only Requester A's tickets | All tickets in response have `requesterId = A` | `server/tests/lab-02/my-tickets.api.test.ts` | PASSED |
 | API-09 | API | AC-09, FR-07 | GET /api/tickets with search keyword | Only tickets whose Number or Summary contains the keyword are returned | `server/tests/lab-02/my-tickets.api.test.ts` | PASSED |
 | API-10 | API | AC-10, FR-07 | GET /api/tickets with categoryId filter | Only tickets in the specified Category are returned | `server/tests/lab-02/my-tickets.api.test.ts` | PASSED |
@@ -33,9 +33,9 @@ Tests are written as failing tests first, then the minimum implementation is add
 | API-15 | API | AC-06, BR-15 | POST /api/tickets/:id/attachments with .exe file | 400; `UNSUPPORTED_FILE_TYPE` | `server/tests/lab-02/attachments.api.test.ts` | PASSED |
 | API-16 | API | AC-06, BR-16 | POST /api/tickets/:id/attachments with file > 5 MB | 400; `FILE_TOO_LARGE` | `server/tests/lab-02/attachments.api.test.ts` | PASSED |
 | API-17 | API | AC-07, BR-17 | POST /api/tickets/:id/attachments when 5 already active | 400; `ATTACHMENT_LIMIT_REACHED` | `server/tests/lab-02/attachments.api.test.ts` | PASSED |
-| API-18 | API | AC-17, FR-12 | PATCH /api/attachments/:id/remove with valid reason | 200; `isRemoved = true`; `removalReason` and `removedAt` stored | `server/tests/lab-02/attachments.api.test.ts` | |
-| API-19 | API | AC-18, BR-18 | GET /api/attachments/:id/download for a removed attachment | 404 or 403; no file bytes returned | `server/tests/lab-02/attachments.api.test.ts` | |
-| API-20 | API | BR-20 | PATCH /api/attachments/:id/remove with empty removalReason | 400; `VALIDATION_ERROR`; attachment not removed | `server/tests/lab-02/attachments.api.test.ts` | |
+| API-18 | API | AC-17, FR-12 | PATCH /api/attachments/:id/remove with valid reason | 200; `isRemoved = true`; `removalReason` and `removedAt` stored | `server/tests/lab-02/attachments.api.test.ts` | PASSED |
+| API-19 | API | AC-18, BR-18 | GET /api/attachments/:id/download for a removed attachment | 404 or 403; no file bytes returned | `server/tests/lab-02/attachments.api.test.ts` | PASSED |
+| API-20 | API | BR-20 | PATCH /api/attachments/:id/remove with empty removalReason | 400; `VALIDATION_ERROR`; attachment not removed | `server/tests/lab-02/attachments.api.test.ts` | PASSED |
 | API-21 | API | AC-22, BR-04 | GET /api/requesters | Inactive Requester is absent from response | `server/tests/lab-02/requesters.api.test.ts` | PASSED |
 | SEED-01 | Integration | BR-04, Sec 7 | Seed data idempotency & reference data verification | 6 tests pass: no duplicates on re-seed, 4 categories, 6+ related systems, 4 active & 1 inactive requesters, correct emails, inactive filter | `server/tests/lab-02/seed-idempotency.test.ts` | PASSED |
 | UI-01 | UI Component | AC-04 | Submit without entering Summary | Field-level error message appears below Summary field; API not called | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
@@ -45,16 +45,16 @@ Tests are written as failing tests first, then the minimum implementation is add
 | UI-05 | UI Component | AC-08 | My Tickets renders only current Requester's tickets | Rendered list matches mocked API response; no cross-Requester data | `client/src/tests/lab-02/MyTickets.test.tsx` | PASSED |
 | UI-06 | UI Component | AC-13 | My Tickets empty state | Empty state message and Create Ticket button rendered | `client/src/tests/lab-02/MyTickets.test.tsx` | PASSED |
 | UI-07 | UI Component | AC-14 | My Tickets API failure | Failure message and Retry button rendered | `client/src/tests/lab-02/MyTickets.test.tsx` | PASSED |
-| UI-08 | UI Component | AC-15 | Ticket Detail shows read-only ticket header | All ticket header fields are non-editable inputs or plain text | `client/src/tests/lab-02/RequesterTicketDetail.test.tsx` | |
-| UI-09 | UI Component | AC-16 | Attachment upload success in Ticket Detail | New attachment row appears in active list with Download button | `client/src/tests/lab-02/AttachmentSection.test.tsx` | |
-| UI-10 | UI Component | AC-17 | Soft-remove attachment with reason | Attachment moves to removed list; Download button absent; reason and date shown | `client/src/tests/lab-02/AttachmentSection.test.tsx` | |
-| UI-11 | UI Component | AC-07 | Add Attachment disabled when 5 active | Add Attachment button is disabled and shows tooltip | `client/src/tests/lab-02/AttachmentSection.test.tsx` | |
+| UI-08 | UI Component | AC-15 | Ticket Detail shows read-only ticket header | All ticket header fields are non-editable inputs or plain text | `client/src/tests/lab-02/RequesterTicketDetail.test.tsx` | PASSED |
+| UI-09 | UI Component | AC-16 | Attachment upload success in Ticket Detail | New attachment row appears in active list with Download button | `client/src/tests/lab-02/AttachmentSection.test.tsx` | PASSED |
+| UI-10 | UI Component | AC-17 | Soft-remove attachment with reason | Attachment moves to removed list; Download button absent; reason and date shown | `client/src/tests/lab-02/AttachmentSection.test.tsx` | PASSED |
+| UI-11 | UI Component | AC-07 | Add Attachment disabled when 5 active | Add Attachment button is disabled and shows tooltip | `client/src/tests/lab-02/AttachmentSection.test.tsx` | PASSED |
 | UI-12 | UI Component | AC-02 | Redirect to Requester Selection when no Requester context | Navigation to My Tickets redirects to Selection screen | `client/src/tests/lab-02/RequesterGuard.test.tsx` | PASSED |
 | UI-13 | UI Component | AC-23, BR-05 | Switch Requester | My Tickets reloads and shows only new Requester's data | `client/src/tests/lab-02/MyTickets.test.tsx` | PASSED |
 | UI-STYLE-01 | UI Style | ui-spec.md | Primary green `#006B3C` applied to app header and primary buttons | Computed background-color matches `#006B3C` | `client/src/tests/lab-02/MyTickets.test.tsx` | PASSED |
 | UI-STYLE-02 | UI Style | ui-spec.md sec 5 | Required-field asterisk present on all required fields in Create Ticket | All required field labels contain `*` | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
 | UI-STYLE-03 | UI Style | ui-spec.md sec 4 | Read-only fields have visually distinct background | Read-only elements have `--color-field-readonly-bg` applied | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
-| UI-STYLE-04 | UI Style | ui-spec.md sec 7 | Status badge NEW renders with correct pale-green background | Badge element has correct background color token | `client/src/tests/lab-02/RequesterTicketDetail.test.tsx` | |
+| UI-STYLE-04 | UI Style | ui-spec.md sec 7 | Status badge NEW renders with correct pale-green background | Badge element has correct background color token | `client/src/tests/lab-02/RequesterTicketDetail.test.tsx` | PASSED |
 | RESP-01 | Responsive | AC-20 | Desktop 992 px+: no horizontal overflow | `document.body.scrollWidth <= window.innerWidth` | `e2e/lab-02/requester-ticket-flow.spec.ts` | |
 | RESP-02 | Responsive | AC-21 | Mobile 375 px: fields stack vertically; no horizontal scroll | Single-column layout; `scrollWidth <= innerWidth` | `e2e/lab-02/requester-ticket-flow.spec.ts` | |
 | RESP-03 | Responsive | AC-21 | Mobile: My Tickets renders as cards, not table | Table element absent; card elements present | `e2e/lab-02/requester-ticket-flow.spec.ts` | |
@@ -301,6 +301,48 @@ npx playwright test e2e/lab-02 --reporter=html
      ✓ reloads with the new requester's data when the requester changes (UI-13, AC-23)
      ✓ shows a safe failure state with retry when the API call fails (UI-07, AC-14)
      ✓ applies primary green styling to the Create Ticket button (UI-STYLE-01)
+
+# client — AttachmentSection component
+ ✓ src/tests/lab-02/AttachmentSection.test.tsx (3) 874ms
+   ✓ AttachmentSection (3)
+     ✓ shows a new row after a successful upload (UI-09, AC-16)
+     ✓ soft-removes an attachment via the reason dialog and updates UI (UI-10, AC-17)
+     ✓ disables Add Attachment once the ticket has 5 active attachments (UI-11, AC-07)
+
+# client — RequesterTicketDetail screen
+ ✓ src/tests/lab-02/RequesterTicketDetail.test.tsx (2) 214ms
+   ✓ RequesterTicketDetail screen (2)
+     ✓ renders all Ticket Information fields as read-only (UI-08, AC-15)
+     ✓ shows the NEW status badge with the Zen Green pale-green/primary token pairing (UI-STYLE-04)
+
+# server — ticket-detail API
+ ✓ tests/lab-02/ticket-detail.api.test.ts (4) 576ms
+   ✓ GET /api/tickets/:id (4)
+     ✓ returns 400 VALIDATION_ERROR when ticket id is invalid
+     ✓ returns 404 TICKET_NOT_FOUND when ticket does not exist
+     ✓ returns 403 FORBIDDEN when accessed by a non-owner requester (API-06, AC-03, BR-06)
+     ✓ returns 200 with full ticket detail and relations for the owner (API-07, FR-08)
+
+# server — attachments API (Download & Soft-remove)
+ ✓ tests/lab-02/attachments.api.test.ts (15) 997ms
+   ✓ POST /api/tickets/:id/attachments (6)
+     ✓ uploads a valid PNG under 5MB and returns 201 (API-14, AC-16)
+     ✓ rejects an unsupported file type with 400 UNSUPPORTED_FILE_TYPE (API-15, AC-06, BR-15)
+     ✓ rejects a file larger than 5MB with 400 FILE_TOO_LARGE (API-16, AC-06, BR-16)
+     ✓ rejects upload if ticket belongs to another requester with 403 FORBIDDEN
+     ✓ rejects upload if ticket does not exist with 404 NOT_FOUND
+     ✓ rejects the 6th active attachment on a ticket with 400 ATTACHMENT_LIMIT_REACHED (API-17, AC-07, BR-17)
+   ✓ PATCH /api/attachments/:id/remove (6)
+     ✓ soft-removes an attachment with a valid reason and returns 200 (API-18, AC-17, FR-12)
+     ✓ rejects an empty removalReason with 400 VALIDATION_ERROR (API-20, BR-20)
+     ✓ rejects removal if attachment does not exist with 404 NOT_FOUND
+     ✓ rejects removal if ticket belongs to another requester with 403 FORBIDDEN
+     ✓ returns 400 ALREADY_REMOVED when attempting to soft-remove an already removed attachment
+     ✓ preserves file binary on disk after soft-removal
+   ✓ GET /api/attachments/:id/download (3)
+     ✓ downloads an active attachment with correct headers and binary stream
+     ✓ returns 404 ATTACHMENT_REMOVED for a soft-removed attachment (API-19, AC-18, BR-18)
+     ✓ rejects download if ticket belongs to another requester with 403 FORBIDDEN
 ```
 
 | Test ID | Final Status | Notes |
@@ -316,8 +358,8 @@ npx playwright test e2e/lab-02 --reporter=html
 | API-03 | PASSED | Summary < 5 chars rejected with 400 VALIDATION_ERROR |
 | API-04 | PASSED | Description < 10 chars rejected with 400 VALIDATION_ERROR |
 | API-05 | PASSED | Invalid priority rejected with 400 VALIDATION_ERROR |
-| API-06 | | |
-| API-07 | | |
+| API-06 | PASSED | returns 403 FORBIDDEN when accessed by a non-owner requester (API-06, AC-03, BR-06) |
+| API-07 | PASSED | returns 200 with full ticket detail and relations for the owner (API-07, FR-08) |
 | API-08 | PASSED | 12/12 in `server/tests/lab-02/my-tickets.api.test.ts` — isolation to requesting Requester only (AC-08, BR-06) |
 | API-09 | PASSED | Search keyword filtering on Ticket Number or Summary (AC-09, FR-07) |
 | API-10 | PASSED | Category and Status filtering (AC-10, FR-07) |
@@ -328,9 +370,9 @@ npx playwright test e2e/lab-02 --reporter=html
 | API-15 | PASSED | Rejects unsupported file type (.exe) with 400 UNSUPPORTED_FILE_TYPE |
 | API-16 | PASSED | Rejects file > 5MB with 400 FILE_TOO_LARGE |
 | API-17 | PASSED | Rejects 6th active attachment with 400 ATTACHMENT_LIMIT_REACHED |
-| API-18 | | |
-| API-19 | | |
-| API-20 | | |
+| API-18 | PASSED | Soft-remove attachment with valid reason and records removedAt/removalReason |
+| API-19 | PASSED | Downloads forbidden for soft-removed attachments (404/403) |
+| API-20 | PASSED | Rejects attachment removal without removalReason (400 VALIDATION_ERROR)|
 | API-21 | PASSED | 3/3 — see Actual Test Run Output |
 | UI-01 | PASSED | 7/7 in `client/src/tests/lab-02/CreateTicket.test.tsx` — Empty summary validation, covers BR-21 warning |
 | UI-02 | PASSED | Button busy/disabled during in-flight submission |
@@ -339,16 +381,16 @@ npx playwright test e2e/lab-02 --reporter=html
 | UI-05 | PASSED | 7/7 in `client/src/tests/lab-02/MyTickets.test.tsx` — renders tickets matching mocked API response (AC-08) |
 | UI-06 | PASSED | Renders empty state with Create Ticket CTA when 0 tickets exist (AC-13) |
 | UI-07 | PASSED | Displays safe failure message with working Retry button on API failure (AC-14) |
-| UI-08 | | |
-| UI-09 | | |
-| UI-10 | | |
-| UI-11 | | |
+| UI-08 | PASSED | `client/src/tests/lab-02/RequesterTicketDetail.test.tsx` — Read-only ticket header rendered |
+| UI-09 | PASSED | `client/src/tests/lab-02/AttachmentSection.test.tsx` — Upload success row in active list|
+| UI-10 | PASSED | Soft-remove attachment workflow verified with reason display |
+| UI-11 | PASSED | Add Attachment disabled when active limit of 5 is reached |
 | UI-12 | PASSED | 1/1 — `client/src/tests/lab-02/RequesterGuard.test.tsx` |
 | UI-13 | PASSED | Automatically reloads new Requester's tickets on context switch (AC-23, BR-05) |
 | UI-STYLE-01 | PASSED | Primary green `#006B3C` verified on header and primary buttons (Create Ticket) |
 | UI-STYLE-02 | PASSED | Verified in `CreateTicket.test.tsx` |
 | UI-STYLE-03 | PASSED | Verified in `CreateTicket.test.tsx` |
-| UI-STYLE-04 | | |
+| UI-STYLE-04 | PASSED | Status badge NEW verified with pale-green styling |
 | RESP-01 | | |
 | RESP-02 | | |
 | RESP-03 | | |
