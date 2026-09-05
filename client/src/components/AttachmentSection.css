@@ -1,0 +1,149 @@
+.attachment-section {
+    background: var(--color-surface, #ffffff);
+    border: 1px solid var(--color-surface-border, #d9e5de);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px var(--color-surface-shadow, rgba(0, 107, 60, 0.08));
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.attachment-add {
+    margin-bottom: 16px;
+}
+
+.attachment-limit-note {
+    font-size: 12px;
+    color: var(--color-text-secondary, #4a6357);
+    margin-top: 4px;
+}
+
+.attachment-active-list,
+.attachment-removed-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.attachment-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--color-surface-border, #d9e5de);
+    flex-wrap: wrap;
+}
+
+.attachment-row:first-child {
+    border-top: none;
+}
+
+.attachment-name {
+    font-weight: 600;
+    color: var(--color-text-primary, #1a2e23);
+}
+
+.attachment-meta {
+    font-size: 12px;
+    color: var(--color-text-secondary, #4a6357);
+}
+
+.attachment-download-btn {
+    background: transparent;
+    border: 1px solid var(--color-primary, #006b3c);
+    color: var(--color-primary, #006b3c);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.attachment-download-btn:hover {
+    background: var(--color-pale-green, #eaf6ef);
+}
+
+.attachment-remove-btn {
+    background: var(--color-error-bg, #fef2f2);
+    border: 1px solid var(--color-error, #b91c1c);
+    color: var(--color-error, #b91c1c);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.attachment-remove-btn:hover {
+    background: var(--color-error, #b91c1c);
+    color: #ffffff;
+}
+
+.attachment-row-removed {
+    color: var(--color-text-secondary, #4a6357);
+}
+
+.attachment-row-removed .attachment-name {
+    color: var(--color-text-secondary, #4a6357);
+    font-weight: 400;
+}
+
+.attachment-removal-reason,
+.attachment-removed-at {
+    font-size: 12px;
+    color: var(--color-text-secondary, #4a6357);
+}
+
+.attachment-removal-reason {
+    font-style: italic;
+}
+
+.attachment-error {
+    color: var(--color-error, #b91c1c);
+    font-size: 13px;
+    margin-top: 6px;
+}
+
+.attachment-removal-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+}
+
+.attachment-removal-panel {
+    background: var(--color-surface, #ffffff);
+    border-radius: 8px;
+    padding: 24px;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.attachment-removal-panel label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-secondary, #4a6357);
+    margin-bottom: 6px;
+}
+
+.attachment-removal-panel textarea {
+    width: 100%;
+    min-height: 80px;
+    border: 1px solid var(--color-surface-border, #d9e5de);
+    border-radius: 6px;
+    padding: 8px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.attachment-removal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}

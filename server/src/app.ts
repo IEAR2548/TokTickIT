@@ -7,6 +7,7 @@ import requestersRoute from "./routes/requesters.route";
 import categoriesRoute from "./routes/categories.route";
 import relatedSystemsRoute from "./routes/relatedSystems.route";
 import ticketsRoute from "./routes/tickets.route";
+import attachmentsRoute from "./routes/attachments.route";
 
 const app = express();
 
@@ -24,5 +25,6 @@ app.use("/api/requesters", requestersRoute);
 app.use("/api/categories", categoriesRoute);
 app.use("/api/related-systems", relatedSystemsRoute);
 app.use("/api/tickets", ticketsRoute);
+app.use("/api/attachments", attachmentsRoute);
 
 export default app;

@@ -1,0 +1,77 @@
+/* Requester Ticket Detail Screen — Zen Green Theme (HANDOVER.md Section 6) */
+
+.ticket-detail-page {
+    background: var(--color-page-bg, #f5f7f6);
+    min-height: 100%;
+    padding-bottom: 32px;
+}
+
+.ticket-back-link {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: var(--color-primary, #006b3c);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.ticket-back-link:hover {
+    color: var(--color-secondary, #0b7a46);
+    text-decoration: underline;
+}
+
+.ticket-title {
+    color: var(--color-text-primary, #1a2e23);
+}
+
+.ticket-header {
+    background: var(--color-surface, #ffffff);
+    border: 1px solid var(--color-surface-border, #d9e5de);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px var(--color-surface-shadow, rgba(0, 107, 60, 0.08));
+    padding: 20px;
+}
+
+.ticket-header-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+    margin: 0;
+}
+
+.ticket-header-summary,
+.ticket-header-description {
+    grid-column: 1 / -1;
+}
+
+.ticket-header-field dt {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-text-secondary, #4a6357);
+    margin-bottom: 4px;
+}
+
+.ticket-field-value,
+.ticket-readonly-input {
+    display: block;
+    width: 100%;
+    background: var(--color-field-readonly-bg, #eef4f1);
+    border: 1px solid var(--color-field-readonly-border, #c8ddd5);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: var(--color-text-primary, #1a2e23);
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.ticket-header-description .ticket-field-value {
+    min-height: 72px;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 767px) {
+    .ticket-header-grid {
+        grid-template-columns: 1fr;
+    }
+}
