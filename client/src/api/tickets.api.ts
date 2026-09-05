@@ -138,3 +138,55 @@ export async function fetchMyTickets(
         },
     };
 }
+
+export interface AttachmentItem {
+    id: number;
+    ticketId: number;
+    originalName: string;
+    mimeType: string;
+    sizeBytes: number;
+    isRemoved: boolean;
+    removalReason: string | null;
+    removedAt: string | null;
+    uploadedAt: string;
+}
+
+export async function fetchTicketAttachments(requesterId: number, ticketId: number): Promise<AttachmentItem[]> {
+    const query = new URLSearchParams({ requesterId: String(requesterId) });
+    const res = await fetch(`/api/tickets/${ticketId}/attachments?${query.toString()}`);
+    const body = await res.json();
+
+    if (!res.ok) {
+        throw new Error(body.message ?? body.error ?? "Failed to load attachments. Please try again.");
+    }
+
+    return body.attachments ?? [];
+}
+
+export async function removeAttachment(
+    requesterId: number,
+    attachmentId: number,
+    removalReason: string
+): Promise<AttachmentItem> {
+    const res = await fetch(`/api/attachments/${attachmentId}/remove`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ requesterId, removalReason }),
+    });
+
+    const body = await res.json();
+
+    if (!res.ok) {
+        throw new Error(body.message ?? body.error ?? "Failed to remove attachment. Please try again.");
+    }
+
+    return body.attachment;
+}
+
+/** Direct link target for downloading an attachment (GET, ownership-checked server-side). */
+export function getAttachmentDownloadUrl(attachmentId: number, requesterId: number): string {
+    const query = new URLSearchParams({ requesterId: String(requesterId) });
+    return `/api/attachments/${attachmentId}/download?${query.toString()}`;
+}
