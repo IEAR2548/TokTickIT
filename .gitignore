@@ -34,3 +34,7 @@ Thumbs.db
 storage/
 server/storage/
 .attachments-storage/
+
+# Playwright test outputs
+playwright-report/
+test-results/
