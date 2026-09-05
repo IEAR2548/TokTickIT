@@ -20,6 +20,18 @@ export class RelatedSystemNotFoundError extends Error {
     }
 }
 
+export class TicketNotFoundError extends Error {
+    constructor() {
+        super("Ticket ID does not exist");
+    }
+}
+
+export class TicketForbiddenError extends Error {
+    constructor() {
+        super("Ticket belongs to a different Requester");
+    }
+}
+
 export async function createTicket(input: CreateTicketInput) {
     const requester = await prisma.devRequester.findUnique({
         where: { id: input.requesterId },
@@ -140,4 +152,35 @@ export async function listTickets(options: ListTicketsOptions) {
             totalPages,
         },
     };
+}
+
+export async function getTicketById(requesterId: number, ticketId: number) {
+    const ticket = await prisma.ticket.findUnique({
+        where: { id: ticketId },
+        select: {
+            id: true,
+            ticketNumber: true,
+            requesterId: true,
+            requester: { select: { id: true, name: true, email: true } },
+            category: { select: { id: true, name: true } },
+            relatedSystem: { select: { id: true, name: true } },
+            summary: true,
+            description: true,
+            requestedPriority: true,
+            currentStatus: true,
+            createdAt: true,
+            updatedAt: true,
+        },
+    });
+
+    if (!ticket) {
+        throw new TicketNotFoundError();
+    }
+
+    if (ticket.requesterId !== requesterId) {
+        throw new TicketForbiddenError();
+    }
+
+    const { requesterId: _requesterId, ...ticketResponse } = ticket;
+    return ticketResponse;
 }

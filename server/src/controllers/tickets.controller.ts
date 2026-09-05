@@ -3,9 +3,12 @@ import { validateCreateTicket, hasErrors, CreateTicketInput } from "../validator
 import {
     createTicket,
     listTickets,
+    getTicketById,
     RequesterNotFoundError,
     CategoryNotFoundError,
     RelatedSystemNotFoundError,
+    TicketNotFoundError,
+    TicketForbiddenError,
 } from "../services/tickets.service";
 
 export async function createTicketHandler(req: Request, res: Response) {
@@ -135,6 +138,52 @@ export async function listTicketsHandler(req: Request, res: Response) {
             });
         }
         console.error("[tickets.controller] listTicketsHandler failed:", err);
+        return res.status(500).json({
+            error: "INTERNAL_ERROR",
+            message: "Unexpected server error",
+        });
+    }
+}
+
+export async function getTicketDetailHandler(req: Request, res: Response) {
+    const requesterIdRaw = req.query.requesterId;
+    const requesterId = Number(requesterIdRaw);
+    if (!requesterIdRaw || !Number.isInteger(requesterId) || requesterId <= 0) {
+        return res.status(400).json({
+            error: "VALIDATION_ERROR",
+            message: "requesterId is required and must be a positive integer",
+        });
+    }
+
+    // Section 5 only documents VALIDATION_ERROR for requesterId, not for the
+    // :id param itself. A malformed/non-integer :id can never match a real
+    // row, so it is treated the same as "does not exist" -> 404 NOT_FOUND,
+    // rather than adding an undocumented error code here.
+    const ticketId = Number(req.params.id);
+    if (!Number.isInteger(ticketId) || ticketId <= 0) {
+        return res.status(404).json({
+            error: "NOT_FOUND",
+            message: "Ticket ID does not exist",
+        });
+    }
+
+    try {
+        const ticket = await getTicketById(requesterId, ticketId);
+        return res.status(200).json({ ticket });
+    } catch (err) {
+        if (err instanceof TicketNotFoundError) {
+            return res.status(404).json({
+                error: "NOT_FOUND",
+                message: "Ticket ID does not exist",
+            });
+        }
+        if (err instanceof TicketForbiddenError) {
+            return res.status(403).json({
+                error: "FORBIDDEN",
+                message: "Ticket belongs to a different Requester",
+            });
+        }
+        console.error("[tickets.controller] getTicketDetailHandler failed:", err);
         return res.status(500).json({
             error: "INTERNAL_ERROR",
             message: "Unexpected server error",
