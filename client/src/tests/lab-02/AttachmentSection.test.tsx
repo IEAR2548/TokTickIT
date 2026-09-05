@@ -4,25 +4,6 @@ import userEvent from "@testing-library/user-event";
 import { AttachmentSection } from "../../components/AttachmentSection";
 import * as ticketsApi from "../../api/tickets.api";
 
-// Ref: HANDOVER.md (Issue #16) Section 6 layout mockup "Attachment Section" + Removal Modal
-// Ref: docs/lab-02/tests.md UI-09, UI-10, UI-11
-//
-// Contract this test assumes (not yet implemented — TDD Red):
-// - client/src/components/AttachmentSection.tsx takes `ticketId` and `requesterId`
-//   as props (does NOT read RequesterContext itself), so no Router/Provider wrapping
-//   is needed here.
-// - It calls ticketsApi.fetchTicketAttachments(requesterId, ticketId) on mount,
-//   returning a flat array (active + removed) of attachment objects.
-// - New uploads go through the existing ticketsApi.uploadAttachment(requesterId, ticketId, file).
-// - The file input is exposed via aria-label "Add Attachment" (same accessible-name
-//   pattern as AttachmentUploader.tsx's `getByLabelText(/attachments/i)`), disabled
-//   once there are 5 active (non-removed) attachments.
-// - Each active row has a "Remove" button that opens a modal with a "Removal Reason"
-//   field and a "Confirm Remove" button, calling
-//   ticketsApi.removeAttachment(requesterId, attachmentId, removalReason).
-// - Removed attachments render in a separate section with the filename inside an
-//   <s> element and the reason shown as text, with no Download/Remove actions.
-
 function activeAttachment(overrides: Partial<any> = {}) {
     return {
         id: 10,
