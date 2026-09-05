@@ -173,6 +173,12 @@
     clip: rect(0, 0, 0, 0);
 }
 
+@media (min-width: 768px) and (max-width: 991px) {
+    .my-tickets-filters input {
+        min-width: 180px;
+    }
+}
+
 @media (max-width: 767px) {
     .my-tickets-header {
         flex-direction: column;

@@ -1,5 +1,3 @@
-/* Ref: docs/lab-02/ui-spec.md sections 4-6, 10, 12 */
-
 .create-ticket-form {
     max-width: 720px;
     margin: 0 auto;
@@ -83,10 +81,6 @@
     color: var(--color-error, #b91c1c);
     font-size: 12px;
     margin: 4px 0 0;
-}
-
-.field-required-asterisk {
-    color: var(--color-error, #b91c1c);
 }
 
 .create-ticket-api-error {
