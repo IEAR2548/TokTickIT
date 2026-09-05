@@ -7,6 +7,7 @@ import { RequesterBadge } from "./components/RequesterBadge";
 import { RequesterSelection } from "./pages/RequesterSelection";
 import { CreateTicket } from "./pages/CreateTicket";
 import { MyTickets } from "./pages/MyTickets";
+import { RequesterTicketDetail } from "./pages/RequesterTicketDetail";
 
 interface HealthResponse {
   status: string;
@@ -119,6 +120,7 @@ export default function App() {
 
           <Route path="/create-ticket" element={<RequesterGuard><CreateTicket /></RequesterGuard>} />
           <Route path="/my-tickets" element={<RequesterGuard><MyTickets /></RequesterGuard>} />
+          <Route path="/tickets/:id" element={<RequesterGuard><RequesterTicketDetail /></RequesterGuard>} />
         </Routes>
       </RequesterProvider>
     </BrowserRouter>
