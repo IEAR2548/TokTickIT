@@ -18,7 +18,9 @@ export class AttachmentForbiddenError extends Error { }
 export class AttachmentRemovedError extends Error { }
 export class AttachmentAlreadyRemovedError extends Error { }
 
-const STORAGE_DIR = path.join(process.cwd(), "storage", "attachments");
+const STORAGE_DIR =
+    process.env.ATTACHMENT_STORAGE_DIR ??
+    path.join(process.cwd(), "..", ".attachments-storage");
 
 async function ensureStorageDir() {
     await fs.mkdir(STORAGE_DIR, { recursive: true });
