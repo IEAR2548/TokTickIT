@@ -404,25 +404,25 @@ Playwright screenshots must be saved at the following paths after test runs:
 
 ```
 artifacts/lab-02/screenshots/create-ticket/
-  create-ticket-desktop.png
-  create-ticket-tablet.png
-  create-ticket-mobile.png
-  create-ticket-validation.png
-  create-ticket-success.png
-  create-ticket-failure.png
+  desktop.png
+  tablet.png
+  mobile.png
+  validation.png
+  success.png
+  failure.png
 
 artifacts/lab-02/screenshots/my-tickets/
-  my-tickets-desktop.png
-  my-tickets-tablet.png
-  my-tickets-mobile.png
-  my-tickets-empty.png
-  my-tickets-no-results.png
-  my-tickets-failure.png
+  desktop.png
+  tablet.png
+  mobile.png
+  empty.png
+  no-results.png
+  failure.png
 
 artifacts/lab-02/screenshots/ticket-detail/
-  ticket-detail-desktop.png
-  ticket-detail-tablet.png
-  ticket-detail-mobile.png
-  ticket-detail-attachments.png
-  ticket-detail-removed-attachment.png
+  desktop.png
+  tablet.png
+  mobile.png
+  attachments.png
+  removed-attachment.png
 ```
