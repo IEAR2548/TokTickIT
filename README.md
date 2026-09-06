@@ -1,66 +1,64 @@
-# TokTickIT - IT Service Desk Application (Lab 01)
+# TokTickIT - IT Service Desk Application (Lab 02)
 
-TokTickIT is an IT Service Desk web application designed for handling IT support requests such as Account & Access, Hardware, Software, and Network issues.
+TokTickIT is an IT Service Desk web application designed for handling IT support requests (Account & Access, Hardware, Software, Network).
 
-Lab 01 demonstrates a complete full-stack **vertical slice** proving integration across all layers of the technology stack:
-$$\text{React UI (Vite)} \longrightarrow \text{Express REST API} \longrightarrow \text{Prisma ORM} \longrightarrow \text{PostgreSQL Database}$$
+Lab 02 delivers a complete Requester-facing ticketing experience adhering to the **Zen Green Theme** across desktop, tablet, and mobile viewports.
+
+$$\text{React UI (Vite)} \longleftrightarrow \text{Express REST API} \longleftrightarrow \text{Prisma ORM} \longleftrightarrow \text{PostgreSQL Database}$$
 
 ---
 
 ## 🏗️ Project Architecture & Tech Stack
 
-- **Frontend (`client/`)**: React 18, TypeScript, Vite, Bootstrap 5, `@testing-library/react`, Vitest
-- **Backend (`server/`)**: Node.js, Express, TypeScript, Prisma ORM (v7 with `@prisma/adapter-pg`), Supertest, Vitest
+- **Frontend (`client/`)**: React 18, TypeScript, Vite, `react-router-dom` v7, Bootstrap 5, Zen Green CSS Variables design system
+- **Backend (`server/`)**: Node.js, Express, TypeScript, Prisma ORM (v7 with `@prisma/adapter-pg`), Multer (file upload storage)
 - **Database**: PostgreSQL
-- **Testing Tools**: Vitest (UI & Integration tests), Supertest (HTTP assertions)
+- **Testing**:
+  - Unit & Integration: Vitest, React Testing Library, Supertest
+  - End-to-End & Responsive: Playwright (`e2e/lab-02/`)
 
 ---
 
-## 📁 Project Directory Structure
+## 📁 Directory Structure
 
 ```text
 toktickit/
-├── client/                      # Frontend Application (React + TypeScript + Vite)
+├── client/                      # Frontend Application (React + Vite + TS)
 │   ├── src/
-│   │   ├── App.tsx              # Main UI component handling system status & categories
-│   │   └── tests/
-│   │       └── lab-01/          # UI Component Tests (Vitest + Testing Library)
-│   │           ├── CategoryList.test.tsx
-│   │           ├── ErrorHandling.test.tsx
-│   │           ├── Heading.test.tsx
-│   │           └── HealthStatus.test.tsx
-│   ├── package.json
-│   └── vite.config.ts
-├── server/                      # Backend REST API (Express + TypeScript + Prisma)
+│   │   ├── api/                 # API client calls (tickets, requesters, referenceData)
+│   │   ├── components/          # Reusable UI components (Badge, RequesterBadge, AttachmentSection, etc.)
+│   │   ├── context/             # RequesterContext (session-based dev identity)
+│   │   ├── pages/               # Screens (RequesterSelection, CreateTicket, MyTickets, RequesterTicketDetail)
+│   │   └── tests/lab-02/        # Client unit, component, and style tests
+├── server/                      # Backend REST API (Express + Prisma)
 │   ├── prisma/                  # Prisma Schema & Database Seeder
-│   │   ├── schema.prisma        # Category model schema
-│   │   └── seed.ts              # Idempotent seed script
-│   ├── src/
-│   │   ├── app.ts               # Express application routes & Prisma client setup
-│   │   └── index.ts             # Server entry point
-│   ├── tests/
-│   │   └── lab-01/              # API Integration Tests (Supertest + Vitest)
-│   │       ├── categories.test.ts
-│   │       └── health.test.ts
-│   ├── prisma.config.ts         # Prisma v7 environment configuration
-│   └── package.json
-├── docs/
-│   └── lab-01/                  # Lab 01 Documentation
-│       ├── ai_use.md            # AI prompt reflections & usage logs
-│       ├── reviewer.md          # Peer reviewer details & PR links
-│       └── tests.md             # Required automated test matrix summary
-├── README.md
-└── .gitignore
+│   │   ├── schema.prisma        # PostgreSQL data models
+│   │   └── seed.ts              # Idempotent seed data (categories, systems, requesters)
+│   ├── storage/attachments/     # UUID-based local file storage
+│   ├── src/                     # Express controllers, services, routes, validators
+│   └── tests/lab-02/            # Server unit & API integration tests
+├── e2e/lab-02/                  # Playwright E2E and responsive test specs
+├── docs/lab-02/                 # Engineering specifications, test plan, UI/API specs
+└── README.md
 ```
 
 ---
 
-## 🚀 API Endpoints Summary
+## 🚀 Key API Endpoints Summary
 
-| Method | Endpoint | Description | Expected Response |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/health` | System health check endpoint | `HTTP 200` — `{ "status": "ok", "service": "TokTickIT API" }` |
-| `GET` | `/api/categories` | Retrieve IT request categories | `HTTP 200` — Array of 4 categories: `[{"id": 1, "name": "Account and Access"}, ...]` |
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/health` | Health check endpoint |
+| `GET` | `/api/requesters` | List active Development Requesters |
+| `GET` | `/api/categories` | List active request Categories |
+| `GET` | `/api/related-systems` | List active Related Systems |
+| `POST` | `/api/tickets` | Create a new Ticket (validates fields, generates `TK-YYYYMMDD-NNNN`) |
+| `GET` | `/api/tickets` | Paginated ticket list for `requesterId` with search, filter, and sort |
+| `GET` | `/api/tickets/:id` | Retrieve single ticket details (ownership-protected) |
+| `POST` | `/api/tickets/:id/attachments` | Upload attachment (JPG/PNG/WEBP/PDF, max 5MB, max 5 active) |
+| `GET` | `/api/tickets/:id/attachments` | List attachment metadata for a ticket |
+| `GET` | `/api/attachments/:id/download` | Download active attachment file stream (ownership-checked) |
+| `PATCH` | `/api/attachments/:id/remove` | Soft-remove attachment with non-empty reason |
 
 ---
 
@@ -74,7 +72,7 @@ toktickit/
 
 ### 2. Backend Setup (`server/`)
 
-1. Navigate to the server folder and install dependencies:
+1. Install dependencies:
    ```bash
    cd server
    npm install
@@ -86,51 +84,53 @@ toktickit/
    PORT=5000
    ```
 
-3. Run Prisma migration and seed the database:
+3. Run migrations and seed data:
    ```bash
-   # Apply database migrations
-   npx prisma migrate dev --name init
-
-   # Seed initial IT categories
-   npx prisma db seed
+   npm run prisma:migrate
+   npm run prisma:seed
    ```
 
-4. Start the backend development server:
+4. Start development server (runs on `http://localhost:5000`):
    ```bash
    npm run dev
    ```
-   The server runs on `http://localhost:5000`.
 
 ---
 
 ### 3. Frontend Setup (`client/`)
 
-1. Open a new terminal, navigate to the client folder, and install dependencies:
+1. Install dependencies:
    ```bash
    cd client
    npm install
    ```
 
-2. Start the Vite development server:
+2. Start development server (runs on `http://localhost:5173`):
    ```bash
    npm run dev
    ```
-   The frontend runs on `http://localhost:5173`.
 
 ---
 
 ## 🧪 Running Automated Tests
 
-### Server API Integration Tests (Supertest)
+### Server Tests (Unit & API Integration)
 ```bash
 cd server
 npm test
 ```
-Verifies endpoints (`/api/health`, `/api/categories`) returning HTTP 200 and expected payload structure.
 
-### Client UI Component Tests (Vitest + React Testing Library)
+### Client Tests (Component & Style)
 ```bash
 cd client
 npm test
 ```
-Verifies UI header rendering, loading states, category list rendering, and API error handling state.
+
+### End-to-End & Responsive Tests (Playwright)
+```bash
+# Run all E2E & responsive tests
+npx playwright test e2e/lab-02
+
+# Run with interactive UI
+npx playwright test e2e/lab-02 --ui
+```

@@ -29,3 +29,12 @@ logs/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Storage / Uploads
+storage/
+server/storage/
+.attachments-storage/
+
+# Playwright test outputs
+playwright-report/
+test-results/
