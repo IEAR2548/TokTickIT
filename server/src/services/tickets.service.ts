@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma";
-import { generateUniqueTicketNumber } from "./ticketNumber.service";
+import { getNextTicketNumberBase, buildCandidateTicketNumber, isTicketNumberUniqueViolation } from "./ticketNumber.service";
 import { CreateTicketInput } from "../validators/ticket.validator";
 
 export class RequesterNotFoundError extends Error {
@@ -54,22 +54,35 @@ export async function createTicket(input: CreateTicketInput) {
         throw new RelatedSystemNotFoundError();
     }
 
-    const ticketNumber = await generateUniqueTicketNumber();
+    const { prefix, baseCount } = await getNextTicketNumberBase();
+    const MAX_ATTEMPTS = 10;
+    let lastConflict: unknown;
 
-    const ticket = await prisma.ticket.create({
-        data: {
-            ticketNumber,
-            requesterId: input.requesterId,
-            categoryId: input.categoryId,
-            relatedSystemId: input.relatedSystemId,
-            summary: input.summary.trim(),
-            description: input.description.trim(),
-            requestedPriority: input.requestedPriority,
-            currentStatus: "NEW", // BR-02
-        },
-    });
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        const ticketNumber = buildCandidateTicketNumber(prefix, baseCount, attempt);
+        try {
+            return await prisma.ticket.create({
+                data: {
+                    ticketNumber,
+                    requesterId: input.requesterId,
+                    categoryId: input.categoryId,
+                    relatedSystemId: input.relatedSystemId,
+                    summary: input.summary.trim(),
+                    description: input.description.trim(),
+                    requestedPriority: input.requestedPriority,
+                    currentStatus: "NEW",
+                },
+            });
+        } catch (err) {
+            if (!isTicketNumberUniqueViolation(err)) {
+                throw err;
+            }
+            // Another concurrent request took this exact number — try the next one.
+            lastConflict = err;
+        }
+    }
 
-    return ticket;
+    throw lastConflict ?? new Error("Unable to generate a unique ticket number");
 }
 
 export interface ListTicketsOptions {
