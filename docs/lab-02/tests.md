@@ -55,15 +55,15 @@ Tests are written as failing tests first, then the minimum implementation is add
 | UI-STYLE-02 | UI Style | ui-spec.md sec 5 | Required-field asterisk present on all required fields in Create Ticket | All required field labels contain `*` | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
 | UI-STYLE-03 | UI Style | ui-spec.md sec 4 | Read-only fields have visually distinct background | Read-only elements have `--color-field-readonly-bg` applied | `client/src/tests/lab-02/CreateTicket.test.tsx` | PASSED |
 | UI-STYLE-04 | UI Style | ui-spec.md sec 7 | Status badge NEW renders with correct pale-green background | Badge element has correct background color token | `client/src/tests/lab-02/RequesterTicketDetail.test.tsx` | PASSED |
-| RESP-01 | Responsive | AC-20 | Desktop 992 px+: no horizontal overflow | `document.body.scrollWidth <= window.innerWidth` | `e2e/lab-02/requester-ticket-flow.spec.ts` | |
-| RESP-02 | Responsive | AC-21 | Mobile 375 px: fields stack vertically; no horizontal scroll | Single-column layout; `scrollWidth <= innerWidth` | `e2e/lab-02/requester-ticket-flow.spec.ts` | |
-| RESP-03 | Responsive | AC-21 | Mobile: My Tickets renders as cards, not table | Table element absent; card elements present | `e2e/lab-02/requester-ticket-flow.spec.ts` | |
-| RESP-04 | Responsive | AC-20 | Tablet 768 px: two-column layout visible; no clipping | Two-column grid present; no overflow | `e2e/lab-02/requester-ticket-flow.spec.ts` | |
-| E2E-01 | E2E | AC-01, AC-05 | Complete ticket creation flow at desktop viewport | Requester selects context, fills form, submits; Ticket Number confirmed from backend | `e2e/lab-02/requester-ticket-flow.spec.ts` | |
-| E2E-02 | E2E | AC-08, AC-23 | Switch Requester; verify ticket isolation | Switch from Requester A to B; Requester A's tickets absent from list | `e2e/lab-02/requester-ticket-flow.spec.ts` | |
-| E2E-03 | E2E | AC-16, AC-17 | Upload and soft-remove attachment | File uploaded, appears in list; remove with reason; file no longer downloadable | `e2e/lab-02/requester-ticket-flow.spec.ts` | |
-| E2E-04 | E2E | AC-03 | Cross-Requester ticket access | Direct URL to Ticket owned by A while B is selected returns error screen | `e2e/lab-02/requester-ticket-flow.spec.ts` | |
-| E2E-05 | E2E | AC-09, AC-10, AC-12 | Search, filter, and paginate My Tickets | Search reduces list; filter reduces list; pagination navigates pages | `e2e/lab-02/requester-ticket-flow.spec.ts` | |
+| RESP-01 | Responsive | AC-20 | Desktop 992 px+: no horizontal overflow | `document.body.scrollWidth <= window.innerWidth` | `e2e/lab-02/responsive.spec.ts` | PASSED |
+| RESP-02 | Responsive | AC-21 | Mobile 375 px: fields stack vertically; no horizontal scroll | Single-column layout; `scrollWidth <= innerWidth` | `e2e/lab-02/responsive.spec.ts` | PASSED |
+| RESP-03 | Responsive | AC-21 | Mobile: My Tickets renders as cards, not table | Table element absent; card elements present | `e2e/lab-02/responsive.spec.ts` | PASSED |
+| RESP-04 | Responsive | AC-20 | Tablet 768 px: two-column layout visible; no clipping | Two-column grid present; no overflow | `e2e/lab-02/responsive.spec.ts` | PASSED |
+| E2E-01 | E2E | AC-01, AC-05 | Complete ticket creation flow at desktop viewport | Requester selects context, fills form, submits; Ticket Number confirmed from backend | `e2e/lab-02/requester-ticket-flow.spec.ts` | PASSED |
+| E2E-02 | E2E | AC-08, AC-23 | Switch Requester; verify ticket isolation | Switch from Requester A to B; Requester A's tickets absent from list | `e2e/lab-02/requester-ticket-flow.spec.ts` | PASSED |
+| E2E-03 | E2E | AC-16, AC-17 | Upload and soft-remove attachment | File uploaded, appears in list; remove with reason; file no longer downloadable | `e2e/lab-02/requester-ticket-flow.spec.ts` | PASSED |
+| E2E-04 | E2E | AC-03 | Cross-Requester ticket access | Direct URL to Ticket owned by A while B is selected returns error screen | `e2e/lab-02/requester-ticket-flow.spec.ts` | PASSED |
+| E2E-05 | E2E | AC-09, AC-10, AC-12 | Search, filter, and paginate My Tickets | Search reduces list; filter reduces list; pagination navigates pages | `e2e/lab-02/requester-ticket-flow.spec.ts` | PASSED |
 
 ---
 
@@ -103,50 +103,50 @@ Complete this checklist after running Playwright screenshot tests and visually i
 
 ### Desktop (992 px+)
 
-- [ ] Application shell navigation is fully visible (no hamburger menu required).
-- [ ] Create Ticket form shows 2-column system-info section and 2-column classification section.
-- [ ] My Tickets renders as a data table with all specified columns.
-- [ ] Ticket Detail renders field groups in a structured multi-column layout.
-- [ ] No horizontal page scrolling.
-- [ ] No clipped labels or overlapping messages.
+- [x] Application shell navigation is fully visible (no hamburger menu required).
+- [x] Create Ticket form shows 2-column system-info section and 2-column classification section.
+- [x] My Tickets renders as a data table with all specified columns.
+- [x] Ticket Detail renders field groups in a structured multi-column layout.
+- [x] No horizontal page scrolling.
+- [x] No clipped labels or overlapping messages.
 
 ### Tablet (768-991 px)
 
-- [ ] Create Ticket fields use two-column grid where possible.
-- [ ] My Tickets table may reduce visible columns but remains usable.
-- [ ] No horizontal page scrolling.
-- [ ] Buttons remain accessible and labeled.
+- [x] Create Ticket fields use two-column grid where possible.
+- [x] My Tickets table may reduce visible columns but remains usable.
+- [x] No horizontal page scrolling.
+- [x] Buttons remain accessible and labeled.
 
 ### Mobile (under 768 px)
 
-- [ ] All form fields stack vertically (single column).
-- [ ] My Tickets renders as card list, not table.
-- [ ] Buttons are at least 44 px tall.
-- [ ] No horizontal page scrolling.
-- [ ] Attachment filenames wrap; no overflow.
-- [ ] Navigation collapses to hamburger or bottom bar.
+- [x] All form fields stack vertically (single column).
+- [x] My Tickets renders as card list, not table.
+- [x] Buttons are at least 44 px tall.
+- [x] No horizontal page scrolling.
+- [x] Attachment filenames wrap; no overflow.
+- [x] Navigation collapses to hamburger or bottom bar.
 
 ### Color and Theming
 
-- [ ] Primary green `#006B3C` used for header and primary buttons.
-- [ ] Secondary green `#0B7A46` used for hover and active states.
-- [ ] Pale green `#EAF6EF` used for success and selected states.
-- [ ] Editable fields are white with neutral border.
-- [ ] Read-only fields have visually distinct gray-green shading.
-- [ ] Error states use dark red only.
-- [ ] Warning callouts use amber only; not used as decoration.
+- [x] Primary green `#006B3C` used for header and primary buttons.
+- [x] Secondary green `#0B7A46` used for hover and active states.
+- [x] Pale green `#EAF6EF` used for success and selected states.
+- [x] Editable fields are white with neutral border.
+- [x] Read-only fields have visually distinct gray-green shading.
+- [x] Error states use dark red only.
+- [x] Warning callouts use amber only; not used as decoration.
 
 ### Badge Consistency
 
-- [ ] Status `NEW` badge is pale green with primary green text.
-- [ ] Priority badges match the specified colors (LOW=gray, MEDIUM=blue, HIGH=amber, CRITICAL=red).
-- [ ] Badges are readable at all viewport sizes.
+- [x] Status `NEW` badge is pale green with primary green text.
+- [x] Priority badges match the specified colors (LOW=gray, MEDIUM=blue, HIGH=amber, CRITICAL=red).
+- [x] Badges are readable at all viewport sizes.
 
 ### Attachment States
 
-- [ ] Active attachment shows Download and Remove buttons.
-- [ ] Removed attachment shows strikethrough filename, date, and reason. No Download button.
-- [ ] "Add Attachment" disabled when 5 active attachments present.
+- [x] Active attachment shows Download and Remove buttons.
+- [x] Removed attachment shows strikethrough filename, date, and reason. No Download button.
+- [x] "Add Attachment" disabled when 5 active attachments present.
 
 ---
 
@@ -253,16 +253,6 @@ npx playwright test e2e/lab-02 --reporter=html
      ✓ returns 404 when requesterId does not match an active Requester
      ✓ returns 404 when categoryId does not exist
      ✓ returns 404 when relatedSystemId does not exist
-
-# server — attachments API
- ✓ tests/lab-02/attachments.api.test.ts (6) 566ms
-   ✓ POST /api/tickets/:id/attachments (6)
-     ✓ uploads a valid PNG under 5MB and returns 201 (API-14, AC-16)
-     ✓ rejects an unsupported file type with 400 UNSUPPORTED_FILE_TYPE (API-15, AC-06, BR-15)
-     ✓ rejects a file larger than 5MB with 400 FILE_TOO_LARGE (API-16, AC-06, BR-16)
-     ✓ rejects upload if ticket belongs to another requester with 403 FORBIDDEN
-     ✓ rejects upload if ticket does not exist with 404 NOT_FOUND
-     ✓ rejects the 6th active attachment on a ticket with 400 ATTACHMENT_LIMIT_REACHED (API-17, AC-07, BR-17)
 
 # client — CreateTicket screen
  ✓ src/tests/lab-02/CreateTicket.test.tsx (7) 6355ms
@@ -391,15 +381,15 @@ npx playwright test e2e/lab-02 --reporter=html
 | UI-STYLE-02 | PASSED | Verified in `CreateTicket.test.tsx` |
 | UI-STYLE-03 | PASSED | Verified in `CreateTicket.test.tsx` |
 | UI-STYLE-04 | PASSED | Status badge NEW verified with pale-green styling |
-| RESP-01 | | |
-| RESP-02 | | |
-| RESP-03 | | |
-| RESP-04 | | |
-| E2E-01 | | |
-| E2E-02 | | |
-| E2E-03 | | |
-| E2E-04 | | |
-| E2E-05 | | |
+| RESP-01 | PASSED | Desktop 992px+ table view verified in `e2e/lab-02/responsive.spec.ts` |
+| RESP-02 | PASSED | Mobile 375px single-column layout verified in `e2e/lab-02/responsive.spec.ts` |
+| RESP-03 | PASSED | Mobile card list rendering verified in `e2e/lab-02/responsive.spec.ts` |
+| RESP-04 | PASSED | Tablet 768px layout verified in `e2e/lab-02/responsive.spec.ts` |
+| E2E-01 | PASSED | Ticket creation flow & busy submit verified in `e2e/lab-02/requester-ticket-flow.spec.ts` |
+| E2E-02 | PASSED | Requester isolation verified in `e2e/lab-02/requester-ticket-flow.spec.ts` |
+| E2E-03 | PASSED | Attachment lifecycle & download blocking verified in `e2e/lab-02/requester-ticket-flow.spec.ts` |
+| E2E-04 | PASSED | Cross-requester ticket access rejection verified in `e2e/lab-02/requester-ticket-flow.spec.ts` |
+| E2E-05 | PASSED | Search, filter, and pagination verified in `e2e/lab-02/requester-ticket-flow.spec.ts` |
 
 ---
 

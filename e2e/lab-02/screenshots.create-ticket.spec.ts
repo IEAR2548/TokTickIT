@@ -7,6 +7,10 @@ async function goToCreateTicket(page: import("@playwright/test").Page) {
     await selectFirstRequesterAndGoToMyTickets(page);
     await page.getByRole("link", { name: "Create Ticket", exact: true }).click();
     await page.waitForURL(/\/create-ticket/);
+
+    // รอให้ Reference Data โหลดสำเร็จและมี option ให้เลือกเกินกว่าค่าเริ่มต้น
+    await expect.poll(async () => page.locator("#category option").count()).toBeGreaterThan(1);
+    await expect.poll(async () => page.locator("#relatedSystem option").count()).toBeGreaterThan(1);
 }
 
 test.describe("Create Ticket screenshots — breakpoints", () => {
