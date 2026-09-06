@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchActiveRequesters, Requester } from "../api/requesters.api";
 import { useRequester } from "../context/RequesterContext";
+import { FieldLabel } from "../components/form/FieldLabel";
 import "./RequesterSelection.css";
 
 type ScreenState = "loading" | "empty" | "error" | "ready";
@@ -72,9 +73,9 @@ export function RequesterSelection() {
 
                 {state === "ready" && (
                     <div className="requester-select-form">
-                        <label htmlFor="requester-select" className="field-label">
+                        <FieldLabel htmlFor="requester-select" required>
                             Select Requester
-                        </label>
+                        </FieldLabel>
                         <select
                             id="requester-select"
                             aria-label="Select Requester"

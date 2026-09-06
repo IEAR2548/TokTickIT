@@ -1,33 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-:root {
-  --color-primary: #006B3C;
-  --color-secondary: #0B7A46;
-  --color-pale-green: #EAF6EF;
-  --color-page-bg: #F5F7F6;
-  --color-surface: #FFFFFF;
-  --color-surface-border: #D9E5DE;
-  --color-surface-shadow: rgba(0, 107, 60, 0.08);
-  --color-text-primary: #1A2E23;
-  --color-text-secondary: #4A6357;
-  --color-text-placeholder: #7A9E8C;
-  --color-field-editable-bg: #FFFFFF;
-  --color-field-editable-border: #B0C8BC;
-  --color-field-readonly-bg: #EEF4F1;
-  --color-field-readonly-border: #C8DDD5;
-  --color-error: #B91C1C;
-  --color-error-bg: #FEF2F2;
-  --color-warning: #B45309;
-  --color-warning-bg: #FFFBEB;
-  --color-success: #15803D;
-  --color-success-bg: #DCFCE7;
-
-  /* Legacy aliases for Lab 1 compatibility */
-  --primary-color: #006B3C;
-  --secondary-color: #0B7A46;
-  --bg-light: #F5F7F6;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -41,7 +13,18 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Base button styles matching ui-spec.md Section 6 */
+.field-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1A2E23);
+  margin-bottom: 8px;
+}
+
+.field-required-asterisk {
+  color: var(--color-error, #B91C1C);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -97,6 +80,17 @@ body {
   text-decoration: underline;
 }
 
+.btn-destructive {
+  background-color: var(--color-error-bg, #FEF2F2) !important;
+  color: var(--color-error, #B91C1C) !important;
+  border-color: var(--color-error, #B91C1C) !important;
+}
+
+.btn-destructive:hover:not(:disabled) {
+  background-color: var(--color-error, #B91C1C) !important;
+  color: #FFFFFF !important;
+}
+
 .btn:disabled,
 .btn[disabled] {
   background-color: #D1DDD8 !important;
@@ -106,7 +100,11 @@ body {
   opacity: 0.85;
 }
 
-/* Lab 1 backward compatibility styles */
+.btn-busy {
+  cursor: wait !important;
+  opacity: 0.75;
+}
+
 .brand-header {
   background-color: var(--primary-color);
   color: white;

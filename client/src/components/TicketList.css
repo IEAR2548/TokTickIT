@@ -63,13 +63,13 @@
 }
 
 .badge-priority-low {
-    background: #f3f4f6;
-    color: #374151;
+    background: var(--color-neutral-bg, #f3f4f6);
+    color: var(--color-neutral-text, #374151);
 }
 
 .badge-priority-medium {
-    background: #eff6ff;
-    color: #1d4ed8;
+    background: var(--color-info-bg, #eff6ff);
+    color: var(--color-info-text, #1d4ed8);
 }
 
 .badge-priority-high {
@@ -80,6 +80,19 @@
 .badge-priority-critical {
     background: var(--color-error-bg, #fef2f2);
     color: var(--color-error, #b91c1c);
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+
+    .ticket-list th:nth-child(6),
+    .ticket-list-row td:nth-child(6) {
+        display: none;
+    }
+
+    .ticket-list th,
+    .ticket-list-row td {
+        padding: 10px 12px;
+    }
 }
 
 /* Mobile: collapse table into a stacked card list */

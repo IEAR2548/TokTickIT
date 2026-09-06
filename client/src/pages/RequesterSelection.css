@@ -46,14 +46,6 @@
     color: var(--color-error, #b91c1c);
 }
 
-.field-label {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--color-text-primary, #1a2e23);
-    margin-bottom: 8px;
-}
-
 .field-select {
     width: 100%;
     height: 40px;
@@ -90,10 +82,4 @@
 .requester-select-card .btn-primary {
     background: var(--color-primary, #006b3c);
     color: #ffffff;
-}
-
-.requester-select-card .btn-primary:disabled {
-    background: var(--color-field-readonly-bg, #d1ddd8);
-    color: var(--color-text-secondary, #7a9e8c);
-    cursor: not-allowed;
 }
