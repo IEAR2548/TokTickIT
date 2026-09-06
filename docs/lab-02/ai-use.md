@@ -18,6 +18,12 @@ The following table documents 6-10 selected key prompts used during Lab 2. These
 | 4 | **Visual Bug Diagnosis from Screenshots** | "แก้ไขโค้ดให้ generate screen shot ได้อย่างถูกต้อง ถ้าต้องการไฟล์อะไรบอกเพิ่มก่อนทำ ผลลัพธ์โค้ดเดิมเป็นดังรูปภาพ" | ใช้ภาพ screenshot 17 รูปเทียบกับ Playwright script เพื่อ diagnose บั๊กจริง (sticky header duplication, race condition, ไฟล์ค้างจาก run ก่อนหน้า) แทนการอธิบายปัญหาเป็นข้อความ |
 | 5 | **Update Test** | "อัพเดทเทสให้ถูกต้องกับโค้ดปัจจุบัน ห้ามอัปเดตโดยไม่มีการทดสอบ" | เพื่ออัปเดต test.md ให้เป็นปัจจุบันตามผลการ test |
 | 6 | **Update Readme** | "ตรวจสอบไฟล์ และอัพเดท readme.md ให้เป็นปัจจุบัน " | เพื่ออัปเดต readme.md ให้เป็นปัจจุบันตามโครงสร้างไฟล์ที่เปลี่ยนแปลง  |
+| 7 | **Run Test and Audit** | "ช่วยเช็ค Definition of Done ใน specification.md ก่อนเปิด PR เข้า main โดยรันเทสต์ทั้งหมด (server, client, และ e2e ใช้ --workers=1) พร้อมตรวจห้ามมี .skip, .only หรือ TODO ค้างอยู่ หากเทสต์พังให้หยุดแจ้งทันที บรรทัดไหน ไฟล์ไหน; แต่ถ้าผ่านหมด ค่อยนำ FR/BR/AC มาเทียบผลเทสต์ ลิสต์ข้อที่ขาด coverage ตรวจเช็กคำสั่งใน README และไฟล์ Prisma migration จากนั้นสรุปสั้นๆ ลง docs/lab-02/internal-notes/release-audit.md และร่าง PR description ต่อท้ายได้เลย (หากมีจุดไม่ผ่านห้ามร่าง PRเด็ดขาด)" | เพื่อให้มั่นใจว่าทุกอย่างถูกต้องก่อน merge leb2-staging เข้า main |
 
 ## Reflection
 My Reflection:
+In Lab 2, using AI as a thought partner helped speed up both the documentation and technical implementation. The key was providing precise context—like feeding it `specification.md` alongside actual source code—rather than just asking for raw code.
+
+The biggest learning curve was handling complex debugging, especially for flaky E2E tests and environment issues. We used Playwright screenshots and trace analysis to fix visual bugs, resolved timing issues by syncing UI steps with API network responses, and fixed infinite server restarts by isolating the file watcher from the storage directory.
+
+Finally, forcing strict audit prompts to verify the Definition of Done (DoD) ensured we didn't miss edge cases or skipped tests. This lab proved that AI is most powerful when driven by clear constraints, systematic debugging, and continuous validation.
