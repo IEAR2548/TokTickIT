@@ -1,6 +1,9 @@
 import { prisma } from "../src/lib/prisma";
+import bcrypt from "bcryptjs";
 
 async function main() {
+    const defaultPasswordHash = bcrypt.hashSync("DevPass@2026!", 10);
+
     // 4 required Categories
     const categories = ['Account and Access', 'Hardware', 'Software', 'Network'];
 
@@ -30,7 +33,7 @@ async function main() {
         });
     }
 
-    // 5 active Development Requesters
+    // Requesters: 6 active + 1 inactive (exceeds >= 4 active + 1 inactive minimum)
     const activeRequesters = [
         { name: 'Alice Tanaka', email: 'alice.tanaka@example.com' },
         { name: 'Bob Chavez', email: 'bob.chavez@example.com' },
@@ -40,21 +43,100 @@ async function main() {
         { name: 'Fiona Gallagher', email: 'fiona.gallagher@example.com' },
     ];
     for (const r of activeRequesters) {
-        await prisma.devRequester.upsert({
+        await prisma.user.upsert({
             where: { email: r.email },
-            update: { name: r.name, isActive: true },
-            create: { name: r.name, email: r.email, isActive: true },
+            update: {
+                name: r.name,
+                role: 'REQUESTER',
+                isActive: true,
+            },
+            create: {
+                name: r.name,
+                email: r.email,
+                passwordHash: defaultPasswordHash,
+                role: 'REQUESTER',
+                isActive: true,
+                mustChangePassword: true,
+            },
         });
     }
 
-    // 1 inactive Development Requester
-    await prisma.devRequester.upsert({
+    // 1 inactive Requester
+    await prisma.user.upsert({
         where: { email: 'eve.former@example.com' },
-        update: { name: 'Eve Former', isActive: false },
+        update: {
+            name: 'Eve Former',
+            role: 'REQUESTER',
+            isActive: false,
+        },
         create: {
             name: 'Eve Former',
             email: 'eve.former@example.com',
+            passwordHash: defaultPasswordHash,
+            role: 'REQUESTER',
             isActive: false,
+            mustChangePassword: true,
+        },
+    });
+
+    // IT Staff: 3 active + 1 inactive (meets >= 3 active + 1 inactive minimum)
+    const activeStaff = [
+        { name: 'Samira Chen', email: 'samira.chen@example.com' },
+        { name: 'Marcus Vance', email: 'marcus.vance@example.com' },
+        { name: 'Liam O\'Connor', email: 'liam.oconnor@example.com' },
+    ];
+    for (const s of activeStaff) {
+        await prisma.user.upsert({
+            where: { email: s.email },
+            update: {
+                name: s.name,
+                role: 'IT_STAFF',
+                isActive: true,
+            },
+            create: {
+                name: s.name,
+                email: s.email,
+                passwordHash: defaultPasswordHash,
+                role: 'IT_STAFF',
+                isActive: true,
+                mustChangePassword: true,
+            },
+        });
+    }
+
+    // 1 inactive IT Staff
+    await prisma.user.upsert({
+        where: { email: 'dana.scully@example.com' },
+        update: {
+            name: 'Dana Scully',
+            role: 'IT_STAFF',
+            isActive: false,
+        },
+        create: {
+            name: 'Dana Scully',
+            email: 'dana.scully@example.com',
+            passwordHash: defaultPasswordHash,
+            role: 'IT_STAFF',
+            isActive: false,
+            mustChangePassword: true,
+        },
+    });
+
+    // Administrator: 1 active (meets >= 1 active minimum)
+    await prisma.user.upsert({
+        where: { email: 'alex.morgan@example.com' },
+        update: {
+            name: 'Alex Morgan',
+            role: 'ADMINISTRATOR',
+            isActive: true,
+        },
+        create: {
+            name: 'Alex Morgan',
+            email: 'alex.morgan@example.com',
+            passwordHash: defaultPasswordHash,
+            role: 'ADMINISTRATOR',
+            isActive: true,
+            mustChangePassword: true,
         },
     });
 
@@ -71,13 +153,17 @@ async function main() {
         systemMap.set(s.name, s.id);
     }
 
-    const requesterMap = new Map<string, number>();
-    const allRequesters = await prisma.devRequester.findMany();
-    for (const r of allRequesters) {
-        requesterMap.set(r.email, r.id);
+    const userMap = new Map<string, number>();
+    const allUsers = await prisma.user.findMany();
+    for (const u of allUsers) {
+        userMap.set(u.email, u.id);
     }
 
-    // Sample tickets for each active requester
+    const samiraId = userMap.get('samira.chen@example.com');
+    const marcusId = userMap.get('marcus.vance@example.com');
+    const liamId = userMap.get('liam.oconnor@example.com');
+
+    // Sample tickets for each active requester (with diverse statuses, IT priorities, owners)
     const sampleTickets = [
         // Alice Tanaka
         {
@@ -88,7 +174,11 @@ async function main() {
             summary: 'Laptop battery drains quickly',
             description: 'The battery drains from 100% to 0% within one hour of normal usage.',
             requestedPriority: 'MEDIUM' as const,
-            currentStatus: 'NEW' as const,
+            itPriority: 'MEDIUM' as const,
+            ownerId: samiraId,
+            currentStatus: 'IN_PROGRESS' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-08-24T09:14:00.000Z'),
         },
         {
@@ -99,7 +189,11 @@ async function main() {
             summary: 'Cannot connect to Campus Wi-Fi in building 3',
             description: 'Wi-Fi authentication keeps failing with timeout error since yesterday morning.',
             requestedPriority: 'HIGH' as const,
-            currentStatus: 'NEW' as const,
+            itPriority: 'HIGH' as const,
+            ownerId: marcusId,
+            currentStatus: 'OPEN' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-08-25T10:30:00.000Z'),
         },
         {
@@ -110,7 +204,11 @@ async function main() {
             summary: 'LEB2 App font rendering issue on Linux',
             description: 'Thai fonts are clipped and overlapping in student dashboard on Chrome Linux.',
             requestedPriority: 'LOW' as const,
+            itPriority: 'LOW' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-08-25T14:15:00.000Z'),
         },
 
@@ -123,7 +221,11 @@ async function main() {
             summary: 'Unable to access VPN from home',
             description: 'Receiving certificate error when initiating Cisco VPN client connection.',
             requestedPriority: 'HIGH' as const,
-            currentStatus: 'NEW' as const,
+            itPriority: 'HIGH' as const,
+            ownerId: marcusId,
+            currentStatus: 'OPEN' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-08-26T08:45:00.000Z'),
         },
         {
@@ -134,7 +236,11 @@ async function main() {
             summary: 'Password reset required for institutional email',
             description: 'Locked out of primary email account after too many incorrect password attempts.',
             requestedPriority: 'CRITICAL' as const,
-            currentStatus: 'NEW' as const,
+            itPriority: 'CRITICAL' as const,
+            ownerId: samiraId,
+            currentStatus: 'RESOLVED' as const,
+            resolutionSummary: 'Temporary password generated and identity verified in person at IT Helpdesk.',
+            appearsResolved: true,
             createdAt: new Date('2026-08-27T11:00:00.000Z'),
         },
 
@@ -147,7 +253,11 @@ async function main() {
             summary: 'Grade Submission App throws 500 error on final report export',
             description: 'Exporting semester grade report gives unexpected server error 500.',
             requestedPriority: 'CRITICAL' as const,
+            itPriority: 'CRITICAL' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-08-28T14:20:00.000Z'),
         },
         {
@@ -158,7 +268,11 @@ async function main() {
             summary: 'Paper jam in 4th floor shared printer',
             description: 'Printer tray 2 has a paper jam and error indicator red light is flashing.',
             requestedPriority: 'LOW' as const,
-            currentStatus: 'NEW' as const,
+            itPriority: 'LOW' as const,
+            ownerId: liamId,
+            currentStatus: 'CLOSED' as const,
+            resolutionSummary: 'Cleared jammed cardstock from tray 2 feed roller and ran printer self-test.',
+            appearsResolved: true,
             createdAt: new Date('2026-08-29T13:15:00.000Z'),
         },
 
@@ -171,7 +285,11 @@ async function main() {
             summary: 'LEB2 App session keeps expiring during quiz submission',
             description: 'Students reporting that LEB2 logouts happen unexpectedly during mid-quiz.',
             requestedPriority: 'HIGH' as const,
-            currentStatus: 'NEW' as const,
+            itPriority: 'HIGH' as const,
+            ownerId: samiraId,
+            currentStatus: 'WAITING_FOR_REQUESTER' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-08-30T15:00:00.000Z'),
         },
         {
@@ -182,11 +300,15 @@ async function main() {
             summary: 'New staff account creation request for teaching assistant',
             description: 'Please create network access and institutional email for new semester TA.',
             requestedPriority: 'MEDIUM' as const,
+            itPriority: 'MEDIUM' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-08-31T09:00:00.000Z'),
         },
 
-        // Elena Rostova (14 tickets to demonstrate multi-page pagination)
+        // Elena Rostova (multi-page tickets)
         {
             ticketNumber: 'TK-20260901-0001',
             requesterEmail: 'elena.rostova@example.com',
@@ -195,7 +317,11 @@ async function main() {
             summary: 'Email sync failing on Thunderbird client',
             description: 'IMAP sync errors out with connection timeout code 504 on workstation.',
             requestedPriority: 'MEDIUM' as const,
+            itPriority: 'MEDIUM' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-09-01T08:00:00.000Z'),
         },
         {
@@ -206,7 +332,11 @@ async function main() {
             summary: 'Wi-Fi disconnects intermittently in library',
             description: 'Connection drops every 15 minutes while studying in the quiet zone.',
             requestedPriority: 'LOW' as const,
+            itPriority: 'LOW' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-09-01T08:30:00.000Z'),
         },
         {
@@ -217,7 +347,11 @@ async function main() {
             summary: 'Software license renewal for MATLAB toolbox',
             description: 'License expired notice showing on department lab computers.',
             requestedPriority: 'HIGH' as const,
+            itPriority: 'HIGH' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-09-01T09:00:00.000Z'),
         },
         {
@@ -228,7 +362,11 @@ async function main() {
             summary: 'Monitor display flickers when connected via HDMI',
             description: 'External display goes black intermittently when shaking the desk.',
             requestedPriority: 'MEDIUM' as const,
+            itPriority: 'MEDIUM' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-09-01T09:30:00.000Z'),
         },
         {
@@ -239,7 +377,11 @@ async function main() {
             summary: 'Cannot reach internal portal via VPN',
             description: 'DNS resolution fails for intranet.kmutt.ac.th over VPN gateway.',
             requestedPriority: 'HIGH' as const,
+            itPriority: 'HIGH' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-09-01T10:00:00.000Z'),
         },
         {
@@ -250,7 +392,11 @@ async function main() {
             summary: 'Scanner not detected on network printer',
             description: 'Scan to email feature says printer offline on 2nd floor.',
             requestedPriority: 'LOW' as const,
+            itPriority: 'LOW' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-09-01T10:30:00.000Z'),
         },
         {
@@ -261,7 +407,11 @@ async function main() {
             summary: 'Password expired and cannot reset via self-service',
             description: 'Self-service portal says security questions not configured.',
             requestedPriority: 'CRITICAL' as const,
+            itPriority: 'CRITICAL' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-09-01T11:00:00.000Z'),
         },
         {
@@ -272,7 +422,11 @@ async function main() {
             summary: 'LEB2 assignment upload button not responding',
             description: 'Clicking submit does nothing when attaching ZIP file above 10MB.',
             requestedPriority: 'HIGH' as const,
+            itPriority: 'HIGH' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-09-01T11:30:00.000Z'),
         },
         {
@@ -283,7 +437,11 @@ async function main() {
             summary: 'Keyboard spacebar sticking on corporate laptop',
             description: 'Spacebar requires heavy pressure to register keystrokes.',
             requestedPriority: 'LOW' as const,
+            itPriority: 'LOW' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-09-01T12:00:00.000Z'),
         },
         {
@@ -294,7 +452,11 @@ async function main() {
             summary: 'VPN disconnection during large file transfer',
             description: 'Tunnel drops every time transferring dataset larger than 1GB.',
             requestedPriority: 'MEDIUM' as const,
+            itPriority: 'MEDIUM' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-09-01T12:30:00.000Z'),
         },
         {
@@ -305,7 +467,11 @@ async function main() {
             summary: 'Grade report calculation error for curved grades',
             description: 'Weighted formula gives NaN when student has zero marks.',
             requestedPriority: 'CRITICAL' as const,
+            itPriority: 'CRITICAL' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-09-01T13:00:00.000Z'),
         },
         {
@@ -316,7 +482,11 @@ async function main() {
             summary: 'Wi-Fi certificate invalid warning on Android device',
             description: 'Device warns of untrusted root CA when attempting to connect.',
             requestedPriority: 'MEDIUM' as const,
+            itPriority: 'MEDIUM' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-09-01T13:30:00.000Z'),
         },
         {
@@ -327,7 +497,11 @@ async function main() {
             summary: 'Toner replacement needed for science building printer',
             description: 'Black cartridge empty indicator is on, cannot print research papers.',
             requestedPriority: 'LOW' as const,
+            itPriority: 'LOW' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-09-01T14:00:00.000Z'),
         },
         {
@@ -338,13 +512,17 @@ async function main() {
             summary: 'Request new account access for visiting professor',
             description: 'Guest lecturer starting next week needs library and email credentials.',
             requestedPriority: 'MEDIUM' as const,
+            itPriority: 'MEDIUM' as const,
+            ownerId: null,
             currentStatus: 'NEW' as const,
+            resolutionSummary: null,
+            appearsResolved: false,
             createdAt: new Date('2026-09-01T14:30:00.000Z'),
         },
     ];
 
     for (const t of sampleTickets) {
-        const requesterId = requesterMap.get(t.requesterEmail);
+        const requesterId = userMap.get(t.requesterEmail);
         const categoryId = categoryMap.get(t.categoryName);
         const relatedSystemId = systemMap.get(t.relatedSystemName);
 
@@ -358,7 +536,11 @@ async function main() {
                     summary: t.summary,
                     description: t.description,
                     requestedPriority: t.requestedPriority,
+                    itPriority: t.itPriority,
+                    ownerId: t.ownerId,
                     currentStatus: t.currentStatus,
+                    resolutionSummary: t.resolutionSummary,
+                    appearsResolved: t.appearsResolved,
                 },
                 create: {
                     ticketNumber: t.ticketNumber,
@@ -368,9 +550,49 @@ async function main() {
                     summary: t.summary,
                     description: t.description,
                     requestedPriority: t.requestedPriority,
+                    itPriority: t.itPriority,
+                    ownerId: t.ownerId,
                     currentStatus: t.currentStatus,
+                    resolutionSummary: t.resolutionSummary,
+                    appearsResolved: t.appearsResolved,
                     createdAt: t.createdAt,
                 },
+            });
+        }
+    }
+
+    // Seed sample Public Comments & Internal Notes for tickets with staff activity
+    const batteryTicket = await prisma.ticket.findUnique({ where: { ticketNumber: 'TK-20260824-0001' } });
+    const aliceId = userMap.get('alice.tanaka@example.com');
+    if (batteryTicket && aliceId && samiraId) {
+        const existingComments = await prisma.publicComment.count({ where: { ticketId: batteryTicket.id } });
+        if (existingComments === 0) {
+            await prisma.publicComment.createMany({
+                data: [
+                    {
+                        ticketId: batteryTicket.id,
+                        authorId: aliceId,
+                        content: 'I noticed the battery drains especially fast when using video conferencing tools.',
+                    },
+                    {
+                        ticketId: batteryTicket.id,
+                        authorId: samiraId,
+                        content: 'Thank you Alice. A replacement battery pack has been ordered for your laptop model.',
+                    },
+                ],
+            });
+        }
+
+        const existingNotes = await prisma.internalNote.count({ where: { ticketId: batteryTicket.id } });
+        if (existingNotes === 0) {
+            await prisma.internalNote.createMany({
+                data: [
+                    {
+                        ticketId: batteryTicket.id,
+                        authorId: samiraId,
+                        content: 'Replacement battery part #BAT-4820 ordered from authorized vendor; expected delivery Thursday.',
+                    },
+                ],
             });
         }
     }
