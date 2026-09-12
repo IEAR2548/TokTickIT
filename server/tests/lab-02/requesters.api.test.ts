@@ -8,8 +8,8 @@ describe("GET /api/requesters", () => {
         // Ensure a known, deterministic seed state for this test suite
         await prisma.attachment.deleteMany({});
         await prisma.ticket.deleteMany({});
-        await prisma.devRequester.deleteMany({});
-        await prisma.devRequester.createMany({
+        await prisma.user.deleteMany({});
+        await prisma.user.createMany({
             data: [
                 { name: "Alice Tanaka", email: "alice.tanaka@example.com", isActive: true },
                 { name: "Bob Chavez", email: "bob.chavez@example.com", isActive: true },
@@ -22,7 +22,7 @@ describe("GET /api/requesters", () => {
         // Only remove the rows this suite created — do not wipe the whole table
         await prisma.attachment.deleteMany({});
         await prisma.ticket.deleteMany({});
-        await prisma.devRequester.deleteMany({
+        await prisma.user.deleteMany({
             where: {
                 email: {
                     in: [
@@ -60,7 +60,7 @@ describe("GET /api/requesters", () => {
     });
 
     it("returns an empty array (not an error) when no active requesters exist", async () => {
-        await prisma.devRequester.updateMany({ data: { isActive: false } });
+        await prisma.user.updateMany({ data: { isActive: false } });
 
         const res = await request(app).get("/api/requesters");
 
@@ -68,7 +68,7 @@ describe("GET /api/requesters", () => {
         expect(res.body.requesters).toEqual([]);
 
         // restore state for other tests
-        await prisma.devRequester.updateMany({
+        await prisma.user.updateMany({
             where: { email: { in: ["alice.tanaka@example.com", "bob.chavez@example.com"] } },
             data: { isActive: true },
         });

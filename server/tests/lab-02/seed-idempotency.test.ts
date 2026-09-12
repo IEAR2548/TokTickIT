@@ -11,12 +11,12 @@ describe("Seed idempotency", () => {
         execSync("npx prisma db seed", { stdio: "inherit" });
         const firstCategoryCount = await prisma.category.count();
         const firstRelatedSystemCount = await prisma.relatedSystem.count();
-        const firstRequesterCount = await prisma.devRequester.count();
+        const firstRequesterCount = await prisma.user.count();
 
         execSync("npx prisma db seed", { stdio: "inherit" });
         const secondCategoryCount = await prisma.category.count();
         const secondRelatedSystemCount = await prisma.relatedSystem.count();
-        const secondRequesterCount = await prisma.devRequester.count();
+        const secondRequesterCount = await prisma.user.count();
 
         expect(secondCategoryCount).toBe(firstCategoryCount);
         expect(secondRelatedSystemCount).toBe(firstRelatedSystemCount);
@@ -36,15 +36,15 @@ describe("Seed idempotency", () => {
     });
 
     it("seeds at least 4 active and 1 inactive requester", async () => {
-        const active = await prisma.devRequester.count({ where: { isActive: true } });
-        const inactive = await prisma.devRequester.count({ where: { isActive: false } });
+        const active = await prisma.user.count({ where: { isActive: true } });
+        const inactive = await prisma.user.count({ where: { isActive: false } });
         expect(active).toBeGreaterThanOrEqual(4);
         expect(inactive).toBeGreaterThanOrEqual(1);
     });
 
     it("seeds the correct active requester emails from specification", async () => {
         const emails = (
-            await prisma.devRequester.findMany({ where: { isActive: true } })
+            await prisma.user.findMany({ where: { isActive: true, role: "REQUESTER" } })
         ).map((r) => r.email);
         expect(emails).toEqual(
             expect.arrayContaining([
@@ -57,14 +57,14 @@ describe("Seed idempotency", () => {
     });
 
     it("inactive requester is not returned when filtering by isActive", async () => {
-        const inactiveRequester = await prisma.devRequester.findUnique({
+        const inactiveRequester = await prisma.user.findUnique({
             where: { email: "eve.former@example.com" },
         });
         expect(inactiveRequester).not.toBeNull();
         expect(inactiveRequester?.isActive).toBe(false);
 
-        const activeList = await prisma.devRequester.findMany({
-            where: { isActive: true },
+        const activeList = await prisma.user.findMany({
+            where: { isActive: true, role: "REQUESTER" },
         });
         const activeEmails = activeList.map((r) => r.email);
         expect(activeEmails).not.toContain("eve.former@example.com");
