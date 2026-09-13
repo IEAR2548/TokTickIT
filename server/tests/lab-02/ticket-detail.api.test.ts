@@ -2,11 +2,14 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import request from "supertest";
 import app from "../../src/app";
 import { prisma } from "../../src/lib/prisma";
+import { signSessionToken } from "../../src/lib/session";
 
 describe("GET /api/tickets/:id", () => {
     let ownerId: number;
     let otherId: number;
     let ticketId: number;
+    let ownerToken: string;
+    let otherToken: string;
 
     const TICKET_NUMBER = "TK-20260905-8888";
 
@@ -18,6 +21,7 @@ describe("GET /api/tickets/:id", () => {
             create: { name: "Owner User", email: "owner.detail@example.com", isActive: true },
         });
         ownerId = owner.id;
+        ownerToken = signSessionToken({ userId: ownerId, role: "REQUESTER", mustChangePassword: false });
 
         const other = await prisma.user.upsert({
             where: { email: "other.detail@example.com" },
@@ -25,10 +29,12 @@ describe("GET /api/tickets/:id", () => {
             create: { name: "Other User", email: "other.detail@example.com", isActive: true },
         });
         otherId = other.id;
+        otherToken = signSessionToken({ userId: otherId, role: "REQUESTER", mustChangePassword: false });
 
         const category = await prisma.category.findFirst({ where: { isActive: true } });
         const system = await prisma.relatedSystem.findFirst({ where: { isActive: true } });
 
+        await prisma.ticket.deleteMany({ where: { ticketNumber: TICKET_NUMBER } });
         const ticket = await prisma.ticket.create({
             data: {
                 ticketNumber: TICKET_NUMBER,
@@ -51,11 +57,11 @@ describe("GET /api/tickets/:id", () => {
         await prisma.$disconnect();
     });
 
-    it("returns 400 VALIDATION_ERROR when requesterId is missing", async () => {
+    it("returns 401 UNAUTHENTICATED when no session cookie is provided", async () => {
         const res = await request(app).get(`/api/tickets/${ticketId}`);
 
-        expect(res.status).toBe(400);
-        expect(res.body.error).toBe("VALIDATION_ERROR");
+        expect(res.status).toBe(401);
+        expect(res.body.error).toBe("UNAUTHENTICATED");
     });
 
     it("returns 404 NOT_FOUND when the ticket id does not exist", async () => {
@@ -64,7 +70,7 @@ describe("GET /api/tickets/:id", () => {
 
         const res = await request(app)
             .get(`/api/tickets/${nonExistentId}`)
-            .query({ requesterId: ownerId });
+            .set("Cookie", `toktickit_session=${ownerToken}`);
 
         expect(res.status).toBe(404);
         expect(res.body.error).toBe("NOT_FOUND");
@@ -73,7 +79,7 @@ describe("GET /api/tickets/:id", () => {
     it("returns 403 FORBIDDEN when accessed by a non-owner requester (API-06, BR-06)", async () => {
         const res = await request(app)
             .get(`/api/tickets/${ticketId}`)
-            .query({ requesterId: otherId });
+            .set("Cookie", `toktickit_session=${otherToken}`);
 
         expect(res.status).toBe(403);
         expect(res.body.error).toBe("FORBIDDEN");
@@ -82,7 +88,7 @@ describe("GET /api/tickets/:id", () => {
     it("returns 200 with full ticket detail and relations for the owner (API-07)", async () => {
         const res = await request(app)
             .get(`/api/tickets/${ticketId}`)
-            .query({ requesterId: ownerId });
+            .set("Cookie", `toktickit_session=${ownerToken}`);
 
         expect(res.status).toBe(200);
         expect(res.body.ticket).toBeDefined();
