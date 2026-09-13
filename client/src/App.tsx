@@ -1,128 +1,52 @@
-import { useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
+import { AuthProvider } from "./context/AuthContext";
+import { AuthGuard } from "./components/AuthGuard";
 import { RequesterProvider } from "./context/RequesterContext";
 import { RequesterGuard } from "./components/RequesterGuard";
 import { RequesterBadge } from "./components/RequesterBadge";
+import { Login } from "./pages/Login";
+import { ChangePassword } from "./pages/ChangePassword";
 import { RequesterSelection } from "./pages/RequesterSelection";
+import { SystemCheck } from "./pages/SystemCheck";
 import { CreateTicket } from "./pages/CreateTicket";
 import { MyTickets } from "./pages/MyTickets";
 import { RequesterTicketDetail } from "./pages/RequesterTicketDetail";
 
-interface HealthResponse {
-  status: string;
-  service: string;
-}
-
-interface Category {
-  id: number;
-  name: string;
-}
-
-type SystemState = 'idle' | 'loading' | 'success' | 'error';
-
 export default function App() {
-  const [state, setState] = useState<SystemState>('idle');
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const handleCheckSystem = async () => {
-    setState('loading');
-    setErrorMessage(null);
-
-    try {
-      const [healthRes, categoriesRes] = await Promise.all([
-        fetch('/api/health'),
-        fetch('/api/categories'),
-      ]);
-
-      if (!healthRes.ok || !categoriesRes.ok) {
-        throw new Error('Unable to connect to TokTickIT API');
-      }
-
-      const healthData: HealthResponse = await healthRes.json();
-      const categoriesData: Category[] = await categoriesRes.json();
-
-      if (healthData.status !== 'ok') {
-        throw new Error('Unable to connect to TokTickIT API');
-      }
-
-      setCategories(categoriesData);
-      setState('success');
-    } catch {
-      setErrorMessage('Unable to connect to TokTickIT API');
-      setState('error');
-    }
-  };
-
   return (
     <BrowserRouter>
-      <RequesterProvider>
-        <RequesterBadge />
-        <Routes>
-          {/* หน้าเลือก Requester */}
-          <Route path="/select-requester" element={<RequesterSelection />} />
+      <AuthProvider>
+        <RequesterProvider>
+          <RequesterBadge />
+          <Routes>
+            {/* Public auth routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/change-password" element={<ChangePassword />} />
 
-          <Route
-            path="/"
-            element={
-              <div className="container mt-5 text-center mb-5" style={{ maxWidth: 480 }}>
-                <h1 className="display-4 fw-bold mb-4">TokTickIT</h1>
+            {/* Dev Requester selector (Lab 2 compatibility) */}
+            <Route path="/select-requester" element={<RequesterSelection />} />
 
-                <button
-                  className="btn btn-primary btn-lg mb-4"
-                  onClick={handleCheckSystem}
-                  disabled={state === 'loading'}
-                >
-                  Check System
-                </button>
+            {/* Root — Lab 1 system check, protected */}
+            <Route
+              path="/"
+              element={
+                <AuthGuard>
+                  <SystemCheck />
+                </AuthGuard>
+              }
+            />
 
-                {state === 'loading' && (
-                  <div
-                    className="alert alert-secondary d-flex justify-content-center align-items-center"
-                    data-testid="loading-state"
-                  >
-                    <div className="spinner-border spinner-border-sm me-2" role="status">
-                      <span className="visually-hidden">Loading...</span>
-                    </div>
-                    loading...
-                  </div>
-                )}
+            {/* Requester screens */}
+            <Route path="/create-ticket" element={<AuthGuard><RequesterGuard><CreateTicket /></RequesterGuard></AuthGuard>} />
+            <Route path="/my-tickets" element={<AuthGuard><RequesterGuard><MyTickets /></RequesterGuard></AuthGuard>} />
+            <Route path="/tickets/:id" element={<AuthGuard><RequesterGuard><RequesterTicketDetail /></RequesterGuard></AuthGuard>} />
 
-                {state === 'error' && (
-                  <div className="alert alert-danger text-start" data-testid="error-state">
-                    <p className="mb-0">
-                      <strong>System Status: Offline</strong>
-                    </p>
-                    <p className="mb-0">{errorMessage}</p>
-                  </div>
-                )}
-
-                {state === 'success' && (
-                  <div className="text-start">
-                    <div className="alert alert-success" data-testid="success-state">
-                      <strong>System Status: Online</strong>
-                    </div>
-
-                    <h2 className="fs-5 fw-bold">Supported Request Categories</h2>
-                    <ul className="list-group mb-3" data-testid="category-list">
-                      {categories.map((cat) => (
-                        <li key={cat.id} className="list-group-item">
-                          {cat.name}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            }
-          />
-
-          <Route path="/create-ticket" element={<RequesterGuard><CreateTicket /></RequesterGuard>} />
-          <Route path="/my-tickets" element={<RequesterGuard><MyTickets /></RequesterGuard>} />
-          <Route path="/tickets/:id" element={<RequesterGuard><RequesterTicketDetail /></RequesterGuard>} />
-        </Routes>
-      </RequesterProvider>
+            {/* Catch-all: redirect unknown/unauthenticated URLs to login */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </RequesterProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
