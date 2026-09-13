@@ -1,7 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import App from '../../App';
+import { MemoryRouter } from 'react-router-dom';
+import { SystemCheck } from '../../pages/SystemCheck';
 
 describe('ErrorHandling Feature (UI-03)', () => {
   afterEach(() => {
@@ -12,7 +13,7 @@ describe('ErrorHandling Feature (UI-03)', () => {
     vi.spyOn(global, 'fetch').mockRejectedValue(new Error('Failed to fetch'));
 
     const user = userEvent.setup();
-    render(<App />);
+    render(<MemoryRouter><SystemCheck /></MemoryRouter>);
 
     await user.click(screen.getByRole('button', { name: /check system/i }));
 

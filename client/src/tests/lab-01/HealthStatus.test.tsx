@@ -1,7 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import App from '../../App';
+import { MemoryRouter } from 'react-router-dom';
+import { SystemCheck } from '../../pages/SystemCheck';
 
 describe('HealthStatus Feature (UI-01)', () => {
   afterEach(() => {
@@ -34,7 +35,7 @@ describe('HealthStatus Feature (UI-01)', () => {
     });
 
     const user = userEvent.setup();
-    render(<App />);
+    render(<MemoryRouter><SystemCheck /></MemoryRouter>);
 
     // Nothing shown until the button is clicked
     expect(screen.queryByTestId('success-state')).not.toBeInTheDocument();
