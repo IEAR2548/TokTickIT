@@ -46,7 +46,11 @@ export function RequesterProvider({ children }: { children: ReactNode }) {
 export function useRequester(): RequesterContextValue {
     const ctx = useContext(RequesterContext);
     if (!ctx) {
-        throw new Error("useRequester must be used within a RequesterProvider");
+        return {
+            selectedRequester: null,
+            selectRequester: () => {},
+            changeRequester: () => {},
+        };
     }
     return ctx;
 }

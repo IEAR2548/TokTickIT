@@ -11,16 +11,17 @@ verifies it.
 
 | Test ID | Type | Req/AC | What It Tests | Expected Result | File | Final |
 |---|---|---|---|---|---|---|
-| UNIT-01 | Unit | BR-07 | Password rule validator | Rejects <8 chars, missing case/number/special | `server/tests/lab-03/unit/password.unit.test.ts` | Planned |
-| UNIT-02 | Unit | BR-08 | Password hashing | bcryptjs hash never equals plaintext, verifies correctly | `server/tests/lab-03/unit/auth.unit.test.ts` | Planned |
+| UNIT-01 | Unit | BR-07 | Password rule validator | Rejects <8 chars, missing case/number/special | `server/tests/lab-03/unit/password.unit.test.ts` | Pass |
+| UNIT-02 | Unit | BR-08 | Password hashing | bcryptjs hash never equals plaintext, verifies correctly | `server/tests/lab-03/unit/auth.unit.test.ts` | Pass |
+| UNIT-02b | Unit | BR-06 | 5-failed-attempts counter & logging | Tracks failed logins, logs security warning at 5 within 15 min | `server/tests/lab-03/unit/loginAttempts.unit.test.ts` | Pass |
 | UNIT-03 | Unit | BR-21 | Status transition matrix | Rejects unlisted transitions, allows listed ones | `server/tests/lab-03/unit/ticketStatus.unit.test.ts` | Planned |
-| API-01 | API | AC-01 | Valid login | 200; session cookie set; safe user data returned | `server/tests/lab-03/auth.api.test.ts` | Planned |
-| API-02 | API | AC-05 | Invalid password | 401 generic message | `server/tests/lab-03/auth.api.test.ts` | Planned |
-| API-03 | API | AC-05 | Unknown email | 401 identical generic message as API-02 | `server/tests/lab-03/auth.api.test.ts` | Planned |
-| API-04 | API | AC-06 | Inactive account login | 401 identical generic message | `server/tests/lab-03/auth.api.test.ts` | Planned |
-| API-05 | API | AC-02 | Restricted session enforcement | Non-change-password endpoints return 403 while mustChangePassword | `server/tests/lab-03/auth.api.test.ts` | Planned |
-| API-06 | API | AC-02 | Valid password change | 200; mustChangePassword cleared; normal session issued | `server/tests/lab-03/auth.api.test.ts` | Planned |
-| API-07 | API | AC-07 | Logout | 200; cookie cleared; subsequent request unauthenticated | `server/tests/lab-03/auth.api.test.ts` | Planned |
+| API-01 | API | AC-01 | Valid login | 200; session cookie set; safe user data returned | `server/tests/lab-03/auth.api.test.ts` | Pass |
+| API-02 | API | AC-05 | Invalid password | 401 generic message | `server/tests/lab-03/auth.api.test.ts` | Pass |
+| API-03 | API | AC-05 | Unknown email | 401 identical generic message as API-02 | `server/tests/lab-03/auth.api.test.ts` | Pass |
+| API-04 | API | AC-06 | Inactive account login | 401 identical generic message | `server/tests/lab-03/auth.api.test.ts` | Pass |
+| API-05 | API | AC-02 | Restricted session enforcement | Non-change-password endpoints return 403 while mustChangePassword | `server/tests/lab-03/auth.api.test.ts` | Pass |
+| API-06 | API | AC-02 | Valid password change | 200; mustChangePassword cleared; normal session issued | `server/tests/lab-03/auth.api.test.ts` | Pass |
+| API-07 | API | AC-07 | Logout | 200; cookie cleared; subsequent request unauthenticated | `server/tests/lab-03/auth.api.test.ts` | Pass |
 | API-08 | API | AC-04 | Requester requests Internal Notes | 403; no note data returned | `server/tests/lab-03/comments-notes.api.test.ts` | Planned |
 | API-09 | API | AC-03 | Requester supplies foreign requesterId | Backend uses session identity, not client value | `server/tests/lab-03/authorization.api.test.ts` | Planned |
 | API-10 | API | AC-08 | Claim unassigned ticket | 200; ownerId = caller | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
@@ -48,14 +49,14 @@ verifies it.
 | SEC-02 | Security | AC-10 | Requester calls PATCH it-priority directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Planned |
 | SEC-03 | Security | AC-32 | Requester calls PATCH status directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Planned |
 | SEC-04 | Security | AC-22 | IT Staff calls /api/admin/users directly | 403 (Admin-only, staff ≠ admin) | `server/tests/lab-03/authorization.api.test.ts` | Planned |
-| SEC-05 | Security | AC-03 | Unauthenticated request to any protected endpoint | 401 across the board | `server/tests/lab-03/authorization.api.test.ts` | Planned |
+| SEC-05 | Security | AC-03 | Unauthenticated request to any protected endpoint | 401 across the board | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-06 | Security | AC-04/FR-09 | Requester calls GET /api/tickets/:id/notes directly | 403; no note data in body | `server/tests/lab-03/authorization.api.test.ts` | Planned |
 | SEC-07 | Security | AC-33 | Requester calls GET /api/staff/tickets directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Planned |
-| SEC-08 | Security | AC-03/FR-04 | Unauthenticated POST /api/auth/change-password | 401 UNAUTHENTICATED | `server/tests/lab-03/authorization.api.test.ts` | Planned |
-| UI-01 | UI | AC-05 | Login form invalid submission | Generic error shown, field state preserved | `client/src/tests/lab-03/Login.test.tsx` | Planned |
-| UI-02 | UI | ui-spec §2 | Login busy state | Submit disabled + spinner during request | `client/src/tests/lab-03/Login.test.tsx` | Planned |
-| UI-03 | UI | AC-02 | Change Password live checklist | Checklist items toggle as rules are met | `client/src/tests/lab-03/ChangePassword.test.tsx` | Planned |
-| UI-04 | UI | ui-spec §3 | Confirm password mismatch | Field-level error, submit disabled | `client/src/tests/lab-03/ChangePassword.test.tsx` | Planned |
+| SEC-08 | Security | AC-03/FR-04 | Unauthenticated POST /api/auth/change-password | 401 UNAUTHENTICATED | `server/tests/lab-03/authorization.api.test.ts` | Pass |
+| UI-01 | UI | AC-05 | Login form invalid submission | Generic error shown, field state preserved | `client/src/tests/lab-03/Login.test.tsx` | Pass |
+| UI-02 | UI | ui-spec §2 | Login busy state | Submit disabled + spinner during request | `client/src/tests/lab-03/Login.test.tsx` | Pass |
+| UI-03 | UI | AC-02 | Change Password live checklist | Checklist items toggle as rules are met | `client/src/tests/lab-03/ChangePassword.test.tsx` | Pass |
+| UI-04 | UI | ui-spec §3 | Confirm password mismatch | Field-level error, submit disabled | `client/src/tests/lab-03/ChangePassword.test.tsx` | Pass |
 | UI-05 | UI | AC-27 | Nav hides Create Ticket for IT Staff | Nav item absent in DOM for staff session | `client/src/tests/lab-03/StaffTicketQueue.test.tsx` | Planned |
 | UI-06 | UI | AC-23 | Staff Queue empty/no-results distinction | Correct state shown for each case | `client/src/tests/lab-03/StaffTicketQueue.test.tsx` | Planned |
 | UI-07 | UI | BR-21 | Staff Ticket Detail status dropdown options | Only permitted-transition options rendered | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Planned |
@@ -70,7 +71,7 @@ verifies it.
 | MIG-01 | Migration/Regression | AC-25 | DevRequester → User migration | Existing Ticket.requesterId still resolves correctly post-migration | `server/tests/lab-03/migration.api.test.ts` | Pass |
 | MIG-02 | Migration/Regression | AC-24 | All Lab 2 ticket/attachment tests re-run | Pass unmodified in intent against authenticated backend | `server/tests/lab-02/*` (re-run, not new files) | Planned |
 | E2E-01 | E2E | AC-01, AC-02 | Login → forced password change → app access | Normal screens unreachable until change completes | `e2e/lab-03/authentication.spec.ts` | Planned |
-| E2E-02 | E2E | AC-07 | Logout → direct URL access blocked | Redirect to /login, no protected content flashes | `e2e/lab-03/authentication.spec.ts` | Planned |
+| E2E-02 | E2E | AC-07 | Logout → direct URL access blocked | Redirect to /login, no protected content flashes | `e2e/lab-03/authentication.spec.ts` | Pass |
 | E2E-03 | E2E | AC-08, AC-09, AC-28, AC-29 | Claim → set IT Priority → change status → post comment → add note | Full staff workflow succeeds end-to-end | `e2e/lab-03/staff-ticket-flow.spec.ts` | Planned |
 | E2E-04 | E2E | AC-04, AC-14 | Internal Note never visible to Requester | Requester's own Ticket Detail view never renders the note content | `e2e/lab-03/staff-ticket-flow.spec.ts` | Planned |
 | E2E-05 | E2E | AC-17..AC-21, AC-30, AC-31 | Create/edit user, set password, safety rules | Full admin workflow incl. all safety-rule rejections | `e2e/lab-03/user-administration.spec.ts` | Planned |
@@ -114,9 +115,7 @@ verifies it.
 | AC-33 | SEC-07 |
 
 ## 4. Coverage Gaps (flagged, not silently resolved)
-- No dedicated test yet for BR-06 (5-failed-attempts logging) — logging-only behavior
-  with no user-visible effect in Lab 3 scope; propose a UNIT test on the login-attempt
-  counter service once #31 (Authentication Foundation) defines its exact interface.
+- BR-06 (5-failed-attempts logging) — resolved in #31 with UNIT-02b (`server/tests/lab-03/unit/loginAttempts.unit.test.ts`).
 - No dedicated test yet for XSS-safe rendering (BR-27) — needs a concrete test once the
   comment-rendering component exists; add as UI-13 during Issue #35.
 

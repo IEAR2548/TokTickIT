@@ -34,7 +34,8 @@ import path from "path";
 // server/. This file itself lives at server/scripts/, so reaching repo root
 // requires going up TWO levels (scripts/ -> server/ -> repo root), then into
 // docs/lab-03/.
-const DOCS_DIR = path.join(__dirname, "..", "..", "docs", "lab-03");
+const REPO_ROOT = path.join(__dirname, "..", "..");
+const DOCS_DIR = path.join(REPO_ROOT, "docs", "lab-03");
 
 function read(filename: string): string {
     return fs.readFileSync(path.join(DOCS_DIR, filename), "utf-8");
@@ -310,14 +311,183 @@ describe("Lab 3 spec consistency (specification.md, api-spec.md, ui-spec.md, tes
         });
     });
 
-    describe("tests.md rows validation for current implementation stage", () => {
-        it("contains only MIG-01 marked as 'Pass' status in the planned-tests table for Issue #30", () => {
-            const passRows = tests.split("\n").filter(line => /\|\s*Pass\s*\|/.test(line));
+    // Ref: this describe block previously hardcoded "exactly 1 row, and it must be
+    // MIG-01" — a fact true only at Issue #30. Every subsequent issue that legitimately
+    // turns more rows to Pass would fail this check by construction, forcing someone to
+    // edit the checker itself on every issue. That's backwards for a "living checker"
+    // meant to be re-run unmodified for the rest of the sprint (see file header).
+    //
+    // Replaced with invariants that hold true AT ANY POINT in the sprint, whether 1 row
+    // or all 40 rows are Pass: a row's Final status must be a recognized value, and any
+    // row claiming Pass must be backed by a real, on-disk test file that actually
+    // mentions that Test ID — not just a status flipped in the markdown table. This
+    // catches the same class of bug the old check caught (docs claiming completion
+    // implementation hasn't earned) without ever needing to be touched again as issues
+    // land.
+    describe("tests.md rows validation (invariant, holds at any implementation stage)", () => {
+        const ALLOWED_FINAL_VALUES = new Set(["Planned", "Pass", "Fail", "Blocked"]);
+
+        type PlannedRow = { testId: string; reqAc: string; file: string | null; final: string };
+
+        function extractPlannedRows(content: string): PlannedRow[] {
+            const section = content.split("## 2. Planned Tests")[1]?.split("## 3.")[0] ?? "";
+            const rows: PlannedRow[] = [];
+
+            for (const line of section.split("\n")) {
+                const trimmed = line.trim();
+                if (!trimmed.startsWith("|")) continue;
+                if (/^\|[\s-]*\|/.test(trimmed) && trimmed.includes("---")) continue; // header separator
+
+                const cells = trimmed.split("|").map((c) => c.trim());
+                // A well-formed row is: "" | Test ID | Type | Req/AC | What It Tests |
+                // Expected Result | File | Final | "" — i.e. 9 cells after split.
+                if (cells.length < 9) continue;
+
+                const testId = cells[1];
+                const reqAc = cells[3];
+                const fileCell = cells[6];
+                const final = cells[7];
+                if (!testId || testId === "Test ID") continue; // header row
+
+                const fileMatch = fileCell.match(/`([^`]+)`/);
+                rows.push({ testId, reqAc, file: fileMatch ? fileMatch[1] : null, final });
+            }
+            return rows;
+        }
+
+        /**
+         * Matches `needle` as a whole token, not as a substring of a longer token — e.g.
+         * "UNIT-02" must NOT match inside "UNIT-02b". Test IDs are alphanumeric+hyphen, so
+         * "not preceded/followed by another alphanumeric" is a correct boundary here.
+         */
+        function wholeTokenRegex(needle: string): RegExp {
+            const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            return new RegExp(`(?<![A-Za-z0-9])${escaped}(?![A-Za-z0-9])`);
+        }
+
+        let rows: PlannedRow[];
+        beforeAll(() => {
+            rows = extractPlannedRows(tests);
+        });
+
+        it("parsed at least one row from the planned-tests table (sanity check on the parser itself)", () => {
+            expect(rows.length, "Parser found zero rows — table format may have changed").toBeGreaterThan(0);
+        });
+
+        it("every row's Final status is one of the recognized values (Planned/Pass/Fail/Blocked)", () => {
+            const bad = rows.filter((r) => !ALLOWED_FINAL_VALUES.has(r.final));
             expect(
-                passRows.length,
-                "For Issue #30, exactly one row (MIG-01) should be marked Pass"
-            ).toBe(1);
-            expect(passRows[0]).toContain("MIG-01");
+                bad.map((r) => `${r.testId}: Final column is "${r.final}"`),
+                "Every row's Final column must be exactly one of Planned/Pass/Fail/Blocked — " +
+                "an unrecognized value is either a typo or an undocumented new status"
+            ).toEqual([]);
+        });
+
+        it("every row marked Pass has a File column pointing at a real path on disk", () => {
+            const missing: string[] = [];
+            for (const r of rows.filter((r) => r.final === "Pass")) {
+                if (!r.file) {
+                    missing.push(`${r.testId}: Pass but File column has no backtick-wrapped path to check`);
+                    continue;
+                }
+                // MIG-02's File column is a glob re-run pointer ("server/tests/lab-02/*"),
+                // not a single new file — check the directory exists instead of a literal file.
+                if (r.file.includes("*")) {
+                    const dir = path.join(REPO_ROOT, path.dirname(r.file));
+                    if (!fs.existsSync(dir)) {
+                        missing.push(`${r.testId}: Pass but directory "${path.dirname(r.file)}" does not exist`);
+                    }
+                    continue;
+                }
+                const fullPath = path.join(REPO_ROOT, r.file);
+                if (!fs.existsSync(fullPath)) {
+                    missing.push(`${r.testId}: Pass but file "${r.file}" does not exist on disk`);
+                }
+            }
+            expect(missing, missing.join("\n")).toEqual([]);
+        });
+
+        it("every row marked Pass has its own Test ID actually referenced inside its test file", () => {
+            const unverifiable: string[] = [];
+            for (const r of rows.filter((r) => r.final === "Pass")) {
+                if (!r.file || r.file.includes("*")) continue; // covered by / exempted in the prior check
+                const fullPath = path.join(REPO_ROOT, r.file);
+                if (!fs.existsSync(fullPath)) continue; // already flagged above, don't double-report
+
+                const content = fs.readFileSync(fullPath, "utf-8");
+                if (!wholeTokenRegex(r.testId).test(content)) {
+                    unverifiable.push(
+                        `${r.testId}: "${r.file}" exists but never mentions "${r.testId}" anywhere ` +
+                        "(e.g. in a test/describe name or comment) — a doc status flip with no matching " +
+                        "test isn't verifiable"
+                    );
+                }
+            }
+            expect(unverifiable, unverifiable.join("\n")).toEqual([]);
+        });
+
+        /**
+         * Splits section 4 into whole bullets (a "- " line plus any indented continuation
+         * lines), since a gap's resolution wording can span multiple lines and matching
+         * single lines in isolation would miss context living on an adjacent line.
+         */
+        function extractBullets(section: string): string[] {
+            const bullets: string[] = [];
+            let current: string[] = [];
+            for (const line of section.split("\n")) {
+                if (/^- /.test(line)) {
+                    if (current.length) bullets.push(current.join(" "));
+                    current = [line];
+                } else if (current.length && line.trim() !== "") {
+                    current.push(line.trim());
+                }
+            }
+            if (current.length) bullets.push(current.join(" "));
+            return bullets;
+        }
+
+        it("no gap in section 4 still reads as open once its BR/AC is covered by a Pass row", () => {
+            // Section 4's established convention (see the BR-06 and BR-27 entries already in
+            // the doc) is a bullet containing the phrase "No dedicated test yet for BR-NN" or
+            // "...for AC-NN". A bullet is genuinely CLOSED once it also carries a resolution
+            // marker (strikethrough `~~...~~` around the phrase, or a plain word like
+            // "resolved"/"closed"/"superseded") — the original phrase is deliberately kept
+            // visible in a closed bullet as an audit trail, so its mere presence must NOT be
+            // read as "still open." Only a bullet with the open phrase and NO resolution
+            // marker at all counts as a real, unclosed gap.
+            const gapsSection = tests.split("## 4. Coverage Gaps")[1]?.split("## 5.")[0] ?? "";
+            const bullets = extractBullets(gapsSection);
+            const resolutionMarkerPattern = /~~|resolved|closed|superseded|\bdone\b/i;
+            const openPhrasePattern = /no dedicated test yet/i;
+            const refPattern = /(?:BR|AC)-\d+/gi;
+
+            // A bullet counts as "open" if it carries the "no dedicated test yet" phrase
+            // and no resolution marker. The BR/AC ref doesn't always sit immediately after
+            // "for" (e.g. "...for XSS-safe rendering (BR-27)"), so once a bullet is judged
+            // open, every BR/AC ref anywhere in that bullet is treated as still uncovered.
+            const openGapRefs: string[] = [];
+            for (const bullet of bullets) {
+                if (resolutionMarkerPattern.test(bullet)) continue; // already closed, audit trail only
+                if (!openPhrasePattern.test(bullet)) continue; // not a gap bullet at all
+                for (const m of bullet.match(refPattern) ?? []) {
+                    openGapRefs.push(m.toUpperCase());
+                }
+            }
+
+            const staleGaps: string[] = [];
+            for (const ref of openGapRefs) {
+                const coveringPassRow = rows.find(
+                    (r) => r.final === "Pass" && wholeTokenRegex(ref).test(r.reqAc)
+                );
+                if (coveringPassRow) {
+                    staleGaps.push(
+                        `section 4 still reads as an open gap for ${ref} (no resolution marker), but ` +
+                        `${coveringPassRow.testId} already covers ${ref} and is marked Pass in section 2 — ` +
+                        `update the bullet to mark it resolved (e.g. "resolved by ${coveringPassRow.testId}")`
+                    );
+                }
+            }
+            expect(staleGaps, staleGaps.join("\n")).toEqual([]);
         });
     });
 });
