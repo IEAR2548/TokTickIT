@@ -137,6 +137,7 @@ export async function listTickets(options: ListTicketsOptions) {
             select: {
                 id: true,
                 ticketNumber: true,
+                requesterId: true,
                 summary: true,
                 category: { select: { id: true, name: true } },
                 relatedSystem: { select: { id: true, name: true } },
@@ -182,6 +183,7 @@ export async function getTicketById(requesterId: number, ticketId: number) {
             description: true,
             requestedPriority: true,
             currentStatus: true,
+            appearsResolved: true,
             createdAt: true,
             updatedAt: true,
         },
