@@ -6,12 +6,8 @@ import {
     clearAllAttempts,
 } from "../../../src/services/loginAttempts.service";
 
-// Ref: docs/lab-03/specification.md BR-06
-// "After 5 consecutive failed login attempts for the same email within 15 minutes,
-//  further attempts return the same generic invalid-credentials message but are
-//  logged server-side; no account lockout UI is required in Lab 3."
-
-describe("BR-06: Failed login attempts tracking and logging", () => {
+// UNIT-02b | Ref: docs/lab-03/specification.md BR-06
+describe("UNIT-02b: Failed login attempts tracking and logging", () => {
     beforeEach(() => {
         clearAllAttempts();
         vi.restoreAllMocks();
@@ -67,7 +63,7 @@ describe("BR-06: Failed login attempts tracking and logging", () => {
     });
 
     it("logs a security warning when 5 or more failed attempts occur", () => {
-        const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+        const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => { });
         const email = "bruteforce@example.com";
 
         for (let i = 0; i < 5; i++) {
