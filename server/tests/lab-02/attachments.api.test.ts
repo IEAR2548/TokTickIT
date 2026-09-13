@@ -15,14 +15,14 @@ describe("POST /api/tickets/:id/attachments", () => {
         await prisma.attachment.deleteMany({});
         await prisma.ticket.deleteMany({});
 
-        const requester = await prisma.devRequester.upsert({
+        const requester = await prisma.user.upsert({
             where: { email: "alice.tanaka@example.com" },
             update: { isActive: true },
             create: { name: "Alice Tanaka", email: "alice.tanaka@example.com", isActive: true },
         });
         requesterId = requester.id;
 
-        const other = await prisma.devRequester.upsert({
+        const other = await prisma.user.upsert({
             where: { email: "bob.chavez@example.com" },
             update: { isActive: true },
             create: { name: "Bob Chavez", email: "bob.chavez@example.com", isActive: true },
@@ -150,14 +150,14 @@ describe("GET /api/attachments/:id/download", () => {
         await prisma.attachment.deleteMany({});
         await prisma.ticket.deleteMany({});
 
-        const owner = await prisma.devRequester.upsert({
+        const owner = await prisma.user.upsert({
             where: { email: "carol.gomez@example.com" },
             update: { isActive: true },
             create: { name: "Carol Gomez", email: "carol.gomez@example.com", isActive: true },
         });
         ownerId = owner.id;
 
-        const other = await prisma.devRequester.upsert({
+        const other = await prisma.user.upsert({
             where: { email: "dave.kim@example.com" },
             update: { isActive: true },
             create: { name: "Dave Kim", email: "dave.kim@example.com", isActive: true },
@@ -269,14 +269,14 @@ describe("PATCH /api/attachments/:id/remove", () => {
         await prisma.attachment.deleteMany({});
         await prisma.ticket.deleteMany({});
 
-        const owner = await prisma.devRequester.upsert({
+        const owner = await prisma.user.upsert({
             where: { email: "erin.walsh@example.com" },
             update: { isActive: true },
             create: { name: "Erin Walsh", email: "erin.walsh@example.com", isActive: true },
         });
         ownerId = owner.id;
 
-        const other = await prisma.devRequester.upsert({
+        const other = await prisma.user.upsert({
             where: { email: "frank.oduya@example.com" },
             update: { isActive: true },
             create: { name: "Frank Oduya", email: "frank.oduya@example.com", isActive: true },

@@ -310,14 +310,14 @@ describe("Lab 3 spec consistency (specification.md, api-spec.md, ui-spec.md, tes
         });
     });
 
-    describe("tests.md rows are all 'Planned' — no implementation exists yet", () => {
-        it("contains no 'Pass' status in the planned-tests table", () => {
-            const passInTableCell = /\|\s*Pass\s*\|/.test(tests);
+    describe("tests.md rows validation for current implementation stage", () => {
+        it("contains only MIG-01 marked as 'Pass' status in the planned-tests table for Issue #30", () => {
+            const passRows = tests.split("\n").filter(line => /\|\s*Pass\s*\|/.test(line));
             expect(
-                passInTableCell,
-                "tests.md has a 'Pass' row already, but no implementation Issue has landed yet — " +
-                "either this was written prematurely, or this check needs updating for the current Issue"
-            ).toBe(false);
+                passRows.length,
+                "For Issue #30, exactly one row (MIG-01) should be marked Pass"
+            ).toBe(1);
+            expect(passRows[0]).toContain("MIG-01");
         });
     });
 });

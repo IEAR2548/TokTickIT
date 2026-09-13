@@ -67,7 +67,7 @@ verifies it.
 | STYLE-01 | Style | ui-spec §1 | Role badge class per role | Correct badge-role-* class + visible text | `client/src/tests/lab-03/Badges.style.test.tsx` | Planned |
 | RESP-01 | Responsive | AC-26 | Staff Queue desktop/tablet/mobile | Table→card switch, no overflow | `e2e/lab-03/responsive.spec.ts` | Planned |
 | RESP-02 | Responsive | AC-26 | Admin User Management responsive | Two-panel→stacked, no overflow | `e2e/lab-03/responsive.spec.ts` | Planned |
-| MIG-01 | Migration/Regression | AC-25 | DevRequester → User migration | Existing Ticket.requesterId still resolves correctly post-migration | `server/tests/lab-03/migration.api.test.ts` | Planned |
+| MIG-01 | Migration/Regression | AC-25 | DevRequester → User migration | Existing Ticket.requesterId still resolves correctly post-migration | `server/tests/lab-03/migration.api.test.ts` | Pass |
 | MIG-02 | Migration/Regression | AC-24 | All Lab 2 ticket/attachment tests re-run | Pass unmodified in intent against authenticated backend | `server/tests/lab-02/*` (re-run, not new files) | Planned |
 | E2E-01 | E2E | AC-01, AC-02 | Login → forced password change → app access | Normal screens unreachable until change completes | `e2e/lab-03/authentication.spec.ts` | Planned |
 | E2E-02 | E2E | AC-07 | Logout → direct URL access blocked | Redirect to /login, no protected content flashes | `e2e/lab-03/authentication.spec.ts` | Planned |

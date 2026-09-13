@@ -14,7 +14,7 @@ describe("generateTicketNumber", () => {
         await prisma.attachment.deleteMany({});
         await prisma.ticket.deleteMany({});
 
-        const requester = await prisma.devRequester.upsert({
+        const requester = await prisma.user.upsert({
             where: { email: "alice.tanaka@example.com" },
             update: { isActive: true },
             create: { name: "Alice Tanaka", email: "alice.tanaka@example.com", isActive: true },
@@ -67,4 +67,4 @@ describe("generateTicketNumber", () => {
         expect(second).not.toBe(first);
         expect(second).toMatch(/^TK-\d{8}-\d{4}$/);
     });
-});
+});

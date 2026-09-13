@@ -17,14 +17,14 @@ describe("POST /api/tickets", () => {
         await prisma.attachment.deleteMany({});
         await prisma.ticket.deleteMany({});
 
-        const requester = await prisma.devRequester.upsert({
+        const requester = await prisma.user.upsert({
             where: { email: "alice.tanaka@example.com" },
             update: { isActive: true },
             create: { name: "Alice Tanaka", email: "alice.tanaka@example.com", isActive: true },
         });
         requesterId = requester.id;
 
-        const inactive = await prisma.devRequester.upsert({
+        const inactive = await prisma.user.upsert({
             where: { email: "eve.former@example.com" },
             update: { isActive: false },
             create: { name: "Eve Former", email: "eve.former@example.com", isActive: false },
@@ -215,4 +215,4 @@ describe("POST /api/tickets", () => {
         expect(res.status).toBe(404);
         expect(res.body.error).toBe("RELATED_SYSTEM_NOT_FOUND");
     });
-});
+});

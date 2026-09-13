@@ -12,14 +12,14 @@ describe("GET /api/tickets/:id", () => {
 
     beforeAll(async () => {
         // Setup owner requester, a different requester, and one ticket owned by `owner`
-        const owner = await prisma.devRequester.upsert({
+        const owner = await prisma.user.upsert({
             where: { email: "owner.detail@example.com" },
             update: { isActive: true },
             create: { name: "Owner User", email: "owner.detail@example.com", isActive: true },
         });
         ownerId = owner.id;
 
-        const other = await prisma.devRequester.upsert({
+        const other = await prisma.user.upsert({
             where: { email: "other.detail@example.com" },
             update: { isActive: true },
             create: { name: "Other User", email: "other.detail@example.com", isActive: true },
@@ -45,7 +45,7 @@ describe("GET /api/tickets/:id", () => {
 
     afterAll(async () => {
         await prisma.ticket.deleteMany({ where: { ticketNumber: TICKET_NUMBER } });
-        await prisma.devRequester.deleteMany({
+        await prisma.user.deleteMany({
             where: { email: { in: ["owner.detail@example.com", "other.detail@example.com"] } },
         });
         await prisma.$disconnect();

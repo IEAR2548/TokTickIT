@@ -41,19 +41,19 @@ describe("GET /api/tickets", () => {
     beforeAll(async () => {
         await prisma.attachment.deleteMany({});
         await prisma.ticket.deleteMany({});
-        await prisma.devRequester.deleteMany({ where: { email: { contains: "mytickets.test" } } });
+        await prisma.user.deleteMany({ where: { email: { contains: "mytickets.test" } } });
 
-        const a = await prisma.devRequester.create({
+        const a = await prisma.user.create({
             data: { name: "Requester A", email: "a.mytickets.test@example.com", isActive: true },
         });
         requesterA = a.id;
 
-        const b = await prisma.devRequester.create({
+        const b = await prisma.user.create({
             data: { name: "Requester B", email: "b.mytickets.test@example.com", isActive: true },
         });
         requesterB = b.id;
 
-        const inactive = await prisma.devRequester.create({
+        const inactive = await prisma.user.create({
             data: { name: "Inactive Requester", email: "inactive.mytickets.test@example.com", isActive: false },
         });
         inactiveRequesterId = inactive.id;
@@ -83,7 +83,7 @@ describe("GET /api/tickets", () => {
     afterAll(async () => {
         await prisma.attachment.deleteMany({});
         await prisma.ticket.deleteMany({});
-        await prisma.devRequester.deleteMany({ where: { email: { contains: "mytickets.test" } } });
+        await prisma.user.deleteMany({ where: { email: { contains: "mytickets.test" } } });
         await prisma.$disconnect();
     });
 

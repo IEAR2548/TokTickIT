@@ -33,8 +33,8 @@ export class TicketForbiddenError extends Error {
 }
 
 export async function createTicket(input: CreateTicketInput) {
-    const requester = await prisma.devRequester.findUnique({
-        where: { id: input.requesterId },
+    const requester = await prisma.user.findFirst({
+        where: { id: input.requesterId, role: "REQUESTER" },
     });
     if (!requester || !requester.isActive) {
         throw new RequesterNotFoundError();
@@ -70,6 +70,7 @@ export async function createTicket(input: CreateTicketInput) {
                     summary: input.summary.trim(),
                     description: input.description.trim(),
                     requestedPriority: input.requestedPriority,
+                    itPriority: input.requestedPriority,
                     currentStatus: "NEW",
                 },
             });
@@ -97,8 +98,8 @@ export interface ListTicketsOptions {
 }
 
 export async function listTickets(options: ListTicketsOptions) {
-    const requester = await prisma.devRequester.findUnique({
-        where: { id: options.requesterId },
+    const requester = await prisma.user.findFirst({
+        where: { id: options.requesterId, role: "REQUESTER" },
     });
     if (!requester || !requester.isActive) {
         throw new RequesterNotFoundError();

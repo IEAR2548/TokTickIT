@@ -7,16 +7,29 @@ datasource db {
   provider = "postgresql"
 }
 
-model DevRequester {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
+enum UserRole {
+  REQUESTER
+  IT_STAFF
+  ADMINISTRATOR
+}
 
-  tickets Ticket[]
+model User {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  email              String   @unique
+  passwordHash       String   @default("$2b$10$yKHvSK6vwpWVJnldmmklX.XrhsXnfcucN8NYP75WhvvRGdedV97fm")
+  role               UserRole @default(REQUESTER)
+  isActive           Boolean  @default(true)
+  mustChangePassword Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  @@index([isActive])
+  requestedTickets Ticket[]        @relation("TicketRequester")
+  ownedTickets     Ticket[]        @relation("TicketOwner")
+  publicComments   PublicComment[]
+  internalNotes    InternalNote[]
+
+  @@index([role, isActive])
 }
 
 model Category {
@@ -46,6 +59,13 @@ enum RequestedPriority {
 
 enum TicketStatus {
   NEW
+  OPEN
+  IN_PROGRESS
+  WAITING_FOR_REQUESTER
+  RESOLVED
+  CLOSED
+  REOPENED
+  CANCELLED
 }
 
 model Ticket {
@@ -53,7 +73,7 @@ model Ticket {
   ticketNumber String @unique
 
   requesterId Int
-  requester   DevRequester @relation(fields: [requesterId], references: [id])
+  requester   User @relation("TicketRequester", fields: [requesterId], references: [id])
 
   categoryId Int
   category   Category @relation(fields: [categoryId], references: [id])
@@ -65,16 +85,26 @@ model Ticket {
   description String
 
   requestedPriority RequestedPriority
-  currentStatus     TicketStatus      @default(NEW)
 
-  attachments Attachment[]
+  // --- Lab 3 additions ---
+  ownerId           Int?
+  owner             User?              @relation("TicketOwner", fields: [ownerId], references: [id])
+  itPriority        RequestedPriority? // defaults to requestedPriority value at creation per BR-17
+  currentStatus     TicketStatus       @default(NEW)
+  resolutionSummary String?
+  appearsResolved   Boolean            @default(false)
+
+  attachments    Attachment[]
+  publicComments PublicComment[]
+  internalNotes  InternalNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([ownerId])
+  @@index([currentStatus])
   @@index([requesterId])
   @@index([categoryId])
-  @@index([currentStatus])
   @@index([createdAt])
 }
 
@@ -97,4 +127,28 @@ model Attachment {
 
   @@index([ticketId])
   @@index([isRemoved])
+}
+
+model PublicComment {
+  id        Int      @id @default(autoincrement())
+  ticketId  Int
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
+}
+
+model InternalNote {
+  id        Int      @id @default(autoincrement())
+  ticketId  Int
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([ticketId])
 }
