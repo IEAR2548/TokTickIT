@@ -175,4 +175,22 @@ describe("Lab 3 Security Authorization (SEC-05, SEC-08, SEC-09, API-09)", () => 
             expect(res.body.error).toBe("FORBIDDEN");
         });
     });
+
+    describe("SEC-07: Authenticated REQUESTER caller gets 403 FORBIDDEN on GET /api/staff/tickets (AC-33)", () => {
+        it("SEC-07: authenticated REQUESTER caller gets 403 FORBIDDEN when calling GET /api/staff/tickets", async () => {
+            const token = signSessionToken({
+                userId: requesterUser.id,
+                role: "REQUESTER",
+                mustChangePassword: false,
+            });
+
+            const res = await request(app)
+                .get("/api/staff/tickets")
+                .set("Cookie", `toktickit_session=${token}`);
+
+            expect(res.status).toBe(403);
+            expect(res.body.error).toBe("FORBIDDEN");
+            expect(res.body.message).toMatch(/Access denied/i);
+        });
+    });
 });
