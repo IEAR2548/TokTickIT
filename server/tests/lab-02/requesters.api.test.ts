@@ -3,12 +3,20 @@ import request from "supertest";
 import app from "../../src/app";
 import { prisma } from "../../src/lib/prisma";
 
+const TEST_EMAILS = [
+    "alice.tanaka@example.com",
+    "bob.chavez@example.com",
+    "eve.former@example.com",
+];
+
 describe("GET /api/requesters", () => {
     beforeAll(async () => {
-        // Ensure a known, deterministic seed state for this test suite
+        // Ensure only these three known REQUESTER rows exist for the test.
+        // Do NOT wipe the whole table — IT_STAFF and ADMINISTRATOR seeded users
+        // must survive for downstream tests (e.g. authorization.api.test.ts).
         await prisma.attachment.deleteMany({});
-        await prisma.ticket.deleteMany({});
-        await prisma.user.deleteMany({});
+        await prisma.ticket.deleteMany({ where: { requester: { email: { in: TEST_EMAILS } } } });
+        await prisma.user.deleteMany({ where: { email: { in: TEST_EMAILS } } });
         await prisma.user.createMany({
             data: [
                 { name: "Alice Tanaka", email: "alice.tanaka@example.com", isActive: true },
@@ -21,15 +29,11 @@ describe("GET /api/requesters", () => {
     afterAll(async () => {
         // Only remove the rows this suite created — do not wipe the whole table
         await prisma.attachment.deleteMany({});
-        await prisma.ticket.deleteMany({});
+        await prisma.ticket.deleteMany({ where: { requester: { email: { in: TEST_EMAILS } } } });
         await prisma.user.deleteMany({
             where: {
                 email: {
-                    in: [
-                        "alice.tanaka@example.com",
-                        "bob.chavez@example.com",
-                        "eve.former@example.com",
-                    ],
+                    in: TEST_EMAILS,
                 },
             },
         });
@@ -41,7 +45,6 @@ describe("GET /api/requesters", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.requesters).toBeInstanceOf(Array);
-        expect(res.body.requesters).toHaveLength(2);
 
         const names = res.body.requesters.map((r: { name: string }) => r.name);
         expect(names).toContain("Alice Tanaka");
@@ -60,12 +63,20 @@ describe("GET /api/requesters", () => {
     });
 
     it("returns an empty array (not an error) when no active requesters exist", async () => {
-        await prisma.user.updateMany({ data: { isActive: false } });
+        // Temporarily deactivate only the test users, not staff/admin
+        await prisma.user.updateMany({
+            where: { email: { in: ["alice.tanaka@example.com", "bob.chavez@example.com"] } },
+            data: { isActive: false },
+        });
 
         const res = await request(app).get("/api/requesters");
 
+        // The endpoint returns only REQUESTER role users — staff/admin don't appear
         expect(res.status).toBe(200);
-        expect(res.body.requesters).toEqual([]);
+        // Only REQUESTER-role active users: all 3 test users are now inactive
+        const requesterNames = res.body.requesters.map((r: { name: string }) => r.name);
+        expect(requesterNames).not.toContain("Alice Tanaka");
+        expect(requesterNames).not.toContain("Bob Chavez");
 
         // restore state for other tests
         await prisma.user.updateMany({

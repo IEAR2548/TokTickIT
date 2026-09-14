@@ -123,3 +123,31 @@
         justify-content: space-between;
     }
 }
+
+.badge-role-requester {
+    background: var(--color-pale-green, #eaf6ef);
+    color: var(--color-primary, #006b3c);
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.badge-role-it_staff {
+    background: var(--color-field-readonly-bg, #f3f4f6);
+    color: var(--color-text-primary, #111827);
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.badge-role-administrator {
+    background: var(--color-warning-bg, #fffbeb);
+    color: var(--color-warning, #b45309);
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+

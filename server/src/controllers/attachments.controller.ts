@@ -44,14 +44,7 @@ export const uploadMiddleware = (req: Request, res: Response, next: NextFunction
 
 
 export async function uploadAttachmentHandler(req: Request, res: Response) {
-    const requesterIdRaw = req.body.requesterId;
-    const requesterId = Number(requesterIdRaw);
-    if (!requesterIdRaw || !Number.isInteger(requesterId) || requesterId <= 0) {
-        return res.status(400).json({
-            error: "VALIDATION_ERROR",
-            message: "requesterId is required and must be an integer",
-        });
-    }
+    const requesterId = req.user!.userId;
 
     const ticketIdParam = req.params.ticketId || req.params.id;
     const ticketId = Number(ticketIdParam);
@@ -124,14 +117,7 @@ export async function uploadAttachmentHandler(req: Request, res: Response) {
 }
 
 export async function getAttachmentsByTicketHandler(req: Request, res: Response) {
-    const requesterIdRaw = req.query.requesterId;
-    const requesterId = Number(requesterIdRaw);
-    if (!requesterIdRaw || !Number.isInteger(requesterId) || requesterId <= 0) {
-        return res.status(400).json({
-            error: "VALIDATION_ERROR",
-            message: "requesterId is required and must be a positive integer",
-        });
-    }
+    const requesterId = req.user!.userId;
 
     const ticketIdParam = req.params.ticketId || req.params.id;
     const ticketId = Number(ticketIdParam);
@@ -171,14 +157,7 @@ export async function getAttachmentsByTicketHandler(req: Request, res: Response)
  * Order: 400 validation -> 404 NOT_FOUND -> 403 FORBIDDEN -> 404 ATTACHMENT_REMOVED -> 200 stream.
  */
 export async function downloadAttachmentHandler(req: Request, res: Response) {
-    const requesterIdRaw = req.query.requesterId;
-    const requesterId = Number(requesterIdRaw);
-    if (!requesterIdRaw || !Number.isInteger(requesterId) || requesterId <= 0) {
-        return res.status(400).json({
-            error: "VALIDATION_ERROR",
-            message: "requesterId is required and must be a positive integer",
-        });
-    }
+    const requesterId = req.user!.userId;
 
     const attachmentId = Number(req.params.id);
     if (!Number.isInteger(attachmentId) || attachmentId <= 0) {
@@ -234,14 +213,7 @@ export async function downloadAttachmentHandler(req: Request, res: Response) {
  * Order: 400 validation -> 404 NOT_FOUND -> 403 FORBIDDEN -> 400 ALREADY_REMOVED -> 200.
  */
 export async function removeAttachmentHandler(req: Request, res: Response) {
-    const requesterIdRaw = req.body.requesterId;
-    const requesterId = Number(requesterIdRaw);
-    if (!requesterIdRaw || !Number.isInteger(requesterId) || requesterId <= 0) {
-        return res.status(400).json({
-            error: "VALIDATION_ERROR",
-            message: "requesterId is required and must be a positive integer",
-        });
-    }
+    const requesterId = req.user!.userId;
 
     const removalReasonRaw = req.body.removalReason;
     const removalReason = typeof removalReasonRaw === "string" ? removalReasonRaw.trim() : "";

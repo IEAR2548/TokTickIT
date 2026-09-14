@@ -2,15 +2,18 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import request from "supertest";
 import app from "../../src/app";
 import { prisma } from "../../src/lib/prisma";
-
-let requesterId: number;
-let otherRequesterId: number;
-let ticketId: number;
+import { signSessionToken } from "../../src/lib/session";
 
 const PNG_1KB = Buffer.alloc(1024, 1);
 const PDF_1KB = Buffer.from("%PDF-1.4 fake pdf content");
 
 describe("POST /api/tickets/:id/attachments", () => {
+    let requesterId: number;
+    let otherRequesterId: number;
+    let ticketId: number;
+    let requesterToken: string;
+    let otherToken: string;
+
     beforeAll(async () => {
         await prisma.attachment.deleteMany({});
         await prisma.ticket.deleteMany({});
@@ -21,6 +24,7 @@ describe("POST /api/tickets/:id/attachments", () => {
             create: { name: "Alice Tanaka", email: "alice.tanaka@example.com", isActive: true },
         });
         requesterId = requester.id;
+        requesterToken = signSessionToken({ userId: requesterId, role: "REQUESTER", mustChangePassword: false });
 
         const other = await prisma.user.upsert({
             where: { email: "bob.chavez@example.com" },
@@ -28,6 +32,7 @@ describe("POST /api/tickets/:id/attachments", () => {
             create: { name: "Bob Chavez", email: "bob.chavez@example.com", isActive: true },
         });
         otherRequesterId = other.id;
+        otherToken = signSessionToken({ userId: otherRequesterId, role: "REQUESTER", mustChangePassword: false });
 
         const category = await prisma.category.upsert({
             where: { name: "Hardware" },
@@ -64,7 +69,7 @@ describe("POST /api/tickets/:id/attachments", () => {
     it("uploads a valid PNG under 5MB and returns 201 (API-14, AC-16)", async () => {
         const res = await request(app)
             .post(`/api/tickets/${ticketId}/attachments`)
-            .field("requesterId", requesterId)
+            .set("Cookie", `toktickit_session=${requesterToken}`)
             .attach("file", PNG_1KB, { filename: "battery.png", contentType: "image/png" });
 
         expect(res.status).toBe(201);
@@ -78,7 +83,7 @@ describe("POST /api/tickets/:id/attachments", () => {
     it("rejects an unsupported file type with 400 UNSUPPORTED_FILE_TYPE (API-15, AC-06, BR-15)", async () => {
         const res = await request(app)
             .post(`/api/tickets/${ticketId}/attachments`)
-            .field("requesterId", requesterId)
+            .set("Cookie", `toktickit_session=${requesterToken}`)
             .attach("file", Buffer.from("MZ fake executable"), {
                 filename: "malware.exe",
                 contentType: "application/x-msdownload",
@@ -92,7 +97,7 @@ describe("POST /api/tickets/:id/attachments", () => {
         const bigFile = Buffer.alloc(6 * 1024 * 1024, 1);
         const res = await request(app)
             .post(`/api/tickets/${ticketId}/attachments`)
-            .field("requesterId", requesterId)
+            .set("Cookie", `toktickit_session=${requesterToken}`)
             .attach("file", bigFile, { filename: "huge.pdf", contentType: "application/pdf" });
 
         expect(res.status).toBe(400);
@@ -102,7 +107,7 @@ describe("POST /api/tickets/:id/attachments", () => {
     it("rejects upload if ticket belongs to another requester with 403 FORBIDDEN", async () => {
         const res = await request(app)
             .post(`/api/tickets/${ticketId}/attachments`)
-            .field("requesterId", otherRequesterId)
+            .set("Cookie", `toktickit_session=${otherToken}`)
             .attach("file", PNG_1KB, { filename: "forbidden.png", contentType: "image/png" });
 
         expect(res.status).toBe(403);
@@ -112,7 +117,7 @@ describe("POST /api/tickets/:id/attachments", () => {
     it("rejects upload if ticket does not exist with 404 NOT_FOUND", async () => {
         const res = await request(app)
             .post(`/api/tickets/999999/attachments`)
-            .field("requesterId", requesterId)
+            .set("Cookie", `toktickit_session=${requesterToken}`)
             .attach("file", PNG_1KB, { filename: "test.png", contentType: "image/png" });
 
         expect(res.status).toBe(404);
@@ -123,14 +128,14 @@ describe("POST /api/tickets/:id/attachments", () => {
         for (let i = 0; i < 4; i++) {
             const added = await request(app)
                 .post(`/api/tickets/${ticketId}/attachments`)
-                .field("requesterId", requesterId)
+                .set("Cookie", `toktickit_session=${requesterToken}`)
                 .attach("file", PDF_1KB, { filename: `doc-${i}.pdf`, contentType: "application/pdf" });
             expect(added.status).toBe(201);
         }
 
         const sixth = await request(app)
             .post(`/api/tickets/${ticketId}/attachments`)
-            .field("requesterId", requesterId)
+            .set("Cookie", `toktickit_session=${requesterToken}`)
             .attach("file", PDF_1KB, { filename: "one-too-many.pdf", contentType: "application/pdf" });
 
         expect(sixth.status).toBe(400);
@@ -145,6 +150,8 @@ describe("GET /api/attachments/:id/download", () => {
     let removedAttachmentId: number;
     let activeAttachmentId: number;
     let removedAndForeignAttachmentId: number;
+    let ownerToken: string;
+    let otherToken: string;
 
     beforeAll(async () => {
         await prisma.attachment.deleteMany({});
@@ -156,6 +163,7 @@ describe("GET /api/attachments/:id/download", () => {
             create: { name: "Carol Gomez", email: "carol.gomez@example.com", isActive: true },
         });
         ownerId = owner.id;
+        ownerToken = signSessionToken({ userId: ownerId, role: "REQUESTER", mustChangePassword: false });
 
         const other = await prisma.user.upsert({
             where: { email: "dave.kim@example.com" },
@@ -163,6 +171,7 @@ describe("GET /api/attachments/:id/download", () => {
             create: { name: "Dave Kim", email: "dave.kim@example.com", isActive: true },
         });
         otherId = other.id;
+        otherToken = signSessionToken({ userId: otherId, role: "REQUESTER", mustChangePassword: false });
 
         const category = await prisma.category.findFirst({ where: { isActive: true } });
         const system = await prisma.relatedSystem.findFirst({ where: { isActive: true } });
@@ -230,7 +239,7 @@ describe("GET /api/attachments/:id/download", () => {
     it("returns 404 ATTACHMENT_REMOVED and sends no binary body when the file was soft-removed (API-19)", async () => {
         const res = await request(app)
             .get(`/api/attachments/${removedAttachmentId}/download`)
-            .query({ requesterId: ownerId });
+            .set("Cookie", `toktickit_session=${ownerToken}`);
 
         expect(res.status).toBe(404);
         expect(res.body.error).toBe("ATTACHMENT_REMOVED");
@@ -241,7 +250,7 @@ describe("GET /api/attachments/:id/download", () => {
     it("returns 403 FORBIDDEN when the attachment belongs to another requester's ticket", async () => {
         const res = await request(app)
             .get(`/api/attachments/${activeAttachmentId}/download`)
-            .query({ requesterId: otherId });
+            .set("Cookie", `toktickit_session=${otherToken}`);
 
         expect(res.status).toBe(403);
         expect(res.body.error).toBe("FORBIDDEN");
@@ -250,7 +259,7 @@ describe("GET /api/attachments/:id/download", () => {
     it("returns 403 FORBIDDEN (not 404 ATTACHMENT_REMOVED) when a non-owner requests an already-removed attachment — ownership is checked before removal state", async () => {
         const res = await request(app)
             .get(`/api/attachments/${removedAndForeignAttachmentId}/download`)
-            .query({ requesterId: otherId });
+            .set("Cookie", `toktickit_session=${otherToken}`);
 
         expect(res.status).toBe(403);
         expect(res.body.error).toBe("FORBIDDEN");
@@ -264,6 +273,8 @@ describe("PATCH /api/attachments/:id/remove", () => {
     let successAttachmentId: number;
     let validationAttachmentId: number;
     let alreadyRemovedAttachmentId: number;
+    let ownerToken: string;
+    let otherToken: string;
 
     beforeAll(async () => {
         await prisma.attachment.deleteMany({});
@@ -275,6 +286,7 @@ describe("PATCH /api/attachments/:id/remove", () => {
             create: { name: "Erin Walsh", email: "erin.walsh@example.com", isActive: true },
         });
         ownerId = owner.id;
+        ownerToken = signSessionToken({ userId: ownerId, role: "REQUESTER", mustChangePassword: false });
 
         const other = await prisma.user.upsert({
             where: { email: "frank.oduya@example.com" },
@@ -282,6 +294,7 @@ describe("PATCH /api/attachments/:id/remove", () => {
             create: { name: "Frank Oduya", email: "frank.oduya@example.com", isActive: true },
         });
         otherId = other.id;
+        otherToken = signSessionToken({ userId: otherId, role: "REQUESTER", mustChangePassword: false });
 
         const category = await prisma.category.findFirst({ where: { isActive: true } });
         const system = await prisma.relatedSystem.findFirst({ where: { isActive: true } });
@@ -347,7 +360,8 @@ describe("PATCH /api/attachments/:id/remove", () => {
     it("soft-removes an attachment with a valid reason and returns 200 with isRemoved/removalReason/removedAt recorded (API-18)", async () => {
         const res = await request(app)
             .patch(`/api/attachments/${successAttachmentId}/remove`)
-            .send({ requesterId: ownerId, removalReason: "Uploaded wrong file version" });
+            .set("Cookie", `toktickit_session=${ownerToken}`)
+            .send({ removalReason: "Uploaded wrong file version" });
 
         expect(res.status).toBe(200);
         expect(res.body.attachment).toBeDefined();
@@ -367,7 +381,8 @@ describe("PATCH /api/attachments/:id/remove", () => {
     it("rejects an empty removalReason with 400 VALIDATION_ERROR and does not modify the attachment (API-20)", async () => {
         const res = await request(app)
             .patch(`/api/attachments/${validationAttachmentId}/remove`)
-            .send({ requesterId: ownerId, removalReason: "" });
+            .set("Cookie", `toktickit_session=${ownerToken}`)
+            .send({ removalReason: "" });
 
         expect(res.status).toBe(400);
         expect(res.body.error).toBe("VALIDATION_ERROR");
@@ -379,7 +394,8 @@ describe("PATCH /api/attachments/:id/remove", () => {
     it("rejects a whitespace-only removalReason with 400 VALIDATION_ERROR (API-20)", async () => {
         const res = await request(app)
             .patch(`/api/attachments/${validationAttachmentId}/remove`)
-            .send({ requesterId: ownerId, removalReason: "   " });
+            .set("Cookie", `toktickit_session=${ownerToken}`)
+            .send({ removalReason: "   " });
 
         expect(res.status).toBe(400);
         expect(res.body.error).toBe("VALIDATION_ERROR");
@@ -391,7 +407,8 @@ describe("PATCH /api/attachments/:id/remove", () => {
     it("rejects removing an attachment that is already removed with 400 ALREADY_REMOVED", async () => {
         const res = await request(app)
             .patch(`/api/attachments/${alreadyRemovedAttachmentId}/remove`)
-            .send({ requesterId: ownerId, removalReason: "Trying to remove again" });
+            .set("Cookie", `toktickit_session=${ownerToken}`)
+            .send({ removalReason: "Trying to remove again" });
 
         expect(res.status).toBe(400);
         expect(res.body.error).toBe("ALREADY_REMOVED");
@@ -400,7 +417,8 @@ describe("PATCH /api/attachments/:id/remove", () => {
     it("returns 403 FORBIDDEN when a non-owner attempts to remove an attachment on someone else's ticket", async () => {
         const res = await request(app)
             .patch(`/api/attachments/${validationAttachmentId}/remove`)
-            .send({ requesterId: otherId, removalReason: "Not my ticket" });
+            .set("Cookie", `toktickit_session=${otherToken}`)
+            .send({ removalReason: "Not my ticket" });
 
         expect(res.status).toBe(403);
         expect(res.body.error).toBe("FORBIDDEN");
@@ -409,7 +427,8 @@ describe("PATCH /api/attachments/:id/remove", () => {
     it("returns 403 FORBIDDEN (not 400 ALREADY_REMOVED) when a non-owner targets an already-removed attachment — ownership is checked before removal state", async () => {
         const res = await request(app)
             .patch(`/api/attachments/${alreadyRemovedAttachmentId}/remove`)
-            .send({ requesterId: otherId, removalReason: "Not my ticket" });
+            .set("Cookie", `toktickit_session=${otherToken}`)
+            .send({ removalReason: "Not my ticket" });
 
         expect(res.status).toBe(403);
         expect(res.body.error).toBe("FORBIDDEN");

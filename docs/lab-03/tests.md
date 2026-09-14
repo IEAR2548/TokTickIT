@@ -23,7 +23,7 @@ verifies it.
 | API-06 | API | AC-02 | Valid password change | 200; mustChangePassword cleared; normal session issued | `server/tests/lab-03/auth.api.test.ts` | Pass |
 | API-07 | API | AC-07 | Logout | 200; cookie cleared; subsequent request unauthenticated | `server/tests/lab-03/auth.api.test.ts` | Pass |
 | API-08 | API | AC-04 | Requester requests Internal Notes | 403; no note data returned | `server/tests/lab-03/comments-notes.api.test.ts` | Planned |
-| API-09 | API | AC-03 | Requester supplies foreign requesterId | Backend uses session identity, not client value | `server/tests/lab-03/authorization.api.test.ts` | Planned |
+| API-09 | API | AC-03 | Requester supplies foreign requesterId | Backend uses session identity, not client value | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | API-10 | API | AC-08 | Claim unassigned ticket | 200; ownerId = caller | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
 | API-11 | API | AC-09 | Reassign ticket | 200; ownerId updated to target | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
 | API-12 | API | BR-14 | Claim already-claimed ticket | 409 conflict | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
@@ -53,11 +53,12 @@ verifies it.
 | SEC-06 | Security | AC-04/FR-09 | Requester calls GET /api/tickets/:id/notes directly | 403; no note data in body | `server/tests/lab-03/authorization.api.test.ts` | Planned |
 | SEC-07 | Security | AC-33 | Requester calls GET /api/staff/tickets directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Planned |
 | SEC-08 | Security | AC-03/FR-04 | Unauthenticated POST /api/auth/change-password | 401 UNAUTHENTICATED | `server/tests/lab-03/authorization.api.test.ts` | Pass |
+| SEC-09 | Security | FR-07 | Authenticated IT_STAFF or ADMINISTRATOR calls POST /api/tickets | 403 FORBIDDEN | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | UI-01 | UI | AC-05 | Login form invalid submission | Generic error shown, field state preserved | `client/src/tests/lab-03/Login.test.tsx` | Pass |
 | UI-02 | UI | ui-spec §2 | Login busy state | Submit disabled + spinner during request | `client/src/tests/lab-03/Login.test.tsx` | Pass |
 | UI-03 | UI | AC-02 | Change Password live checklist | Checklist items toggle as rules are met | `client/src/tests/lab-03/ChangePassword.test.tsx` | Pass |
 | UI-04 | UI | ui-spec §3 | Confirm password mismatch | Field-level error, submit disabled | `client/src/tests/lab-03/ChangePassword.test.tsx` | Pass |
-| UI-05 | UI | AC-27 | Nav hides Create Ticket for IT Staff | Nav item absent in DOM for staff session | `client/src/tests/lab-03/StaffTicketQueue.test.tsx` | Planned |
+| UI-05 | UI | AC-27 | Nav hides Create Ticket for IT Staff | Nav item absent in DOM for staff session | `client/src/tests/lab-03/StaffTicketQueue.test.tsx` | Pass |
 | UI-06 | UI | AC-23 | Staff Queue empty/no-results distinction | Correct state shown for each case | `client/src/tests/lab-03/StaffTicketQueue.test.tsx` | Planned |
 | UI-07 | UI | BR-21 | Staff Ticket Detail status dropdown options | Only permitted-transition options rendered | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Planned |
 | UI-08 | UI | FR-19 | Internal Notes tab visual distinction | Different background class than Public Comments | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Planned |
@@ -69,7 +70,7 @@ verifies it.
 | RESP-01 | Responsive | AC-26 | Staff Queue desktop/tablet/mobile | Table→card switch, no overflow | `e2e/lab-03/responsive.spec.ts` | Planned |
 | RESP-02 | Responsive | AC-26 | Admin User Management responsive | Two-panel→stacked, no overflow | `e2e/lab-03/responsive.spec.ts` | Planned |
 | MIG-01 | Migration/Regression | AC-25 | DevRequester → User migration | Existing Ticket.requesterId still resolves correctly post-migration | `server/tests/lab-03/migration.api.test.ts` | Pass |
-| MIG-02 | Migration/Regression | AC-24 | All Lab 2 ticket/attachment tests re-run | Pass unmodified in intent against authenticated backend | `server/tests/lab-02/*` (re-run, not new files) | Planned |
+| MIG-02 | Migration/Regression | AC-24 | All Lab 2 ticket/attachment tests re-run | Pass unmodified in intent against authenticated backend | `server/tests/lab-02/*` (re-run, not new files) | Pass |
 | E2E-01 | E2E | AC-01, AC-02 | Login → forced password change → app access | Normal screens unreachable until change completes | `e2e/lab-03/authentication.spec.ts` | Planned |
 | E2E-02 | E2E | AC-07 | Logout → direct URL access blocked | Redirect to /login, no protected content flashes | `e2e/lab-03/authentication.spec.ts` | Pass |
 | E2E-03 | E2E | AC-08, AC-09, AC-28, AC-29 | Claim → set IT Priority → change status → post comment → add note | Full staff workflow succeeds end-to-end | `e2e/lab-03/staff-ticket-flow.spec.ts` | Planned |
@@ -113,6 +114,7 @@ verifies it.
 | AC-31 | API-30, E2E-05 |
 | AC-32 | SEC-03 |
 | AC-33 | SEC-07 |
+| FR-07 | SEC-09 |
 
 ## 4. Coverage Gaps (flagged, not silently resolved)
 - BR-06 (5-failed-attempts logging) — resolved in #31 with UNIT-02b (`server/tests/lab-03/unit/loginAttempts.unit.test.ts`).

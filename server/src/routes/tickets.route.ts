@@ -1,8 +1,11 @@
 import { Router } from "express";
+import { requireRole } from "../middleware/auth.middleware";
 import { createTicketHandler, listTicketsHandler, getTicketDetailHandler } from "../controllers/tickets.controller";
 import { uploadMiddleware, uploadAttachmentHandler, getAttachmentsByTicketHandler } from "../controllers/attachments.controller";
 
 const router = Router();
+
+router.use(requireRole("REQUESTER"));
 
 // /api/tickets
 router.get("/", listTicketsHandler);
