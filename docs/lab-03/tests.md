@@ -33,7 +33,7 @@ verifies it.
 | API-16 | API | AC-14 | Create Internal Note | 201; never returned to Requester's ticket-detail response | `server/tests/lab-03/comments-notes.api.test.ts` | Planned |
 | API-17 | API | AC-15 | Empty comment/note content | 400; nothing persisted | `server/tests/lab-03/comments-notes.api.test.ts` | Planned |
 | API-18 | API | AC-16 | Mark problem appears-resolved | 200; currentStatus unchanged | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
-| API-19 | API | AC-23 | Staff queue search/filter/sort/pagination | Correct filtered/sorted/paginated results | `server/tests/lab-03/staff-queue.api.test.ts` | Planned |
+| API-19 | API | AC-23 | Staff queue search/filter/sort/pagination | Correct filtered/sorted/paginated results | `server/tests/lab-03/staff-queue.api.test.ts` | Pass |
 | API-20 | API | AC-17 | Admin user search | Matches partial name/email | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
 | API-21 | API | AC-18 | Duplicate email on create | 409 DUPLICATE_EMAIL | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
 | API-22 | API | AC-19 | Set new initial password | mustChangePassword=true for target on next login | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
@@ -51,7 +51,7 @@ verifies it.
 | SEC-04 | Security | AC-22 | IT Staff calls /api/admin/users directly | 403 (Admin-only, staff ≠ admin) | `server/tests/lab-03/authorization.api.test.ts` | Planned |
 | SEC-05 | Security | AC-03 | Unauthenticated request to any protected endpoint | 401 across the board | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-06 | Security | AC-04/FR-09 | Requester calls GET /api/tickets/:id/notes directly | 403; no note data in body | `server/tests/lab-03/authorization.api.test.ts` | Planned |
-| SEC-07 | Security | AC-33 | Requester calls GET /api/staff/tickets directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Planned |
+| SEC-07 | Security | AC-33 | Requester calls GET /api/staff/tickets directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-08 | Security | AC-03/FR-04 | Unauthenticated POST /api/auth/change-password | 401 UNAUTHENTICATED | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-09 | Security | FR-07 | Authenticated IT_STAFF or ADMINISTRATOR calls POST /api/tickets | 403 FORBIDDEN | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | UI-01 | UI | AC-05 | Login form invalid submission | Generic error shown, field state preserved | `client/src/tests/lab-03/Login.test.tsx` | Pass |
@@ -59,7 +59,7 @@ verifies it.
 | UI-03 | UI | AC-02 | Change Password live checklist | Checklist items toggle as rules are met | `client/src/tests/lab-03/ChangePassword.test.tsx` | Pass |
 | UI-04 | UI | ui-spec §3 | Confirm password mismatch | Field-level error, submit disabled | `client/src/tests/lab-03/ChangePassword.test.tsx` | Pass |
 | UI-05 | UI | AC-27 | Nav hides Create Ticket for IT Staff | Nav item absent in DOM for staff session | `client/src/tests/lab-03/StaffTicketQueue.test.tsx` | Pass |
-| UI-06 | UI | AC-23 | Staff Queue empty/no-results distinction | Correct state shown for each case | `client/src/tests/lab-03/StaffTicketQueue.test.tsx` | Planned |
+| UI-06 | UI | AC-23 | Staff Queue empty/no-results distinction | Correct state shown for each case | `client/src/tests/lab-03/StaffTicketQueue.test.tsx` | Pass |
 | UI-07 | UI | BR-21 | Staff Ticket Detail status dropdown options | Only permitted-transition options rendered | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Planned |
 | UI-08 | UI | FR-19 | Internal Notes tab visual distinction | Different background class than Public Comments | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Planned |
 | UI-09 | UI | AC-16 | Requester "appears resolved" indicator | Badge shown after click, status badge unchanged | `client/src/tests/lab-03/RequesterTicketDetail.test.tsx` | Planned |
@@ -67,11 +67,11 @@ verifies it.
 | UI-11 | UI | AC-20/21 | Deactivate button disabled for self/last-admin | Button disabled + tooltip, not just hidden | `client/src/tests/lab-03/UserManagement.test.tsx` | Planned |
 | UI-12 | UI | AC-16 | Staff Ticket Detail appears-resolved badge | Badge rendered near status dropdown when appearsResolved is true | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Planned |
 | STYLE-01 | Style | ui-spec §1 | Role badge class per role | Correct badge-role-* class + visible text | `client/src/tests/lab-03/Badges.style.test.tsx` | Planned |
-| RESP-01 | Responsive | AC-26 | Staff Queue desktop/tablet/mobile | Table→card switch, no overflow | `e2e/lab-03/responsive.spec.ts` | Planned |
+| RESP-01 | Responsive | AC-26 | Staff Queue desktop/tablet/mobile | Table→card switch, no overflow | `e2e/lab-03/responsive.spec.ts` | Pass |
 | RESP-02 | Responsive | AC-26 | Admin User Management responsive | Two-panel→stacked, no overflow | `e2e/lab-03/responsive.spec.ts` | Planned |
 | MIG-01 | Migration/Regression | AC-25 | DevRequester → User migration | Existing Ticket.requesterId still resolves correctly post-migration | `server/tests/lab-03/migration.api.test.ts` | Pass |
 | MIG-02 | Migration/Regression | AC-24 | All Lab 2 ticket/attachment tests re-run | Pass unmodified in intent against authenticated backend | `server/tests/lab-02/*` (re-run, not new files) | Pass |
-| E2E-01 | E2E | AC-01, AC-02 | Login → forced password change → app access | Normal screens unreachable until change completes | `e2e/lab-03/authentication.spec.ts` | Planned |
+| E2E-01 | E2E | AC-01, AC-02 | Login → forced password change → app access | Normal screens unreachable until change completes | `e2e/lab-03/authentication.spec.ts` | Pass |
 | E2E-02 | E2E | AC-07 | Logout → direct URL access blocked | Redirect to /login, no protected content flashes | `e2e/lab-03/authentication.spec.ts` | Pass |
 | E2E-03 | E2E | AC-08, AC-09, AC-28, AC-29 | Claim → set IT Priority → change status → post comment → add note | Full staff workflow succeeds end-to-end | `e2e/lab-03/staff-ticket-flow.spec.ts` | Planned |
 | E2E-04 | E2E | AC-04, AC-14 | Internal Note never visible to Requester | Requester's own Ticket Detail view never renders the note content | `e2e/lab-03/staff-ticket-flow.spec.ts` | Planned |
