@@ -10,6 +10,7 @@ import categoriesRoute from "./routes/categories.route";
 import relatedSystemsRoute from "./routes/relatedSystems.route";
 import ticketsRoute from "./routes/tickets.route";
 import attachmentsRoute from "./routes/attachments.route";
+import staffTicketsRoute from "./routes/staffTickets.route";
 
 const app = express();
 
@@ -37,5 +38,6 @@ app.use("/api/categories", categoriesRoute);
 app.use("/api/related-systems", relatedSystemsRoute);
 app.use("/api/tickets", ticketsRoute);
 app.use("/api/attachments", attachmentsRoute);
+app.use("/api/staff/tickets", staffTicketsRoute);
 
 export default app;
