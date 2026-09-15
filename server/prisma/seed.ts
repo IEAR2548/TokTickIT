@@ -49,6 +49,8 @@ async function main() {
                 name: r.name,
                 role: 'REQUESTER',
                 isActive: true,
+                mustChangePassword: true,
+                passwordHash: defaultPasswordHash,
             },
             create: {
                 name: r.name,
@@ -68,6 +70,8 @@ async function main() {
             name: 'Eve Former',
             role: 'REQUESTER',
             isActive: false,
+            mustChangePassword: true,
+            passwordHash: defaultPasswordHash,
         },
         create: {
             name: 'Eve Former',
@@ -81,9 +85,9 @@ async function main() {
 
     // IT Staff: 3 active + 1 inactive (meets >= 3 active + 1 inactive minimum)
     const activeStaff = [
-        { name: 'Samira Chen', email: 'samira.chen@example.com' },
-        { name: 'Marcus Vance', email: 'marcus.vance@example.com' },
-        { name: 'Liam O\'Connor', email: 'liam.oconnor@example.com' },
+        { name: 'Samira Chen', email: 'samira.chen@example.com', mustChangePassword: false },
+        { name: 'Marcus Vance', email: 'marcus.vance@example.com', mustChangePassword: true },
+        { name: 'Liam O\'Connor', email: 'liam.oconnor@example.com', mustChangePassword: true },
     ];
     for (const s of activeStaff) {
         await prisma.user.upsert({
@@ -92,6 +96,8 @@ async function main() {
                 name: s.name,
                 role: 'IT_STAFF',
                 isActive: true,
+                mustChangePassword: s.mustChangePassword,
+                passwordHash: defaultPasswordHash,
             },
             create: {
                 name: s.name,
@@ -99,7 +105,7 @@ async function main() {
                 passwordHash: defaultPasswordHash,
                 role: 'IT_STAFF',
                 isActive: true,
-                mustChangePassword: true,
+                mustChangePassword: s.mustChangePassword,
             },
         });
     }
@@ -111,6 +117,8 @@ async function main() {
             name: 'Dana Scully',
             role: 'IT_STAFF',
             isActive: false,
+            mustChangePassword: true,
+            passwordHash: defaultPasswordHash,
         },
         create: {
             name: 'Dana Scully',
@@ -129,6 +137,8 @@ async function main() {
             name: 'Alex Morgan',
             role: 'ADMINISTRATOR',
             isActive: true,
+            mustChangePassword: true,
+            passwordHash: defaultPasswordHash,
         },
         create: {
             name: 'Alex Morgan',

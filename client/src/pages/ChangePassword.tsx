@@ -37,7 +37,13 @@ export function ChangePassword() {
             if (user) {
                 setUser({ ...user, mustChangePassword: false });
             }
-            navigate("/my-tickets");
+            if (user?.role === "IT_STAFF") {
+                navigate("/staff/queue");
+            } else if (user?.role === "ADMINISTRATOR") {
+                navigate("/admin/users");
+            } else {
+                navigate("/my-tickets");
+            }
         } catch (err: any) {
             setServerError(err.message || "Failed to change password. Please try again.");
         } finally {

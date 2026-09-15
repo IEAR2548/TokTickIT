@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { useRequester } from "../context/RequesterContext";
 import { fetchMyTickets, TicketListItem, PaginationMeta } from "../api/tickets.api";
 import { fetchCategories, ReferenceItem } from "../api/referenceData.api";
@@ -19,6 +20,7 @@ const DEFAULT_FILTERS = {
 };
 
 export function MyTickets() {
+    const { user } = useAuth();
     const { selectedRequester } = useRequester();
     const [state, setState] = useState<ScreenState>("loading");
     const [tickets, setTickets] = useState<TicketListItem[]>([]);
@@ -31,7 +33,7 @@ export function MyTickets() {
 
     const categoryNamesById = Object.fromEntries(categories.map((c) => [c.id, c.name]));
 
-    const requesterId = selectedRequester?.id;
+    const requesterId = user?.id ?? selectedRequester?.id;
 
     const load = useCallback(async () => {
         if (!requesterId) return;

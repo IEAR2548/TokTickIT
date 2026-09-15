@@ -10,6 +10,7 @@ import { SystemCheck } from "./pages/SystemCheck";
 import { CreateTicket } from "./pages/CreateTicket";
 import { MyTickets } from "./pages/MyTickets";
 import { RequesterTicketDetail } from "./pages/RequesterTicketDetail";
+import { StaffQueue } from "./pages/StaffQueue";
 
 export default function App() {
   return (
@@ -33,9 +34,49 @@ export default function App() {
             />
 
             {/* Requester screens */}
-            <Route path="/create-ticket" element={<AuthGuard><CreateTicket /></AuthGuard>} />
-            <Route path="/my-tickets" element={<AuthGuard><MyTickets /></AuthGuard>} />
-            <Route path="/tickets/:id" element={<AuthGuard><RequesterTicketDetail /></AuthGuard>} />
+            <Route
+              path="/create-ticket"
+              element={
+                <AuthGuard allowedRoles={["REQUESTER"]}>
+                  <CreateTicket />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/my-tickets"
+              element={
+                <AuthGuard allowedRoles={["REQUESTER"]}>
+                  <MyTickets />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/tickets/:id"
+              element={
+                <AuthGuard allowedRoles={["REQUESTER"]}>
+                  <RequesterTicketDetail />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/staff/queue"
+              element={
+                <AuthGuard allowedRoles={["IT_STAFF", "ADMINISTRATOR"]}>
+                  <StaffQueue />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AuthGuard allowedRoles={["ADMINISTRATOR"]}>
+                  <div className="container py-4" data-testid="admin-users-page">
+                    <h2>User Management</h2>
+                    <p className="text-muted">Administrator panel</p>
+                  </div>
+                </AuthGuard>
+              }
+            />
 
             {/* Catch-all: redirect unknown/unauthenticated URLs to login */}
             <Route path="*" element={<Navigate to="/login" replace />} />
