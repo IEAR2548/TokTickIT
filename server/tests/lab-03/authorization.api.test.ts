@@ -193,4 +193,58 @@ describe("Lab 3 Security Authorization (SEC-05, SEC-08, SEC-09, API-09)", () => 
             expect(res.body.message).toMatch(/Access denied/i);
         });
     });
+
+    describe("SEC-02: Authenticated REQUESTER caller gets 403 FORBIDDEN on PATCH /api/staff/tickets/:id/it-priority (AC-10)", () => {
+        it("SEC-02: authenticated REQUESTER caller gets 403 FORBIDDEN when calling PATCH it-priority", async () => {
+            const token = signSessionToken({
+                userId: requesterUser.id,
+                role: "REQUESTER",
+                mustChangePassword: false,
+            });
+
+            const res = await request(app)
+                .patch("/api/staff/tickets/1/it-priority")
+                .set("Cookie", `toktickit_session=${token}`)
+                .send({ itPriority: "HIGH" });
+
+            expect(res.status).toBe(403);
+            expect(res.body.error).toBe("FORBIDDEN");
+        });
+    });
+
+    describe("SEC-03: Authenticated REQUESTER caller gets 403 FORBIDDEN on PATCH /api/staff/tickets/:id/status (AC-32)", () => {
+        it("SEC-03: authenticated REQUESTER caller gets 403 FORBIDDEN when calling PATCH status", async () => {
+            const token = signSessionToken({
+                userId: requesterUser.id,
+                role: "REQUESTER",
+                mustChangePassword: false,
+            });
+
+            const res = await request(app)
+                .patch("/api/staff/tickets/1/status")
+                .set("Cookie", `toktickit_session=${token}`)
+                .send({ status: "CLOSED" });
+
+            expect(res.status).toBe(403);
+            expect(res.body.error).toBe("FORBIDDEN");
+        });
+    });
+
+    describe("SEC-06: Authenticated REQUESTER caller gets 403 FORBIDDEN on GET /api/tickets/:id/notes (AC-04/FR-09)", () => {
+        it("SEC-06: authenticated REQUESTER caller gets 403 FORBIDDEN and no note data on GET notes", async () => {
+            const token = signSessionToken({
+                userId: requesterUser.id,
+                role: "REQUESTER",
+                mustChangePassword: false,
+            });
+
+            const res = await request(app)
+                .get("/api/tickets/1/notes")
+                .set("Cookie", `toktickit_session=${token}`);
+
+            expect(res.status).toBe(403);
+            expect(res.body.error).toBe("FORBIDDEN");
+            expect(res.body.data).toBeUndefined();
+        });
+    });
 });

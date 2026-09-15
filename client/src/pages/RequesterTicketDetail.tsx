@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useRequester } from "../context/RequesterContext";
-import { fetchTicketDetail, TicketDetail } from "../api/tickets.api";
+import {
+    fetchTicketDetail,
+    TicketDetail,
+    fetchPublicComments,
+    postPublicComment,
+    patchAppearsResolved,
+    PublicComment,
+} from "../api/tickets.api";
 import { Badge } from "../components/Badge";
 import { AttachmentSection } from "../components/AttachmentSection";
 import "./RequesterTicketDetail.css";
@@ -19,6 +26,15 @@ function formatDate(iso: string): string {
     }
 }
 
+function formatDateTime(iso: string): string {
+    try {
+        const d = new Date(iso);
+        return `${d.toISOString().slice(0, 10)} ${d.toISOString().slice(11, 16)}`;
+    } catch {
+        return iso;
+    }
+}
+
 export function RequesterTicketDetail() {
     const { id } = useParams<{ id: string }>();
     const ticketId = Number(id);
@@ -28,6 +44,16 @@ export function RequesterTicketDetail() {
     const [state, setState] = useState<ScreenState>("loading");
     const [ticket, setTicket] = useState<TicketDetail | null>(null);
 
+    // Appears-resolved state (persisted from ticket.appearsResolved)
+    const [appearsResolved, setAppearsResolved] = useState(false);
+    const [appearsResolvedError, setAppearsResolvedError] = useState<string | null>(null);
+
+    // Public comments
+    const [comments, setComments] = useState<PublicComment[]>([]);
+    const [commentInput, setCommentInput] = useState("");
+    const [postingComment, setPostingComment] = useState(false);
+    const [postError, setPostError] = useState<string | null>(null);
+
     useEffect(() => {
         let cancelled = false;
         setState("loading");
@@ -35,16 +61,51 @@ export function RequesterTicketDetail() {
             .then((data) => {
                 if (cancelled) return;
                 setTicket(data);
+                setAppearsResolved(data.appearsResolved ?? false);
                 setState("ready");
             })
             .catch(() => {
                 if (cancelled) return;
                 setState("error");
             });
-        return () => {
-            cancelled = true;
-        };
+        return () => { cancelled = true; };
     }, [requesterId, ticketId]);
+
+    useEffect(() => {
+        if (state !== "ready" || !ticket) return;
+        fetchPublicComments(ticketId)
+            .then(setComments)
+            .catch(() => { /* non-fatal */ });
+    }, [ticketId, state, ticket]);
+
+    async function handleAppearsResolved() {
+        if (appearsResolved) return;
+        setAppearsResolvedError(null);
+        try {
+            // ui-spec §8.6: the success indicator must reflect a real saved state —
+            // show safe-failure feedback instead if the API call does not succeed.
+            await patchAppearsResolved(ticketId);
+            setAppearsResolved(true);
+        } catch (err: any) {
+            setAppearsResolvedError(err.message ?? "Failed to update. Please try again.");
+        }
+    }
+
+    async function handlePostComment(e: React.FormEvent) {
+        e.preventDefault();
+        if (!commentInput.trim()) return;
+        setPostingComment(true);
+        setPostError(null);
+        try {
+            const newComment = await postPublicComment(ticketId, commentInput.trim());
+            setComments((prev) => [...prev, newComment]);
+            setCommentInput("");
+        } catch (err: any) {
+            setPostError(err.message ?? "Failed to post comment");
+        } finally {
+            setPostingComment(false);
+        }
+    }
 
     if (state === "loading") {
         return (
@@ -120,7 +181,9 @@ export function RequesterTicketDetail() {
                     <div className="ticket-header-field">
                         <dt>Status</dt>
                         <dd>
-                            <Badge kind="status" value={ticket.currentStatus} />
+                            <span data-testid="ticket-status-badge">
+                                <Badge kind="status" value={ticket.currentStatus} />
+                            </span>
                         </dd>
                     </div>
                     <div className="ticket-header-field">
@@ -144,7 +207,74 @@ export function RequesterTicketDetail() {
                 </dl>
             </section>
 
+            {/* Problem Appears Resolved — ui-spec §4, AC-16, BR-05, BR-20 */}
+            <section className="ticket-appears-resolved-section mb-4">
+                {!appearsResolved ? (
+                    <>
+                        <button
+                            type="button"
+                            className="ticket-appears-resolved-btn"
+                            data-testid="requester-ticket-appears-resolved-btn"
+                            onClick={handleAppearsResolved}
+                        >
+                            Problem Appears Resolved
+                        </button>
+                        {appearsResolvedError && (
+                            <p role="alert" className="ticket-comment-error">{appearsResolvedError}</p>
+                        )}
+                    </>
+                ) : (
+                    <div
+                        className="ticket-appears-resolved-indicator"
+                        data-testid="requester-ticket-appears-resolved-indicator"
+                    >
+                        ✓ Problem Appears Resolved
+                    </div>
+                )}
+            </section>
+
+            {/* Public Comments — ui-spec §4 */}
+            <section className="ticket-comments-section mb-4">
+                <h2 className="ticket-section-title">Public Comments</h2>
+                <form onSubmit={handlePostComment} className="ticket-comment-form mb-3">
+                    <textarea
+                        data-testid="requester-ticket-comment-input"
+                        className="ticket-comment-textarea"
+                        placeholder="Write a comment…"
+                        value={commentInput}
+                        onChange={(e) => setCommentInput(e.target.value)}
+                        rows={3}
+                        maxLength={2000}
+                    />
+                    {postError && <p className="ticket-comment-error">{postError}</p>}
+                    <button
+                        type="submit"
+                        className="btn btn-sm btn-primary mt-2"
+                        disabled={postingComment || !commentInput.trim()}
+                        data-testid="requester-ticket-comment-submit"
+                    >
+                        {postingComment ? "Posting…" : "Post Comment"}
+                    </button>
+                </form>
+                <ul className="ticket-comment-list">
+                    {comments.map((c) => (
+                        <li key={c.id} className="ticket-comment-item">
+                            <div className="ticket-comment-meta">
+                                <strong>{c.authorName}</strong>
+                                {" "}<Badge kind="role" value={c.authorRole} />
+                                <span className="ticket-comment-time"> · {formatDateTime(c.createdAt)}</span>
+                            </div>
+                            <p className="ticket-comment-content">{c.content}</p>
+                        </li>
+                    ))}
+                    {comments.length === 0 && (
+                        <li className="ticket-comment-empty">No comments yet.</li>
+                    )}
+                </ul>
+            </section>
+
             <AttachmentSection ticketId={ticket.id} requesterId={requesterId} />
         </div>
     );
 }
+

@@ -1,6 +1,17 @@
 type BadgeKind = "status" | "priority" | "role";
 
-const STATUS_LABELS: Record<string, string> = { NEW: "NEW" };
+// Ref: docs/lab-03/specification.md BR-18 — the 8 permitted statuses.
+// NEW keeps its Lab 2 label; unknown values fall back to the raw enum text.
+const STATUS_LABELS: Record<string, string> = {
+    NEW: "NEW",
+    OPEN: "Open",
+    IN_PROGRESS: "In Progress",
+    WAITING_FOR_REQUESTER: "Waiting for Requester",
+    RESOLVED: "Resolved",
+    CLOSED: "Closed",
+    REOPENED: "Reopened",
+    CANCELLED: "Cancelled",
+};
 const PRIORITY_LABELS: Record<string, string> = {
     LOW: "Low",
     MEDIUM: "Medium",

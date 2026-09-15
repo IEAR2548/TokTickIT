@@ -11,6 +11,7 @@ import { CreateTicket } from "./pages/CreateTicket";
 import { MyTickets } from "./pages/MyTickets";
 import { RequesterTicketDetail } from "./pages/RequesterTicketDetail";
 import { StaffQueue } from "./pages/StaffQueue";
+import { StaffTicketDetail } from "./pages/StaffTicketDetail";
 
 export default function App() {
   return (
@@ -63,6 +64,14 @@ export default function App() {
               element={
                 <AuthGuard allowedRoles={["IT_STAFF", "ADMINISTRATOR"]}>
                   <StaffQueue />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/staff/tickets/:id"
+              element={
+                <AuthGuard allowedRoles={["IT_STAFF", "ADMINISTRATOR"]}>
+                  <StaffTicketDetail />
                 </AuthGuard>
               }
             />

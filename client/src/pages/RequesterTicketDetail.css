@@ -75,3 +75,110 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* --- Lab 3 additions: Problem Appears Resolved + Public Comments (ui-spec §4) --- */
+
+.ticket-appears-resolved-section {
+    display: flex;
+    align-items: center;
+}
+
+.ticket-appears-resolved-btn {
+    border: 1px solid var(--color-success, #15803d);
+    color: var(--color-success, #15803d);
+    background: var(--color-surface, #ffffff);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.ticket-appears-resolved-btn:hover {
+    background: var(--color-success-bg, #dcfce7);
+}
+
+.ticket-appears-resolved-indicator {
+    display: inline-block;
+    padding: 8px 16px;
+    background: var(--color-pale-green, #eaf6ef);
+    color: var(--color-primary, #006b3c);
+    border: 1px solid var(--color-primary, #006b3c);
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.ticket-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary, #1a2e23);
+    margin-bottom: 12px;
+}
+
+.ticket-comment-form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.ticket-comment-textarea {
+    width: 100%;
+    border: 1px solid var(--color-surface-border, #d9e5de);
+    border-radius: 6px;
+    padding: 10px 12px;
+    background: var(--color-field-editable-bg, #ffffff);
+    border-color: var(--color-field-editable-border, #b0c8bc);
+    color: var(--color-text-primary, #1a2e23);
+    font-size: 14px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.ticket-comment-textarea:focus {
+    outline: 2px solid var(--color-primary, #006b3c);
+    outline-offset: 1px;
+}
+
+.ticket-comment-error {
+    color: var(--color-error, #b91c1c);
+    font-size: 13px;
+    margin: 6px 0 0;
+}
+
+.ticket-comment-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ticket-comment-item {
+    background: var(--color-surface, #ffffff);
+    border: 1px solid var(--color-surface-border, #d9e5de);
+    border-radius: 6px;
+    padding: 12px 14px;
+}
+
+.ticket-comment-meta {
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.ticket-comment-time {
+    color: var(--color-text-secondary, #4a6357);
+}
+
+.ticket-comment-content {
+    margin: 0;
+    font-size: 14px;
+    white-space: pre-wrap;
+}
+
+.ticket-comment-empty {
+    color: var(--color-text-secondary, #4a6357);
+    font-size: 14px;
+}

@@ -62,6 +62,43 @@
     color: var(--color-primary, #006b3c);
 }
 
+/* Ref: docs/lab-03/specification.md BR-18 — pill styles for the expanded status set.
+   NEW keeps its Lab 2 pale-green; the rest reuse the existing Zen Green palette. */
+.badge-status-open {
+    background: var(--color-info-bg, #eff6ff);
+    color: var(--color-info-text, #1d4ed8);
+}
+
+.badge-status-in_progress {
+    background: var(--color-warning-bg, #fffbeb);
+    color: var(--color-warning, #b45309);
+}
+
+.badge-status-waiting_for_requester {
+    background: var(--color-neutral-bg, #f3f4f6);
+    color: var(--color-neutral-text, #374151);
+}
+
+.badge-status-resolved {
+    background: var(--color-success-bg, #dcfce7);
+    color: var(--color-success, #15803d);
+}
+
+.badge-status-closed {
+    background: var(--color-neutral-bg, #f3f4f6);
+    color: var(--color-neutral-text, #374151);
+}
+
+.badge-status-reopened {
+    background: var(--color-warning-bg, #fffbeb);
+    color: var(--color-warning, #b45309);
+}
+
+.badge-status-cancelled {
+    background: var(--color-error-bg, #fef2f2);
+    color: var(--color-error, #b91c1c);
+}
+
 .badge-priority-low {
     background: var(--color-neutral-bg, #f3f4f6);
     color: var(--color-neutral-text, #374151);

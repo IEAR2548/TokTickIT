@@ -54,7 +54,46 @@ beforeEach(() => {
         }
 
         if (url.includes('/api/staff/tickets')) {
+            // Staff ticket detail — URL matches /api/staff/tickets/5 (has numeric id segment)
+            const detailMatch = url.match(/\/api\/staff\/tickets\/(\d+)$/);
+            if (detailMatch) {
+                return fakeFetch({
+                    data: {
+                        id: Number(detailMatch[1]),
+                        ticketNumber: 'TKT-0005',
+                        summary: 'Cannot access network drive',
+                        description: 'Detailed description.',
+                        category: { id: 1, name: 'Network' },
+                        relatedSystem: { id: 2, name: 'VPN' },
+                        requester: { id: 3, name: 'Alice Tanaka', email: 'alice@example.com' },
+                        requestedPriority: 'MEDIUM',
+                        itPriority: 'MEDIUM',
+                        currentStatus: 'OPEN',
+                        appearsResolved: true,
+                        resolutionSummary: null,
+                        owner: null,
+                        ownerId: null,
+                        commentsCount: 0,
+                        notesCount: 0,
+                        attachmentsCount: 0,
+                        createdAt: '2026-09-01T10:00:00Z',
+                        updatedAt: '2026-09-01T10:00:00Z',
+                    },
+                }, 200);
+            }
             return fakeFetch(STAFF_QUEUE_EMPTY, 200);
+        }
+
+        if (url.match(/\/api\/tickets\/\d+\/comments/)) {
+            return fakeFetch({ data: [] }, 200);
+        }
+
+        if (url.match(/\/api\/tickets\/\d+\/notes/)) {
+            return fakeFetch({ data: [] }, 200);
+        }
+
+        if (url.match(/\/api\/tickets\/\d+\/attachments/)) {
+            return fakeFetch({ attachments: [] }, 200);
         }
 
         return fakeFetch({}, 200);
