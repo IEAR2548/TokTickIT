@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { loginAsRequesterByIndex, getSelectedRequesterId } from "./helpers";
+import { loginAsRequesterByIndex } from "./helpers";
+
+// MIG-02: Lab 2 E2E flows pass unmodified in intent; the identity source migrated
+// from the removed Development Requester selector to authenticated sessions.
+// Requester A = seed index 1 (Alice Tanaka), requester B = seed index 2 (Bob Chavez).
 
 test.describe.configure({ mode: "serial" });
 
@@ -56,8 +60,7 @@ async function createTicketViaAPI(
     page: import("@playwright/test").Page,
     opts: { priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"; summary: string; description: string }
 ): Promise<{ id: number; ticketNumber: string }> {
-    const requesterId = await getSelectedRequesterId(page);
-
+    // The requester is derived from the authenticated session server-side.
     const [categoriesRes, relatedSystemsRes] = await Promise.all([
         page.request.get("/api/categories"),
         page.request.get("/api/related-systems"),
@@ -82,7 +85,6 @@ async function createTicketViaAPI(
 
     const res = await page.request.post("/api/tickets", {
         data: {
-            requesterId,
             categoryId: categories[0].id,
             relatedSystemId: relatedSystems[0].id,
             summary: opts.summary,
@@ -145,12 +147,8 @@ test("E2E-02: switching requester A -> B hides A's ticket from My Tickets (AC-08
     await page.goto("/my-tickets");
     await expect(page.getByText(ticketNumber)).toBeVisible();
 
-    // Switch to requester B
-    await page.getByRole("button", { name: /change requester/i }).click();
-    await page.waitForURL(/\/select-requester/);
-    await page.getByLabel(/select requester/i).selectOption({ index: 2 });
-    await page.getByRole("button", { name: /continue/i }).click();
-    await page.waitForURL(/\/my-tickets/);
+    // Switch to requester B (real authenticated session replaces the dev selector)
+    await loginAsRequesterByIndex(page, 2);
 
     // A's ticket must not appear under B
     await expect(page.getByText(ticketNumber)).not.toBeVisible();
@@ -160,7 +158,6 @@ test("E2E-03: upload an attachment, soft-remove it with a reason, then confirm d
     page,
 }) => {
     await loginAsRequesterByIndex(page, 1);
-    const requesterId = await getSelectedRequesterId(page);
 
     // Create our own ticket via API instead of assuming one already exists in
     // the list (that assumption broke this test whenever it ran in isolation
@@ -199,7 +196,8 @@ test("E2E-03: upload an attachment, soft-remove it with a reason, then confirm d
     await expect(removedRow).toBeVisible();
     await expect(removedRow.getByRole("link", { name: /download/i })).toHaveCount(0);
 
-    const downloadUrl = `/api/attachments/${attachmentId}/download?requesterId=${requesterId}`;
+    // Identity is session-based now — no requesterId query param needed.
+    const downloadUrl = `/api/attachments/${attachmentId}/download`;
     const res = await page.request.get(downloadUrl);
     expect(res.status()).toBe(404);
     const body = await res.json();
@@ -216,11 +214,8 @@ test("E2E-04: navigating directly to another requester's ticket URL shows the er
     });
     void ticketNumber; // kept for readability at the call site / future assertions
 
-    // Switch to requester B
-    await page.goto("/select-requester");
-    await page.getByLabel(/select requester/i).selectOption({ index: 2 });
-    await page.getByRole("button", { name: /continue/i }).click();
-    await page.waitForURL(/\/my-tickets/);
+    // Switch to requester B (real authenticated session replaces the dev selector)
+    await loginAsRequesterByIndex(page, 2);
 
     // Direct-navigate to A's ticket while logged in as B.
     await page.goto(`/tickets/${ticketId}`);
@@ -230,7 +225,6 @@ test("E2E-04: navigating directly to another requester's ticket URL shows the er
 
 test("E2E-05: search, filter, and paginate My Tickets return correct results (AC-09, AC-10, AC-12)", async ({ page }) => {
     await loginAsRequesterByIndex(page, 1);
-    const requesterId = await getSelectedRequesterId(page);
     const keyword = `e2e05-${Date.now()}`;
 
     await page.goto("/create-ticket");
@@ -243,7 +237,6 @@ test("E2E-05: search, filter, and paginate My Tickets return correct results (AC
     for (let i = 0; i < 11; i++) {
         const res = await page.request.post("/api/tickets", {
             data: {
-                requesterId,
                 categoryId: Number(categoryId),
                 relatedSystemId: Number(relatedSystemId),
                 summary: `${keyword} bulk ticket ${i}`,

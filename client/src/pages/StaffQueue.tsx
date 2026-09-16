@@ -44,11 +44,16 @@ export function StaffQueue() {
     // Track whether there were any tickets globally before filters were applied
     const [hasEverHadTickets, setHasEverHadTickets] = useState<boolean | null>(null);
 
+    // Sequence guard: ignore stale responses that resolve out of order
+    // (e.g. the initial unfiltered fetch resolving after a search fetch)
+    const requestSeqRef = useRef(0);
+
     const isFiltered = Boolean(search || statusFilter || itPriorityFilter || ownerFilter);
     const isFilteredRef = useRef(isFiltered);
     useEffect(() => { isFilteredRef.current = isFiltered; }, [isFiltered]);
 
     const loadTickets = useCallback(async () => {
+        const seq = ++requestSeqRef.current;
         setStatus("loading");
         setErrorMessage("");
 
@@ -70,6 +75,9 @@ export function StaffQueue() {
                 page,
                 pageSize: 10,
             });
+
+            // A newer request has been issued meanwhile — discard this stale result
+            if (seq !== requestSeqRef.current) return;
 
             setTickets(res.data);
             setMeta(res.meta);
@@ -395,7 +403,7 @@ export function StaffQueue() {
                                             <td data-label="Status">
                                                 <Badge kind="status" value={ticket.currentStatus} />
                                             </td>
-                                            <td data-label="Owner" className="staff-queue-col-owner" data-testid="col-owner">
+                                            <td data-label="Owner" className="staff-queue-col-owner">
                                                 {ticket.owner ? (
                                                     <span>{ticket.owner.name}</span>
                                                 ) : (

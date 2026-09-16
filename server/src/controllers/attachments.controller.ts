@@ -118,6 +118,7 @@ export async function uploadAttachmentHandler(req: Request, res: Response) {
 
 export async function getAttachmentsByTicketHandler(req: Request, res: Response) {
     const requesterId = req.user!.userId;
+    const role = req.user!.role;
 
     const ticketIdParam = req.params.ticketId || req.params.id;
     const ticketId = Number(ticketIdParam);
@@ -129,7 +130,7 @@ export async function getAttachmentsByTicketHandler(req: Request, res: Response)
     }
 
     try {
-        const attachments = await getAttachmentsByTicket(requesterId, ticketId);
+        const attachments = await getAttachmentsByTicket(requesterId, ticketId, role);
         return res.status(200).json({ attachments });
     } catch (err) {
         if (err instanceof TicketNotFoundError) {

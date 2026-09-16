@@ -14,7 +14,7 @@ verifies it.
 | UNIT-01 | Unit | BR-07 | Password rule validator | Rejects <8 chars, missing case/number/special | `server/tests/lab-03/unit/password.unit.test.ts` | Pass |
 | UNIT-02 | Unit | BR-08 | Password hashing | bcryptjs hash never equals plaintext, verifies correctly | `server/tests/lab-03/unit/auth.unit.test.ts` | Pass |
 | UNIT-02b | Unit | BR-06 | 5-failed-attempts counter & logging | Tracks failed logins, logs security warning at 5 within 15 min | `server/tests/lab-03/unit/loginAttempts.unit.test.ts` | Pass |
-| UNIT-03 | Unit | BR-21 | Status transition matrix | Rejects unlisted transitions, allows listed ones | `server/tests/lab-03/unit/ticketStatus.unit.test.ts` | Planned |
+| UNIT-03 | Unit | BR-21 | Status transition matrix | Rejects unlisted transitions, allows listed ones | `server/tests/lab-03/unit/ticketStatus.unit.test.ts` | Pass |
 | API-01 | API | AC-01 | Valid login | 200; session cookie set; safe user data returned | `server/tests/lab-03/auth.api.test.ts` | Pass |
 | API-02 | API | AC-05 | Invalid password | 401 generic message | `server/tests/lab-03/auth.api.test.ts` | Pass |
 | API-03 | API | AC-05 | Unknown email | 401 identical generic message as API-02 | `server/tests/lab-03/auth.api.test.ts` | Pass |
@@ -22,17 +22,17 @@ verifies it.
 | API-05 | API | AC-02 | Restricted session enforcement | Non-change-password endpoints return 403 while mustChangePassword | `server/tests/lab-03/auth.api.test.ts` | Pass |
 | API-06 | API | AC-02 | Valid password change | 200; mustChangePassword cleared; normal session issued | `server/tests/lab-03/auth.api.test.ts` | Pass |
 | API-07 | API | AC-07 | Logout | 200; cookie cleared; subsequent request unauthenticated | `server/tests/lab-03/auth.api.test.ts` | Pass |
-| API-08 | API | AC-04 | Requester requests Internal Notes | 403; no note data returned | `server/tests/lab-03/comments-notes.api.test.ts` | Planned |
+| API-08 | API | AC-04 | Requester requests Internal Notes | 403; no note data returned | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 | API-09 | API | AC-03 | Requester supplies foreign requesterId | Backend uses session identity, not client value | `server/tests/lab-03/authorization.api.test.ts` | Pass |
-| API-10 | API | AC-08 | Claim unassigned ticket | 200; ownerId = caller | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
-| API-11 | API | AC-09 | Reassign ticket | 200; ownerId updated to target | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
-| API-12 | API | BR-14 | Claim already-claimed ticket | 409 conflict | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
-| API-13 | API | AC-11 | Invalid status transition | 400 INVALID_TRANSITION | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
-| API-14 | API | AC-12 | Resolve without resolution summary | 400 RESOLUTION_SUMMARY_REQUIRED | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
-| API-15 | API | AC-13 | Post Public Comment | 201; visible to Requester and staff | `server/tests/lab-03/comments-notes.api.test.ts` | Planned |
-| API-16 | API | AC-14 | Create Internal Note | 201; never returned to Requester's ticket-detail response | `server/tests/lab-03/comments-notes.api.test.ts` | Planned |
-| API-17 | API | AC-15 | Empty comment/note content | 400; nothing persisted | `server/tests/lab-03/comments-notes.api.test.ts` | Planned |
-| API-18 | API | AC-16 | Mark problem appears-resolved | 200; currentStatus unchanged | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
+| API-10 | API | AC-08 | Claim unassigned ticket | 200; ownerId = caller | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
+| API-11 | API | AC-09 | Reassign ticket | 200; ownerId updated to target | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
+| API-12 | API | BR-14 | Claim already-claimed ticket | 409 conflict | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
+| API-13 | API | AC-11 | Invalid status transition | 400 INVALID_TRANSITION | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
+| API-14 | API | AC-12 | Resolve without resolution summary | 400 RESOLUTION_SUMMARY_REQUIRED | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
+| API-15 | API | AC-13 | Post Public Comment | 201; visible to Requester and staff | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
+| API-16 | API | AC-14 | Create Internal Note | 201; never returned to Requester's ticket-detail response | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
+| API-17 | API | AC-15 | Empty comment/note content | 400; nothing persisted | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
+| API-18 | API | AC-16 | Mark problem appears-resolved | 200; currentStatus unchanged | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
 | API-19 | API | AC-23 | Staff queue search/filter/sort/pagination | Correct filtered/sorted/paginated results | `server/tests/lab-03/staff-queue.api.test.ts` | Pass |
 | API-20 | API | AC-17 | Admin user search | Matches partial name/email | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
 | API-21 | API | AC-18 | Duplicate email on create | 409 DUPLICATE_EMAIL | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
@@ -46,11 +46,11 @@ verifies it.
 | API-29 | API | AC-30 | Create user (happy path) | 201; user created with mustChangePassword=true | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
 | API-30 | API | AC-31 | Edit user name and role (happy path) | 200; user record updated accordingly | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
 | SEC-01 | Security | AC-22 | Non-Admin calls /api/admin/users directly | 403, independent of any UI | `server/tests/lab-03/authorization.api.test.ts` | Planned |
-| SEC-02 | Security | AC-10 | Requester calls PATCH it-priority directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Planned |
-| SEC-03 | Security | AC-32 | Requester calls PATCH status directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Planned |
+| SEC-02 | Security | AC-10 | Requester calls PATCH it-priority directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
+| SEC-03 | Security | AC-32 | Requester calls PATCH status directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-04 | Security | AC-22 | IT Staff calls /api/admin/users directly | 403 (Admin-only, staff ≠ admin) | `server/tests/lab-03/authorization.api.test.ts` | Planned |
 | SEC-05 | Security | AC-03 | Unauthenticated request to any protected endpoint | 401 across the board | `server/tests/lab-03/authorization.api.test.ts` | Pass |
-| SEC-06 | Security | AC-04/FR-09 | Requester calls GET /api/tickets/:id/notes directly | 403; no note data in body | `server/tests/lab-03/authorization.api.test.ts` | Planned |
+| SEC-06 | Security | AC-04/FR-09 | Requester calls GET /api/tickets/:id/notes directly | 403; no note data in body | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-07 | Security | AC-33 | Requester calls GET /api/staff/tickets directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-08 | Security | AC-03/FR-04 | Unauthenticated POST /api/auth/change-password | 401 UNAUTHENTICATED | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-09 | Security | FR-07 | Authenticated IT_STAFF or ADMINISTRATOR calls POST /api/tickets | 403 FORBIDDEN | `server/tests/lab-03/authorization.api.test.ts` | Pass |
@@ -60,12 +60,13 @@ verifies it.
 | UI-04 | UI | ui-spec §3 | Confirm password mismatch | Field-level error, submit disabled | `client/src/tests/lab-03/ChangePassword.test.tsx` | Pass |
 | UI-05 | UI | AC-27 | Nav hides Create Ticket for IT Staff | Nav item absent in DOM for staff session | `client/src/tests/lab-03/StaffTicketQueue.test.tsx` | Pass |
 | UI-06 | UI | AC-23 | Staff Queue empty/no-results distinction | Correct state shown for each case | `client/src/tests/lab-03/StaffTicketQueue.test.tsx` | Pass |
-| UI-07 | UI | BR-21 | Staff Ticket Detail status dropdown options | Only permitted-transition options rendered | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Planned |
-| UI-08 | UI | FR-19 | Internal Notes tab visual distinction | Different background class than Public Comments | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Planned |
-| UI-09 | UI | AC-16 | Requester "appears resolved" indicator | Badge shown after click, status badge unchanged | `client/src/tests/lab-03/RequesterTicketDetail.test.tsx` | Planned |
+| UI-07 | UI | BR-21 | Staff Ticket Detail status dropdown options | Only permitted-transition options rendered | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
+| UI-08 | UI | FR-19 | Internal Notes tab visual distinction | Different background class than Public Comments | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
+| UI-09 | UI | AC-16 | Requester "appears resolved" indicator | Badge shown after click, status badge unchanged | `client/src/tests/lab-03/RequesterTicketDetail.test.tsx` | Pass |
 | UI-10 | UI | AC-18 | Admin create-user duplicate email | Field-level error shown | `client/src/tests/lab-03/UserManagement.test.tsx` | Planned |
 | UI-11 | UI | AC-20/21 | Deactivate button disabled for self/last-admin | Button disabled + tooltip, not just hidden | `client/src/tests/lab-03/UserManagement.test.tsx` | Planned |
-| UI-12 | UI | AC-16 | Staff Ticket Detail appears-resolved badge | Badge rendered near status dropdown when appearsResolved is true | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Planned |
+| UI-12 | UI | AC-16 | Staff Ticket Detail appears-resolved badge | Badge rendered near status dropdown when appearsResolved is true | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
+| UI-13 | UI | BR-27 | Comment content XSS-safe rendering | Stored markup renders as plain text — script/img never executed | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
 | STYLE-01 | Style | ui-spec §1 | Role badge class per role | Correct badge-role-* class + visible text | `client/src/tests/lab-03/Badges.style.test.tsx` | Planned |
 | RESP-01 | Responsive | AC-26 | Staff Queue desktop/tablet/mobile | Table→card switch, no overflow | `e2e/lab-03/responsive.spec.ts` | Pass |
 | RESP-02 | Responsive | AC-26 | Admin User Management responsive | Two-panel→stacked, no overflow | `e2e/lab-03/responsive.spec.ts` | Planned |
@@ -73,8 +74,8 @@ verifies it.
 | MIG-02 | Migration/Regression | AC-24 | All Lab 2 ticket/attachment tests re-run | Pass unmodified in intent against authenticated backend | `server/tests/lab-02/*` (re-run, not new files) | Pass |
 | E2E-01 | E2E | AC-01, AC-02 | Login → forced password change → app access | Normal screens unreachable until change completes | `e2e/lab-03/authentication.spec.ts` | Pass |
 | E2E-02 | E2E | AC-07 | Logout → direct URL access blocked | Redirect to /login, no protected content flashes | `e2e/lab-03/authentication.spec.ts` | Pass |
-| E2E-03 | E2E | AC-08, AC-09, AC-28, AC-29 | Claim → set IT Priority → change status → post comment → add note | Full staff workflow succeeds end-to-end | `e2e/lab-03/staff-ticket-flow.spec.ts` | Planned |
-| E2E-04 | E2E | AC-04, AC-14 | Internal Note never visible to Requester | Requester's own Ticket Detail view never renders the note content | `e2e/lab-03/staff-ticket-flow.spec.ts` | Planned |
+| E2E-03 | E2E | AC-08, AC-09, AC-28, AC-29 | Claim → set IT Priority → change status → post comment → add note | Full staff workflow succeeds end-to-end | `e2e/lab-03/staff-ticket-flow.spec.ts` | Pass |
+| E2E-04 | E2E | AC-04, AC-14 | Internal Note never visible to Requester | Requester's own Ticket Detail view never renders the note content | `e2e/lab-03/staff-ticket-flow.spec.ts` | Pass |
 | E2E-05 | E2E | AC-17..AC-21, AC-30, AC-31 | Create/edit user, set password, safety rules | Full admin workflow incl. all safety-rule rejections | `e2e/lab-03/user-administration.spec.ts` | Planned |
 
 ## 3. Acceptance-Criterion Traceability
@@ -116,10 +117,8 @@ verifies it.
 | AC-33 | SEC-07 |
 | FR-07 | SEC-09 |
 
-## 4. Coverage Gaps (flagged, not silently resolved)
-- BR-06 (5-failed-attempts logging) — resolved in #31 with UNIT-02b (`server/tests/lab-03/unit/loginAttempts.unit.test.ts`).
-- No dedicated test yet for XSS-safe rendering (BR-27) — needs a concrete test once the
-  comment-rendering component exists; add as UI-13 during Issue #35.
+## 4. Coverage Gaps (flagged, not silently resolved)- BR-06 (5-failed-attempts logging) — resolved in #31 with UNIT-02b (`server/tests/lab-03/unit/loginAttempts.unit.test.ts`).
+- XSS-safe rendering (BR-27) — resolved in #35 with UI-13 (`client/src/tests/lab-03/StaffTicketDetail.test.tsx`).
 
 ## 5. Test Commands (to be finalized once test runners are wired up in #31+)
 ```bash

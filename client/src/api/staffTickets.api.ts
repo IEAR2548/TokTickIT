@@ -68,3 +68,69 @@ export async function fetchStaffTickets(params: FetchStaffTicketsParams = {}): P
 
     return res.json();
 }
+
+export interface StaffTicketDetail extends StaffTicketItem {
+    commentsCount: number;
+    notesCount: number;
+    attachmentsCount: number;
+}
+
+export async function fetchStaffTicketDetail(ticketId: number): Promise<StaffTicketDetail> {
+    const res = await fetch(`/api/staff/tickets/${ticketId}`);
+    const body = await res.json();
+    if (!res.ok) {
+        if (res.status === 404) throw new Error("Ticket not found");
+        if (res.status === 403) throw new Error("Access denied");
+        throw new Error(body.message ?? body.error ?? "Failed to load ticket");
+    }
+    return body.data;
+}
+
+export async function claimStaffTicket(ticketId: number): Promise<{ id: number; ownerId: number; owner: StaffTicketOwner }> {
+    const res = await fetch(`/api/staff/tickets/${ticketId}/claim`, { method: "PATCH" });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.message ?? body.error ?? "Failed to claim ticket");
+    return body.data;
+}
+
+export async function assignStaffTicket(ticketId: number, ownerId: number | null): Promise<{ id: number; ownerId: number | null; owner: StaffTicketOwner | null }> {
+    const res = await fetch(`/api/staff/tickets/${ticketId}/assign`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ownerId }),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.message ?? body.error ?? "Failed to assign ticket");
+    return body.data;
+}
+
+export async function updateStaffTicketPriority(ticketId: number, itPriority: string): Promise<{ id: number; itPriority: string }> {
+    const res = await fetch(`/api/staff/tickets/${ticketId}/it-priority`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itPriority }),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.message ?? body.error ?? "Failed to update IT priority");
+    return body.data;
+}
+
+export async function updateStaffTicketStatus(
+    ticketId: number,
+    status: string,
+    resolutionSummary?: string
+): Promise<{ id: number; currentStatus: string; resolutionSummary: string | null }> {
+    const res = await fetch(`/api/staff/tickets/${ticketId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status, resolutionSummary }),
+    });
+    const body = await res.json();
+    if (!res.ok) {
+        const err = new Error(body.message ?? body.error ?? "Failed to update status") as any;
+        err.code = body.error;
+        throw err;
+    }
+    return body.data;
+}
+
