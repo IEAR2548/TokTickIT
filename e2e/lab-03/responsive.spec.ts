@@ -1,4 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
+import { loginAs } from "../auth-helpers";
 
 async function loginAsStaffAndGoToQueue(page: Page) {
     await page.goto("/login");
@@ -52,5 +53,95 @@ test.describe("RESP-01: Staff Queue responsive breakpoints", () => {
 
         const cards = page.locator("[data-testid^='staff-queue-row-']").first();
         await expect(cards).toBeVisible();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// RESP-02: Admin User Management responsive breakpoints (Issue #36, AC-26)
+// Two-panel desktop layout -> stacked mobile, no horizontal overflow.
+// Ref: docs/lab-03/ui-spec.md section 7, docs/lab-03/tests.md RESP-02.
+// ---------------------------------------------------------------------------
+
+async function loginAsAdminAndGoToUsers(page: Page) {
+    // loginAs self-heals the seed admin's mustChangePassword flag (same-password change),
+    // landing the session directly in the app.
+    await loginAs(page, "alex.morgan@example.com");
+    await page.goto("/admin/users");
+    await expect(page).toHaveURL(/\/admin\/users/);
+}
+
+async function expectNoHorizontalOverflow(page: Page) {
+    const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+}
+
+test.describe("RESP-02: Admin User Management responsive breakpoints", () => {
+    test("desktop (>=992px): two-panel layout with table and slide-over form side by side, no overflow", async ({ page }) => {
+        await page.setViewportSize({ width: 1280, height: 800 });
+        await loginAsAdminAndGoToUsers(page);
+
+        const container = page.getByTestId("admin-users-container");
+        await expect(container).toBeVisible();
+
+        const table = page.getByTestId("admin-user-table");
+        await expect(table).toBeVisible();
+
+        await expect(page.getByTestId("admin-user-search")).toBeVisible();
+        await expect(page.getByTestId("admin-user-role-filter")).toBeVisible();
+        await expect(page.getByTestId("admin-create-user-button")).toBeVisible();
+
+        // Seed data guarantees at least one user row
+        const firstRow = page.locator("[data-testid^='admin-user-row-']").first();
+        await expect(firstRow).toBeVisible();
+
+        // Two-panel: opening the create slide-over renders the form beside the table,
+        // not stacked underneath it
+        const tableBox = await table.boundingBox();
+        await page.getByTestId("admin-create-user-button").click();
+        const formBox = await page.getByTestId("admin-user-form").boundingBox();
+        expect(formBox).not.toBeNull();
+        expect(tableBox).not.toBeNull();
+        expect(formBox!.x).toBeGreaterThanOrEqual(tableBox!.x + tableBox!.width * 0.5);
+
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test("tablet (768-991px): usable list with search and create button, no overflow", async ({ page }) => {
+        await page.setViewportSize({ width: 820, height: 1180 });
+        await loginAsAdminAndGoToUsers(page);
+
+        await expect(page.getByTestId("admin-user-table")).toBeVisible();
+        await expect(page.getByTestId("admin-user-search")).toBeVisible();
+        await expect(page.getByTestId("admin-create-user-button")).toBeVisible();
+
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test("mobile (<768px): stacked layout, table header hidden, slide-over form full width, no overflow", async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 800 });
+        await loginAsAdminAndGoToUsers(page);
+
+        const container = page.getByTestId("admin-users-container");
+        await expect(container).toBeVisible();
+
+        // Table header row hidden on mobile; rows render as stacked cards
+        const tableHeader = page.locator("[data-testid='admin-user-table'] thead");
+        await expect(tableHeader).toBeHidden();
+
+        const firstRow = page.locator("[data-testid^='admin-user-row-']").first();
+        await expect(firstRow).toBeVisible();
+
+        await expect(page.getByTestId("admin-user-search")).toBeVisible();
+
+        // Slide-over form stacks full-width on mobile instead of a narrow side panel
+        await page.getByTestId("admin-create-user-button").click();
+        const formBox = await page.getByTestId("admin-user-form").boundingBox();
+        expect(formBox).not.toBeNull();
+        const viewportWidth = page.viewportSize()!.width;
+        expect(formBox!.width).toBeGreaterThanOrEqual(viewportWidth * 0.9);
+
+        await expectNoHorizontalOverflow(page);
     });
 });

@@ -8,12 +8,35 @@ import { prisma } from "../../src/lib/prisma";
 //  REQUESTER, preserving its original id so existing Ticket.requesterId foreign
 //  keys remain valid without a data rewrite."
 
+// The migrated cohort per BR-37: every Lab 2 DevRequester row, which the seed
+// provisions as exactly these User rows. Shared between beforeAll's self-heal
+// check and the BR-38 assertion below.
+const MIGRATED_REQUESTER_EMAILS = [
+    "alice.tanaka@example.com",
+    "bob.chavez@example.com",
+    "carol.meier@example.com",
+    "david.sorn@example.com",
+    "elena.rostova@example.com",
+    "fiona.gallagher@example.com",
+    "eve.former@example.com", // inactive requester is migrated too
+];
+
 describe("MIG-01: DevRequester -> User migration preserves Ticket ownership", () => {
     beforeAll(async () => {
-        // Reads whatever the seeded/migrated database contains. If prior test suites
-        // emptied the Ticket table, re-run seed to restore the pre-existing data.
+        // Reads whatever the seeded/migrated database contains. If prior suites
+        // emptied the Ticket table (requesters.api.test.ts deliberately deletes
+        // alice/bob/eve in its afterAll) or removed members of the migrated
+        // requester cohort, re-run the seed to restore the documented baseline.
+        // This makes the suite order-independent instead of relying on the
+        // alphabetical coincidence that a re-seeding suite runs in between.
         const ticketCount = await prisma.ticket.count();
-        if (ticketCount === 0) {
+        const migratedCount = await prisma.user.count({
+            where: {
+                role: "REQUESTER",
+                email: { in: MIGRATED_REQUESTER_EMAILS },
+            },
+        });
+        if (ticketCount === 0 || migratedCount < MIGRATED_REQUESTER_EMAILS.length) {
             execSync("npx tsx prisma/seed.ts", { stdio: "ignore" });
         }
     });
@@ -46,8 +69,20 @@ describe("MIG-01: DevRequester -> User migration preserves Ticket ownership", ()
     });
 
     it("migrated Requester accounts have a real bcrypt hash and mustChangePassword=true (BR-38)", async () => {
-        const requesters = await prisma.user.findMany({ where: { role: "REQUESTER" } });
-        expect(requesters.length).toBeGreaterThan(0);
+        // BR-38 is scoped to the MIGRATED cohort: BR-37 says "Every existing Lab 2
+        // DevRequester row is migrated into a User row" — i.e. the documented seed
+        // requesters in MIGRATED_REQUESTER_EMAILS above. Other test suites
+        // legitimately create throwaway REQUESTER fixtures (e.g. auth fixtures with
+        // mustChangePassword=false) in this shared dev database; those are not
+        // migrated accounts, and asserting BR-38 over them made this test flake on
+        // file order / leftover state.
+        const requesters = await prisma.user.findMany({
+            where: { role: "REQUESTER", email: { in: MIGRATED_REQUESTER_EMAILS } },
+        });
+        expect(
+            requesters.length,
+            `Expected all ${MIGRATED_REQUESTER_EMAILS.length} migrated requesters to exist`
+        ).toBe(MIGRATED_REQUESTER_EMAILS.length);
 
         for (const r of requesters) {
             expect(r.passwordHash, `User ${r.id} has an empty passwordHash`).not.toBe("");

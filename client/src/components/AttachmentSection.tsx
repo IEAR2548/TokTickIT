@@ -68,6 +68,10 @@ export function AttachmentSection({ ticketId, requesterId, readOnly = false }: A
             .then((data) => {
                 if (!cancelled) setAttachments(data);
             })
+            .catch(() => {
+                // Non-fatal: leave the list empty instead of letting the
+                // rejection escape as an unhandled promise rejection.
+            })
             .finally(() => {
                 if (!cancelled) setLoading(false);
             });

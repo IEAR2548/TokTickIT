@@ -1,25 +1,44 @@
 import { test, expect } from "@playwright/test";
-import { execSync } from "child_process";
+import { loginAs, adminCreateUser, DEV_PASSWORD, projectTag, RUN_ID } from "../auth-helpers";
 
 // Ref: docs/lab-03/specification.md AC-01, AC-02, BR-02, BR-07
 // Ref: docs/lab-03/ui-spec.md Section 2, Section 3
 // Ref: docs/lab-03/tests.md E2E-01, E2E-02
+//
+// Parallel-safety: fullyParallel runs this spec once per browser project. E2E-01
+// MUTATES its user (changes the password), so each project provisions its own
+// user through the Admin API — sharing one user across projects broke the other
+// workers' logins mid-flight (the old marcus.vance-based version).
 
 test.describe("Lab 3 Authentication & Session E2E", () => {
-    test.afterAll(() => {
-        try {
-            execSync("npm run prisma:seed", { cwd: "./server", stdio: "ignore" });
-        } catch {
-            // ignore cleanup errors
-        }
-    });
+    test("E2E-01: Login -> forced password change -> app access (AC-01, AC-02)", async ({ page }, testInfo) => {
+        // 0. Provision a dedicated must-change-password user for this project.
+        //    loginAs sets the admin's session cookie in this browser context,
+        //    which page.request shares. Tag includes retry so a retried attempt
+        //    provisions fresh fixtures instead of colliding with its own first run.
+        const tag = `pw${projectTag(testInfo.project.name)}${testInfo.retry}`;
+        await loginAs(page, "alex.morgan@example.com"); // seed Administrator (self-heals its own flag)
+        const user = await adminCreateUser(page, {
+            name: `E2E One ${tag}`,
+            // RUN_ID makes the email unique across runs: the seed never deletes
+            // e2e fixture users, so a stable email would 409 on the next run.
+            email: `e2e01.${tag}.${RUN_ID}@example.com`,
+            role: "REQUESTER",
+            isActive: true,
+            initialPassword: DEV_PASSWORD,
+        });
+        expect(user.mustChangePassword).toBe(true);
 
-    test("E2E-01: Login -> forced password change -> app access (AC-01, AC-02)", async ({ page }) => {
-        await page.goto("/login");
+        // Start clean: log out the admin so the flow under test begins unauthenticated.
+        // (Direct logout via API would work too; the UI button is equivalent.)
+        const logoutBtn = page.getByRole("button", { name: /logout/i });
+        await expect(logoutBtn).toBeVisible();
+        await logoutBtn.click();
+        await expect(page).toHaveURL(/\/login/);
 
-        // 1. Log in with user requiring password change (Marcus Vance)
-        await page.getByTestId("login-email").fill("marcus.vance@example.com");
-        await page.getByTestId("login-password").fill("DevPass@2026!");
+        // 1. Log in with the dedicated user
+        await page.getByTestId("login-email").fill(user.email);
+        await page.getByTestId("login-password").fill(DEV_PASSWORD);
 
         await Promise.all([
             page.waitForResponse(
@@ -42,13 +61,14 @@ test.describe("Lab 3 Authentication & Session E2E", () => {
         await expect(page).toHaveURL(/\/change-password/);
 
         // 4. Fill current password
-        await page.getByTestId("change-password-current").fill("DevPass@2026!");
+        await page.getByTestId("change-password-current").fill(DEV_PASSWORD);
 
         // 5. Test password rule checklist (BR-07, UI-03)
         await page.getByTestId("change-password-new").fill("short");
         await expect(page.getByTestId("change-password-rule-length")).not.toHaveClass(/satisfied/);
 
-        await page.getByTestId("change-password-new").fill("NewSecretPass@2026!");
+        const NEW_PASSWORD = `NewSecretPass@${tag}!A1`;
+        await page.getByTestId("change-password-new").fill(NEW_PASSWORD);
         await expect(page.getByTestId("change-password-rule-length")).toHaveClass(/satisfied/);
         await expect(page.getByTestId("change-password-rule-case")).toHaveClass(/satisfied/);
         await expect(page.getByTestId("change-password-rule-number-special")).toHaveClass(/satisfied/);
@@ -58,7 +78,7 @@ test.describe("Lab 3 Authentication & Session E2E", () => {
         await expect(page.getByTestId("change-password-submit")).toBeDisabled();
 
         // Match confirm password: submit enabled
-        await page.getByTestId("change-password-confirm").fill("NewSecretPass@2026!");
+        await page.getByTestId("change-password-confirm").fill(NEW_PASSWORD);
         await expect(page.getByTestId("change-password-submit")).toBeEnabled();
 
         // 7. Submit password change
@@ -69,9 +89,11 @@ test.describe("Lab 3 Authentication & Session E2E", () => {
             page.getByTestId("change-password-submit").click(),
         ]);
 
-        // 8. Normal app access is granted (redirected to staff queue for IT_STAFF)
-        await expect(page).toHaveURL(/\/staff\/queue/);
-        await expect(page.getByTestId("staff-queue-container")).toBeVisible();
+        // 8. Normal app access is granted (redirected to my-tickets for REQUESTER)
+        await expect(page).toHaveURL(/\/my-tickets/);
+        await expect(
+            page.getByTestId("my-tickets-loading").or(page.getByTestId("my-tickets-empty")).or(page.getByTestId("my-tickets-no-results"))
+        ).toBeVisible();
     });
 
     test("E2E-02: Logout -> direct URL access blocked (AC-07)", async ({ page }) => {
@@ -80,7 +102,7 @@ test.describe("Lab 3 Authentication & Session E2E", () => {
 
         // Fill credentials for active user
         await page.getByTestId("login-email").fill("samira.chen@example.com");
-        await page.getByTestId("login-password").fill("DevPass@2026!");
+        await page.getByTestId("login-password").fill(DEV_PASSWORD);
 
         await Promise.all([
             page.waitForResponse(
