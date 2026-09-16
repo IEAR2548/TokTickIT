@@ -4,6 +4,52 @@ import bcrypt from "bcryptjs";
 async function main() {
     const defaultPasswordHash = bcrypt.hashSync("DevPass@2026!", 10);
 
+    // --- Test-fixture cleanup -------------------------------------------------
+    // The dev database is shared by vitest API tests and Playwright e2e runs, both
+    // of which create throwaway User fixtures through fixtures or the Admin API
+    // (e.g. e2e01.pwdesktop0.*@example.com, carol.gomez@example.com from
+    // attachments.api.test.ts, or anything left behind by an interrupted run).
+    // Seeding must restore the TRUE documented baseline: exactly the users listed
+    // below. Any other row is test residue and is deleted (children first —
+    // Ticket.requester/owner, PublicComment/InternalNote.author and
+    // Attachment.ticket have no cascade rule on User/Ticket).
+    const SEED_USER_EMAILS = [
+        // Active requesters
+        "alice.tanaka@example.com",
+        "bob.chavez@example.com",
+        "carol.meier@example.com",
+        "david.sorn@example.com",
+        "elena.rostova@example.com",
+        "fiona.gallagher@example.com",
+        // Inactive requester
+        "eve.former@example.com",
+        // Active IT staff
+        "samira.chen@example.com",
+        "marcus.vance@example.com",
+        "liam.oconnor@example.com",
+        // Inactive IT staff
+        "dana.scully@example.com",
+        // Administrator
+        "alex.morgan@example.com",
+    ];
+
+    const fixtureUsers = await prisma.user.findMany({
+        where: { email: { notIn: SEED_USER_EMAILS } },
+        select: { id: true },
+    });
+    if (fixtureUsers.length > 0) {
+        const fixtureIds = fixtureUsers.map((u) => u.id);
+        await prisma.attachment.deleteMany({
+            where: { ticket: { OR: [{ requesterId: { in: fixtureIds } }, { ownerId: { in: fixtureIds } }] } },
+        });
+        await prisma.publicComment.deleteMany({ where: { authorId: { in: fixtureIds } } });
+        await prisma.internalNote.deleteMany({ where: { authorId: { in: fixtureIds } } });
+        await prisma.ticket.deleteMany({
+            where: { OR: [{ requesterId: { in: fixtureIds } }, { ownerId: { in: fixtureIds } }] },
+        });
+        await prisma.user.deleteMany({ where: { id: { in: fixtureIds } } });
+    }
+
     // 4 required Categories
     const categories = ['Account and Access', 'Hardware', 'Software', 'Network'];
 

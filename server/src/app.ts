@@ -11,6 +11,7 @@ import relatedSystemsRoute from "./routes/relatedSystems.route";
 import ticketsRoute from "./routes/tickets.route";
 import attachmentsRoute from "./routes/attachments.route";
 import staffTicketsRoute from "./routes/staffTickets.route";
+import adminUsersRoute from "./routes/adminUsers.route";
 
 const app = express();
 
@@ -39,5 +40,6 @@ app.use("/api/related-systems", relatedSystemsRoute);
 app.use("/api/tickets", ticketsRoute);
 app.use("/api/attachments", attachmentsRoute);
 app.use("/api/staff/tickets", staffTicketsRoute);
+app.use("/api/admin/users", adminUsersRoute);
 
 export default app;
