@@ -12,6 +12,7 @@ import { MyTickets } from "./pages/MyTickets";
 import { RequesterTicketDetail } from "./pages/RequesterTicketDetail";
 import { StaffQueue } from "./pages/StaffQueue";
 import { StaffTicketDetail } from "./pages/StaffTicketDetail";
+import { UserManagement } from "./pages/UserManagement";
 
 export default function App() {
   return (
@@ -79,10 +80,7 @@ export default function App() {
               path="/admin/users"
               element={
                 <AuthGuard allowedRoles={["ADMINISTRATOR"]}>
-                  <div className="container py-4" data-testid="admin-users-page">
-                    <h2>User Management</h2>
-                    <p className="text-muted">Administrator panel</p>
-                  </div>
+                  <UserManagement />
                 </AuthGuard>
               }
             />
