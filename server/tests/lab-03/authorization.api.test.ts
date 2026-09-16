@@ -247,4 +247,66 @@ describe("Lab 3 Security Authorization (SEC-05, SEC-08, SEC-09, API-09)", () => 
             expect(res.body.data).toBeUndefined();
         });
     });
+
+    // Ref: docs/lab-03/tests.md SEC-01, SEC-04 — moved here from #32 per Issue #36 Step 1a:
+    // these were correctly left Planned because /api/admin/* did not exist yet; the
+    // endpoint ships in this Issue, so the enforcement tests belong here now.
+    describe("Admin endpoint server-side enforcement (SEC-01, SEC-04, AC-22)", () => {
+        const ADMIN_PATHS: Array<{ method: "get" | "post" | "patch"; path: string; body?: any }> = [
+            { method: "get", path: "/api/admin/users" },
+            {
+                method: "post",
+                path: "/api/admin/users",
+                body: {
+                    name: "Forbidden Create Try",
+                    email: "forbidden.create@example.com",
+                    role: "REQUESTER",
+                    isActive: true,
+                    initialPassword: "Forbidden@2026!",
+                },
+            },
+            { method: "patch", path: "/api/admin/users/1", body: { name: "Should Not Apply" } },
+            {
+                method: "patch",
+                path: "/api/admin/users/1/password",
+                body: { newPassword: "Forbidden@2026!" },
+            },
+        ];
+
+        it("SEC-01: authenticated REQUESTER calling every /api/admin/users endpoint directly gets 403 FORBIDDEN", async () => {
+            for (const { method, path, body } of ADMIN_PATHS) {
+                const token = signSessionToken({
+                    userId: requesterUser.id,
+                    role: "REQUESTER",
+                    mustChangePassword: false,
+                });
+
+                const res = await (request(app) as any)[method](path)
+                    .set("Cookie", `toktickit_session=${token}`)
+                    .send(body ?? {});
+
+                expect(res.status, `${method.toUpperCase()} ${path}`).toBe(403);
+                expect(res.body.error, `${method.toUpperCase()} ${path}`).toBe("FORBIDDEN");
+                expect(res.body.message, `${method.toUpperCase()} ${path}`).toMatch(/Access denied/i);
+            }
+        });
+
+        it("SEC-04: authenticated IT_STAFF calling every /api/admin/users endpoint directly gets 403 FORBIDDEN (staff ≠ admin)", async () => {
+            for (const { method, path, body } of ADMIN_PATHS) {
+                const token = signSessionToken({
+                    userId: staffUser.id,
+                    role: "IT_STAFF",
+                    mustChangePassword: false,
+                });
+
+                const res = await (request(app) as any)[method](path)
+                    .set("Cookie", `toktickit_session=${token}`)
+                    .send(body ?? {});
+
+                expect(res.status, `${method.toUpperCase()} ${path}`).toBe(403);
+                expect(res.body.error, `${method.toUpperCase()} ${path}`).toBe("FORBIDDEN");
+                expect(res.body.message, `${method.toUpperCase()} ${path}`).toMatch(/Access denied/i);
+            }
+        });
+    });
 });
