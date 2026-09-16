@@ -34,21 +34,21 @@ verifies it.
 | API-17 | API | AC-15 | Empty comment/note content | 400; nothing persisted | `server/tests/lab-03/comments-notes.api.test.ts` | Pass |
 | API-18 | API | AC-16 | Mark problem appears-resolved | 200; currentStatus unchanged | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
 | API-19 | API | AC-23 | Staff queue search/filter/sort/pagination | Correct filtered/sorted/paginated results | `server/tests/lab-03/staff-queue.api.test.ts` | Pass |
-| API-20 | API | AC-17 | Admin user search | Matches partial name/email | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| API-21 | API | AC-18 | Duplicate email on create | 409 DUPLICATE_EMAIL | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| API-22 | API | AC-19 | Set new initial password | mustChangePassword=true for target on next login | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| API-23 | API | AC-20 | Self-deactivation attempt | 403 CANNOT_DEACTIVATE_SELF | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| API-24 | API | AC-21 | Deactivate last active Administrator | 403 LAST_ACTIVE_ADMIN | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| API-25 | API | BR-11/BR-30 | Edit user with duplicate email | 409 DUPLICATE_EMAIL on PATCH user | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| API-26 | API | AC-21/BR-33 | Role-change last active Admin away from Administrator | 403 LAST_ACTIVE_ADMIN | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| API-27 | API | AC-28 | Change IT Priority (happy path) | 200; itPriority updated, requestedPriority unchanged | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
-| API-28 | API | AC-29 | Valid status transition (happy path) | 200; currentStatus updated to target status | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Planned |
-| API-29 | API | AC-30 | Create user (happy path) | 201; user created with mustChangePassword=true | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| API-30 | API | AC-31 | Edit user name and role (happy path) | 200; user record updated accordingly | `server/tests/lab-03/users-admin.api.test.ts` | Planned |
-| SEC-01 | Security | AC-22 | Non-Admin calls /api/admin/users directly | 403, independent of any UI | `server/tests/lab-03/authorization.api.test.ts` | Planned |
+| API-20 | API | AC-17 | Admin user search | Matches partial name/email | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-21 | API | AC-18 | Duplicate email on create | 409 DUPLICATE_EMAIL | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-22 | API | AC-19 | Set new initial password | mustChangePassword=true for target on next login | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-23 | API | AC-20 | Self-deactivation attempt | 403 CANNOT_DEACTIVATE_SELF | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-24 | API | AC-21 | Deactivate last active Administrator | 403 LAST_ACTIVE_ADMIN | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-25 | API | BR-11/BR-30 | Edit user with duplicate email | 409 DUPLICATE_EMAIL on PATCH user | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-26 | API | AC-21/BR-33 | Role-change last active Admin away from Administrator | 403 LAST_ACTIVE_ADMIN | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-27 | API | AC-28 | Change IT Priority (happy path) | 200; itPriority updated, requestedPriority unchanged | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
+| API-28 | API | AC-29 | Valid status transition (happy path) | 200; currentStatus updated to target status | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
+| API-29 | API | AC-30 | Create user (happy path) | 201; user created with mustChangePassword=true | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-30 | API | AC-31 | Edit user name and role (happy path) | 200; user record updated accordingly | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| SEC-01 | Security | AC-22 | Non-Admin calls /api/admin/users directly | 403, independent of any UI | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-02 | Security | AC-10 | Requester calls PATCH it-priority directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-03 | Security | AC-32 | Requester calls PATCH status directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
-| SEC-04 | Security | AC-22 | IT Staff calls /api/admin/users directly | 403 (Admin-only, staff ≠ admin) | `server/tests/lab-03/authorization.api.test.ts` | Planned |
+| SEC-04 | Security | AC-22 | IT Staff calls /api/admin/users directly | 403 (Admin-only, staff ≠ admin) | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-05 | Security | AC-03 | Unauthenticated request to any protected endpoint | 401 across the board | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-06 | Security | AC-04/FR-09 | Requester calls GET /api/tickets/:id/notes directly | 403; no note data in body | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-07 | Security | AC-33 | Requester calls GET /api/staff/tickets directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
@@ -63,13 +63,13 @@ verifies it.
 | UI-07 | UI | BR-21 | Staff Ticket Detail status dropdown options | Only permitted-transition options rendered | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
 | UI-08 | UI | FR-19 | Internal Notes tab visual distinction | Different background class than Public Comments | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
 | UI-09 | UI | AC-16 | Requester "appears resolved" indicator | Badge shown after click, status badge unchanged | `client/src/tests/lab-03/RequesterTicketDetail.test.tsx` | Pass |
-| UI-10 | UI | AC-18 | Admin create-user duplicate email | Field-level error shown | `client/src/tests/lab-03/UserManagement.test.tsx` | Planned |
-| UI-11 | UI | AC-20/21 | Deactivate button disabled for self/last-admin | Button disabled + tooltip, not just hidden | `client/src/tests/lab-03/UserManagement.test.tsx` | Planned |
+| UI-10 | UI | AC-18 | Admin create-user duplicate email | Field-level error shown | `client/src/tests/lab-03/UserManagement.test.tsx` | Pass |
+| UI-11 | UI | AC-20/21 | Deactivate button disabled for self/last-admin | Button disabled + tooltip, not just hidden | `client/src/tests/lab-03/UserManagement.test.tsx` | Pass |
 | UI-12 | UI | AC-16 | Staff Ticket Detail appears-resolved badge | Badge rendered near status dropdown when appearsResolved is true | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
 | UI-13 | UI | BR-27 | Comment content XSS-safe rendering | Stored markup renders as plain text — script/img never executed | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
-| STYLE-01 | Style | ui-spec §1 | Role badge class per role | Correct badge-role-* class + visible text | `client/src/tests/lab-03/Badges.style.test.tsx` | Planned |
+| STYLE-01 | Style | ui-spec §1 | Role badge class per role | Correct badge-role-* class + visible text | `client/src/tests/lab-03/Badges.style.test.tsx` | Pass |
 | RESP-01 | Responsive | AC-26 | Staff Queue desktop/tablet/mobile | Table→card switch, no overflow | `e2e/lab-03/responsive.spec.ts` | Pass |
-| RESP-02 | Responsive | AC-26 | Admin User Management responsive | Two-panel→stacked, no overflow | `e2e/lab-03/responsive.spec.ts` | Planned |
+| RESP-02 | Responsive | AC-26 | Admin User Management responsive | Two-panel→stacked, no overflow | `e2e/lab-03/responsive.spec.ts` | Pass |
 | MIG-01 | Migration/Regression | AC-25 | DevRequester → User migration | Existing Ticket.requesterId still resolves correctly post-migration | `server/tests/lab-03/migration.api.test.ts` | Pass |
 | MIG-02 | Migration/Regression | AC-24 | All Lab 2 ticket/attachment tests re-run | Pass unmodified in intent against authenticated backend | `server/tests/lab-02/*` (re-run, not new files) | Pass |
 | E2E-01 | E2E | AC-01, AC-02 | Login → forced password change → app access | Normal screens unreachable until change completes | `e2e/lab-03/authentication.spec.ts` | Pass |
@@ -117,7 +117,8 @@ verifies it.
 | AC-33 | SEC-07 |
 | FR-07 | SEC-09 |
 
-## 4. Coverage Gaps (flagged, not silently resolved)- BR-06 (5-failed-attempts logging) — resolved in #31 with UNIT-02b (`server/tests/lab-03/unit/loginAttempts.unit.test.ts`).
+## 4. Coverage Gaps (flagged, not silently resolved)
+- BR-06 (5-failed-attempts logging) — resolved in #31 with UNIT-02b (`server/tests/lab-03/unit/loginAttempts.unit.test.ts`).
 - XSS-safe rendering (BR-27) — resolved in #35 with UI-13 (`client/src/tests/lab-03/StaffTicketDetail.test.tsx`).
 
 ## 5. Test Commands (to be finalized once test runners are wired up in #31+)
@@ -132,4 +133,4 @@ _Not applicable yet — no implementation exists. To be filled in during Issue #
 (Release Integration), mirroring the Lab 2 Issue #28 pattern._
 
 ## 7. Known Limitations or Deferred Tests
-_None yet — will be populated as implementation Issues (#30–#38) surface any._
+_None yet — will be populated as implementation Issues (#30–#38) surface any.
