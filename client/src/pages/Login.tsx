@@ -4,6 +4,7 @@ import { login } from "../api/auth.api";
 import { useAuth } from "../context/AuthContext";
 import { useRequester } from "../context/RequesterContext";
 import "./RequesterSelection.css";
+import "./Login.css";
 
 export function Login() {
     const [email, setEmail] = useState("");
@@ -51,7 +52,9 @@ export function Login() {
 
     return (
         <div className="requester-select-page">
-            <div className="requester-select-card" style={{ maxWidth: 440 }}>
+            {/* STYLE-02: login-card testid required by LabScreensStyle.style.test.tsx —
+                .requester-select-card is the --color-surface token class */}
+            <div className="requester-select-card" data-testid="login-card" style={{ maxWidth: 440 }}>
                 <h1 className="requester-select-title">TokTickIT</h1>
                 <p className="requester-select-subtitle">Sign in to your account</p>
 
@@ -77,7 +80,8 @@ export function Login() {
                         <label htmlFor="login-password" className="form-label fw-semibold">
                             Password
                         </label>
-                        <div className="input-group">
+                        {/* Eye toggle sits INSIDE the input box (overlaid right edge) */}
+                        <div className="password-input-wrapper">
                             <input
                                 id="login-password"
                                 data-testid="login-password"
@@ -91,12 +95,13 @@ export function Login() {
                             />
                             <button
                                 type="button"
-                                className="btn btn-outline-secondary"
+                                className="password-toggle-btn"
                                 onClick={() => setShowPassword(!showPassword)}
                                 tabIndex={-1}
                                 aria-label={showPassword ? "Hide password" : "Show password"}
+                                aria-pressed={showPassword}
                             >
-                                <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`}></i>
+                                <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -111,6 +116,7 @@ export function Login() {
                         </div>
                     )}
 
+                    {/* STYLE-02: btn-primary binds --color-primary (required by LabScreensStyle.style.test.tsx) */}
                     <button
                         type="submit"
                         data-testid="login-submit"

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { changePassword } from "../api/auth.api";
 import { useAuth } from "../context/AuthContext";
 import "./RequesterSelection.css";
+import "./ChangePassword.css";
 
 export function ChangePassword() {
     const [currentPassword, setCurrentPassword] = useState("");
@@ -103,21 +104,23 @@ export function ChangePassword() {
                         <div className="mt-2 p-2 bg-light rounded text-muted small">
                             <div
                                 data-testid="change-password-rule-length"
-                                className={`d-flex align-items-center mb-1 ${hasLength ? "satisfied text-success fw-semibold" : ""}`}
+                                /* STYLE-03: rule-met / rule-unmet classes required by
+                                   LabScreensStyle.style.test.tsx (visible pass/fail indicator) */
+                                className={`d-flex align-items-center mb-1 password-rule ${hasLength ? "rule-met satisfied text-success fw-semibold" : "rule-unmet"}`}
                             >
                                 <i className={`bi me-2 ${hasLength ? "bi-check-circle-fill" : "bi-circle"}`}></i>
                                 Be at least 8 characters
                             </div>
                             <div
                                 data-testid="change-password-rule-case"
-                                className={`d-flex align-items-center mb-1 ${hasCase ? "satisfied text-success fw-semibold" : ""}`}
+                                className={`d-flex align-items-center mb-1 password-rule ${hasCase ? "rule-met satisfied text-success fw-semibold" : "rule-unmet"}`}
                             >
                                 <i className={`bi me-2 ${hasCase ? "bi-check-circle-fill" : "bi-circle"}`}></i>
                                 Include upper and lower case letters
                             </div>
                             <div
                                 data-testid="change-password-rule-number-special"
-                                className={`d-flex align-items-center ${hasNumberAndSpecial ? "satisfied text-success fw-semibold" : ""}`}
+                                className={`d-flex align-items-center password-rule ${hasNumberAndSpecial ? "rule-met satisfied text-success fw-semibold" : "rule-unmet"}`}
                             >
                                 <i className={`bi me-2 ${hasNumberAndSpecial ? "bi-check-circle-fill" : "bi-circle"}`}></i>
                                 Include a number and a special character
