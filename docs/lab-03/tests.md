@@ -68,8 +68,31 @@ verifies it.
 | UI-12 | UI | AC-16 | Staff Ticket Detail appears-resolved badge | Badge rendered near status dropdown when appearsResolved is true | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
 | UI-13 | UI | BR-27 | Comment content XSS-safe rendering | Stored markup renders as plain text — script/img never executed | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
 | STYLE-01 | Style | ui-spec §1 | Role badge class per role | Correct badge-role-* class + visible text | `client/src/tests/lab-03/Badges.style.test.tsx` | Pass |
+| STYLE-02 | Style | ui-spec §2 | Login card + submit token classes | Card carries the --color-surface class, submit the --color-primary class | `client/src/tests/lab-03/LabScreensStyle.style.test.tsx` | Pass |
+| STYLE-03 | Style | ui-spec §3 | Password rule checklist indicator class | Items carry rule-unmet/rule-met classes that flip as rules are satisfied | `client/src/tests/lab-03/LabScreensStyle.style.test.tsx` | Pass |
+| STYLE-04 | Style | ui-spec §6 | Internal Notes panel warning token class | Panel class binds --color-warning-bg, distinct from Public Comments panel | `client/src/tests/lab-03/LabScreensStyle.style.test.tsx` | Pass |
+| STYLE-05 | Style | ui-spec §4 | Appears-resolved indicator token class | Indicator class binds --color-pale-green | `client/src/tests/lab-03/LabScreensStyle.style.test.tsx` | Pass |
+| STYLE-06 | Style | ui-spec §7 | Admin role filter/badge full-label render | Role filter offers full labels; row badge renders "Administrator" with no truncation classes | `client/src/tests/lab-03/LabScreensStyle.style.test.tsx` | Pass |
 | RESP-01 | Responsive | AC-26 | Staff Queue desktop/tablet/mobile | Table→card switch, no overflow | `e2e/lab-03/responsive.spec.ts` | Pass |
 | RESP-02 | Responsive | AC-26 | Admin User Management responsive | Two-panel→stacked, no overflow | `e2e/lab-03/responsive.spec.ts` | Pass |
+| RESP-03 | Responsive | AC-26 | Login screen responsive | Centered card, fields visible/usable, no overflow at 375/768/1280 | `e2e/lab-03/responsive.spec.ts` | Pass |
+| RESP-04 | Responsive | AC-26 | Change Password screen responsive | Checklist items + Continue visible, not clipped, no overflow at 375/768/1280 | `e2e/lab-03/responsive.spec.ts` | Pass |
+| RESP-05 | Responsive | AC-26 | Staff Ticket Detail responsive | Header grid 2-col→1-col on mobile, tabs tappable, no overflow at 375/768/1280 | `e2e/lab-03/responsive.spec.ts` | Pass |
+| RESP-06 | Responsive | AC-26 | Requester Ticket Detail additions responsive | Comment input + appears-resolved button visible/tappable, no overflow at 375/768/1280 | `e2e/lab-03/responsive.spec.ts` | Pass |
+| VISUAL-01 | Visual | ui-spec §10 | Login screenshots | 3 viewports + error state in `artifacts/lab-03/screenshots/login/` | `e2e/lab-03/screenshots.login.spec.ts` | Pass |
+| VISUAL-02 | Visual | ui-spec §10 | Change Password screenshots | 3 viewports + checklist-validation state in `artifacts/lab-03/screenshots/change-password/` | `e2e/lab-03/screenshots.change-password.spec.ts` | Pass |
+| VISUAL-03 | Visual | ui-spec §10 | Staff Queue screenshots | 3 viewports + filters-open + no-results states in `artifacts/lab-03/screenshots/staff-queue/` | `e2e/lab-03/screenshots.staff-queue.spec.ts` | Pass |
+| VISUAL-04 | Visual | ui-spec §10 | Staff Ticket Detail screenshots | 3 viewports + internal-notes-tab + resolution-summary states in `artifacts/lab-03/screenshots/staff-ticket-detail/` | `e2e/lab-03/screenshots.staff-ticket-detail.spec.ts` | Pass |
+| VISUAL-05 | Visual | ui-spec §10 | Requester Ticket Detail screenshots | 3 viewports + appears-resolved state in `artifacts/lab-03/screenshots/requester-ticket-detail/` | `e2e/lab-03/screenshots.requester-ticket-detail.spec.ts` | Pass |
+| VISUAL-06 | Visual | ui-spec §10 | Admin User Management screenshots | 3 viewports + create-panel-open state in `artifacts/lab-03/screenshots/admin-users/` | `e2e/lab-03/screenshots.admin-users.spec.ts` | Pass |
+| VISUAL-CHK-01 | Visual | ui-spec §10 item 1 | Role badge correct token color per role, text visible | Computed background == --color-pale-green / --color-field-readonly-bg / --color-warning-bg for Requester / IT Staff / Administrator | `e2e/lab-03/visual-inspection.spec.ts` | Pass |
+| VISUAL-CHK-02 | Visual | ui-spec §10 item 2 | Internal Notes visually distinct from Public Comments | Notes panel background == --color-warning-bg and differs from public panel | `e2e/lab-03/visual-inspection.spec.ts` | Pass |
+| VISUAL-CHK-03 | Visual | ui-spec §10 item 3 | Editable vs read-only field token pair | Editable selects == --color-field-editable-bg, read-only values == --color-field-readonly-bg, and they differ | `e2e/lab-03/visual-inspection.spec.ts` | Pass |
+| VISUAL-CHK-04 | Visual | ui-spec §10 item 4 | No Create Ticket nav for IT Staff/Administrator | Nav link present for Requester, absent in DOM for IT Staff and Administrator (D-5) | `e2e/lab-03/visual-inspection.spec.ts` | Pass |
+| VISUAL-CHK-05 | Visual | ui-spec §10 item 5 | No pagination controls in admin user list | Zero pagination controls rendered (D-4) | `e2e/lab-03/visual-inspection.spec.ts` | Pass |
+| VISUAL-CHK-06 | Visual | ui-spec §10 item 6 | No email-delivery checkbox in Create User form | Only checkbox is the Active toggle; no email-delivery control/text (D-2) | `e2e/lab-03/visual-inspection.spec.ts` | Pass |
+| VISUAL-CHK-07 | Visual | ui-spec §10 item 7 | All screens usable and non-overflowing at 375/850/1280 | scrollWidth <= clientWidth on all 6 new screens at all 3 widths | `e2e/lab-03/visual-inspection.spec.ts` | Pass |
+| VISUAL-07 | Visual | ui-spec §2 | Login show/hide password eye icon | bootstrap-icons glyph font loaded (::before resolves), toggle switches field type, aria-label present | `e2e/lab-03/login-password-toggle.spec.ts` | Pass |
 | MIG-01 | Migration/Regression | AC-25 | DevRequester → User migration | Existing Ticket.requesterId still resolves correctly post-migration | `server/tests/lab-03/migration.api.test.ts` | Pass |
 | MIG-02 | Migration/Regression | AC-24 | All Lab 2 ticket/attachment tests re-run | Pass unmodified in intent against authenticated backend | `server/tests/lab-02/*` (re-run, not new files) | Pass |
 | E2E-01 | E2E | AC-01, AC-02 | Login → forced password change → app access | Normal screens unreachable until change completes | `e2e/lab-03/authentication.spec.ts` | Pass |
@@ -107,7 +130,7 @@ verifies it.
 | AC-23 | API-19, UI-06 |
 | AC-24 | MIG-02 |
 | AC-25 | MIG-01 |
-| AC-26 | RESP-01, RESP-02 |
+| AC-26 | RESP-01, RESP-02, RESP-03, RESP-04, RESP-05, RESP-06, VISUAL-CHK-07 |
 | AC-27 | UI-05 |
 | AC-28 | API-27, E2E-03 |
 | AC-29 | API-28, E2E-03 |
@@ -133,4 +156,8 @@ _Not applicable yet — no implementation exists. To be filled in during Issue #
 (Release Integration), mirroring the Lab 2 Issue #28 pattern._
 
 ## 7. Known Limitations or Deferred Tests
-_None yet — will be populated as implementation Issues (#30–#38) surface any.
+- E2E-05 (full admin workflow incl. safety-rule rejections) remains Planned — assigned to Issue #38 (End-to-End Tests).
+- ui-spec §10 Visual Inspection Checklist is fully automated (VISUAL-CHK-01..07); screenshot evidence lives in
+  `artifacts/lab-03/screenshots/` (VISUAL-01..06) for the human-eye review pass.
+- STYLE-02..06 assert the className-to-token contract in jsdom (jsdom cannot compute real CSS); the computed-style
+  proof of the same tokens runs in Playwright (VISUAL-CHK-01..03).

@@ -29,6 +29,10 @@ async function openStaffTicketByNumber(page: Page, ticketNumber: string) {
 }
 
 test.describe("Lab 3 IT Staff Ticket Flow E2E", () => {
+    // 90s per-test budget: fixture provisioning through the Admin API + two
+    // logins + several saves exceed the 30s default under peak parallel load
+    // (the product itself is not slow — the clock just runs out mid-workflow).
+    test.setTimeout(90_000);
     test("E2E-03: Claim → set IT Priority → change status → post comment → add note (AC-08, AC-28, AC-29, AC-13, AC-14)", async ({ page }, testInfo) => {
         // 0. Provision a dedicated per-project ticket (admin session, then logged out).
         //    Tag includes retry so a retried test provisions fresh fixtures instead of
