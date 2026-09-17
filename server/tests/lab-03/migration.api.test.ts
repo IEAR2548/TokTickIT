@@ -21,22 +21,48 @@ const MIGRATED_REQUESTER_EMAILS = [
     "eve.former@example.com", // inactive requester is migrated too
 ];
 
+// A specific, known-stable seeded ticket to inspect for the "expanded columns"
+// check below. Deliberately Carol Meier's ticket, not Alice's or Bob's:
+// requesters.api.test.ts used to reuse alice/bob/eve's emails as its own fixture
+// (now fixed to use its own private emails — see that file), and Bob's seeded
+// ticket TK-20260827-0001 is intentionally appearsResolved=true by design. Carol
+// is not touched by any other suite, so her ticket's seeded values are a safe,
+// deterministic fixture to assert against.
+const STABLE_TICKET_NUMBER = "TK-20260828-0001";
+
 describe("MIG-01: DevRequester -> User migration preserves Ticket ownership", () => {
     beforeAll(async () => {
-        // Reads whatever the seeded/migrated database contains. If prior suites
-        // emptied the Ticket table (requesters.api.test.ts deliberately deletes
-        // alice/bob/eve in its afterAll) or removed members of the migrated
-        // requester cohort, re-run the seed to restore the documented baseline.
-        // This makes the suite order-independent instead of relying on the
-        // alphabetical coincidence that a re-seeding suite runs in between.
-        const ticketCount = await prisma.ticket.count();
-        const migratedCount = await prisma.user.count({
-            where: {
-                role: "REQUESTER",
-                email: { in: MIGRATED_REQUESTER_EMAILS },
-            },
-        });
-        if (ticketCount === 0 || migratedCount < MIGRATED_REQUESTER_EMAILS.length) {
+        // Reads whatever the seeded/migrated database contains. Several lab-02
+        // suites issue a blanket `prisma.ticket.deleteMany({})` (they need an
+        // isolated Ticket table), so by the time this file runs the seed's
+        // tickets are usually gone — while `ticketCount` is still > 0 because
+        // those suites created their own rows afterward. The old guard only
+        // checked `ticketCount === 0` / migrated-cohort size, so it missed that
+        // corruption and this file then asserted against a wiped baseline: the
+        // STABLE_TICKET lookup returned null, and a leftover requester without
+        // mustChangePassword=true failed BR-38. Verify EVERY invariant this file
+        // asserts and re-seed when any of them is broken, so the result is
+        // genuinely order-independent instead of depending on which suite ran
+        // last and what residue it left behind.
+        const [ticketCount, migrated, stableTicket] = await Promise.all([
+            prisma.ticket.count(),
+            prisma.user.findMany({
+                where: { role: "REQUESTER", email: { in: MIGRATED_REQUESTER_EMAILS } },
+                select: { mustChangePassword: true, passwordHash: true },
+            }),
+            prisma.ticket.findUnique({
+                where: { ticketNumber: STABLE_TICKET_NUMBER },
+                select: { id: true },
+            }),
+        ]);
+
+        const baselineIntact =
+            ticketCount > 0 &&
+            migrated.length === MIGRATED_REQUESTER_EMAILS.length &&
+            migrated.every((u) => u.mustChangePassword && u.passwordHash.length > 20) &&
+            stableTicket !== null;
+
+        if (!baselineIntact) {
             execSync("npx tsx prisma/seed.ts", { stdio: "ignore" });
         }
     });
@@ -102,7 +128,14 @@ describe("MIG-01: DevRequester -> User migration preserves Ticket ownership", ()
     });
 
     it("Ticket has ownerId, itPriority, currentStatus (expanded enum), resolutionSummary, appearsResolved columns", async () => {
-        const ticket = await prisma.ticket.findFirst({
+        // Query a SPECIFIC, known-stable seeded ticket rather than findFirst() with
+        // no where/orderBy — Postgres does not guarantee row order without an
+        // explicit ORDER BY, so an unordered findFirst() could non-deterministically
+        // return any seeded ticket, including ones the seed deliberately gives
+        // appearsResolved=true (e.g. Bob Chavez's TK-20260827-0001). That made this
+        // assertion flake independently of any real migration bug.
+        const ticket = await prisma.ticket.findUnique({
+            where: { ticketNumber: STABLE_TICKET_NUMBER },
             select: {
                 ownerId: true,
                 itPriority: true,
@@ -111,7 +144,7 @@ describe("MIG-01: DevRequester -> User migration preserves Ticket ownership", ()
                 appearsResolved: true,
             },
         });
-        expect(ticket).toBeDefined();
+        expect(ticket, `Expected seeded ticket ${STABLE_TICKET_NUMBER} to exist`).toBeDefined();
         // itPriority backfilled from requestedPriority for pre-existing tickets (BR-17)
         expect(ticket!.itPriority).not.toBeNull();
         expect(ticket!.appearsResolved).toBe(false);

@@ -11,6 +11,10 @@ import { loginAs, adminCreateUser, DEV_PASSWORD, projectTag, RUN_ID } from "../a
 // workers' logins mid-flight (the old marcus.vance-based version).
 
 test.describe("Lab 3 Authentication & Session E2E", () => {
+    // 90s per-test budget: E2E-01 provisions a user via the Admin API and
+    // performs two logins plus the forced-change flow — over the 30s default
+    // under peak parallel load.
+    test.setTimeout(90_000);
     test("E2E-01: Login -> forced password change -> app access (AC-01, AC-02)", async ({ page }, testInfo) => {
         // 0. Provision a dedicated must-change-password user for this project.
         //    loginAs sets the admin's session cookie in this browser context,

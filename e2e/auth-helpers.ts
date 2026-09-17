@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { Page, expect } from "@playwright/test";
 
 // Ref: docs/lab-03/api-spec.md Endpoints 1-4 (auth), docs/lab-03/specification.md AC-02
@@ -15,7 +16,29 @@ export const DEV_PASSWORD = "DevPass@2026!";
 // Unique-per-run suffix for fixture records created through the Admin API.
 // Combined with the per-project tag (below) it gives every parallel worker its
 // own users/tickets, so no two tests ever mutate the same row.
-export const RUN_ID = `${Date.now()}`;
+//
+// Date.now() alone is not a safe uniqueness source here: Playwright's
+// workerIndex is documented as recyclable across worker restarts (e.g. after a
+// retry), so two DIFFERENT worker processes can end up with the same
+// workerIndex+retry combination. If those two processes also import this
+// module within the same millisecond (observed in practice — two real runs
+// differed by only 11ms), the resulting fixture email collides and
+// adminCreateUser fails with 409 DUPLICATE_EMAIL for a completely unrelated
+// spec file. The random suffix makes that collision astronomically unlikely
+// regardless of timing or worker-index reuse.
+export const RUN_ID = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
+
+// Fixture identity for setup that runs OUTSIDE a single test body (notably
+// `test.beforeAll`). RUN_ID is module-level, so every re-invocation of the same
+// hook inside one worker process reuses it — and testInfo.workerIndex / retry
+// are documented as recyclable and were observed identical across two beforeAll
+// runs in the SAME worker process (Playwright re-runs the hook for a retried
+// test). The combination produced the exact same fixture email twice in one
+// process, so the second create hit 409 DUPLICATE_EMAIL. A fresh UUID per call
+// makes every provisioning attempt unique regardless of worker/retry reuse.
+export function uniqueFixtureSuffix(): string {
+    return randomUUID().replace(/-/g, "").slice(0, 12);
+}
 
 export function projectTag(projectName: string | undefined): string {
     return (projectName ?? "anon").replace(/[^a-z0-9]/gi, "").toLowerCase();
@@ -175,9 +198,6 @@ export async function provisionRequesterWithTicket(
         initialPassword: DEV_PASSWORD,
     });
 
-    // Reference data is stable seed content — pick the first of each.
-    // NOTE response shapes differ: /api/categories returns a bare array,
-    // /api/related-systems returns { relatedSystems: [...] }.
     const categoriesBody = (await (await page.request.get("/api/categories")).json()) as
         | { id: number }[]
         | { categories?: { id: number }[] };
