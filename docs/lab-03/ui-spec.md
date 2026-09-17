@@ -146,8 +146,8 @@ Single screen, two-panel layout on desktop, stacked on mobile:
 ### Left panel — user table
 Columns: Name, Email, Role (badge), Status (Active/Inactive pill), Edit action.
 Above the table: search input (name/email) + role filter dropdown (All/Requester/IT
-Staff/Administrator). **No pagination controls** (Decision D-4) — all matching users
-render. "+ Create User" button top-right.
+Staff/Administrator) + status filter dropdown (All/Active/Inactive).
+**No pagination controls** (Decision D-4) — all matching users render. "+ Create User" button top-right.
 
 ### Right panel — Create/Edit slide-over
 Right panel = slide-over Create/Edit form: Full Name* (text), Email Address* (text),
@@ -165,7 +165,7 @@ Validation (duplicate email, invalid role), success (toast/banner), forbidden
 "No users match your search" with a "Clear filters" link (distinct from the zero-users
 global empty state which should not occur given seed data minimums).
 
-`data-testid`: `admin-user-search`, `admin-user-role-filter`,
+`data-testid`: `admin-user-search`, `admin-user-role-filter`, `admin-user-status-filter`,
 `admin-user-row-${userId}`, `admin-create-user-button`,
 `admin-user-form-name`, `admin-user-form-email`, `admin-user-form-role`,
 `admin-user-form-active`, `admin-user-form-password`,

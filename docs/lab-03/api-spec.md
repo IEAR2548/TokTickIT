@@ -232,7 +232,7 @@ transitioning to Resolved/Closed without one (BR-22/AC-12),
 
 ## 26. GET /api/admin/users
 **Auth:** Administrator only
-**Query:** `search` (name/email substring), `role` (optional exact filter)
+**Query:** `search` (name/email substring), `role` (optional exact filter), `isActive` (optional exact status filter: `true`/`false`)
 **Response 200:** `{ "data": [ { "id":1, "name":"...", "email":"...", "role":"...", "isActive":true } ] }` — no pagination (Decision D-4).
 **Errors:** `401 UNAUTHENTICATED`, `403 FORBIDDEN` for non-Administrator caller (SEC-01, SEC-04).
 
