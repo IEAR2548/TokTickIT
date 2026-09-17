@@ -15,9 +15,14 @@ import { validatePassword } from "../validators/password.validator";
 export async function listAdminUsersHandler(req: Request, res: Response) {
     const search = req.query.search ? String(req.query.search) : undefined;
     const role = req.query.role ? String(req.query.role).toUpperCase() : undefined;
+    // Exact-active-state filter (per ui-spec §7: All/Active/Inactive). Combinable
+    // with search and/or role — they are independent predicates (AND semantics).
+    const rawIsActive = req.query.isActive ? String(req.query.isActive).toLowerCase() : undefined;
+    const isActive =
+        rawIsActive === "true" ? true : rawIsActive === "false" ? false : undefined;
 
     try {
-        const users = await listAdminUsers({ search, role });
+        const users = await listAdminUsers({ search, role, isActive });
         // No pagination metadata by design (Decision D-4)
         return res.status(200).json({ data: users });
     } catch (err) {
