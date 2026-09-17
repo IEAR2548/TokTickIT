@@ -64,7 +64,8 @@
     background: var(--color-surface, #fff);
 }
 
-.admin-users-role-filter {
+.admin-users-role-filter,
+.admin-users-status-filter {
     flex: 0 1 180px;
 }
 
