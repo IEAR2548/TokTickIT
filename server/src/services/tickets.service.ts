@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma";
-import { getNextTicketNumberBase, buildCandidateTicketNumber, isTicketNumberUniqueViolation } from "./ticketNumber.service";
+import { getNextTicketNumberBase, getHighestTicketSequence, buildCandidateTicketNumber, isTicketNumberUniqueViolation } from "./ticketNumber.service";
 import { CreateTicketInput } from "../validators/ticket.validator";
 
 export class RequesterNotFoundError extends Error {
@@ -33,8 +33,8 @@ export class TicketForbiddenError extends Error {
 }
 
 export async function createTicket(input: CreateTicketInput) {
-    const requester = await prisma.devRequester.findUnique({
-        where: { id: input.requesterId },
+    const requester = await prisma.user.findFirst({
+        where: { id: input.requesterId, role: "REQUESTER" },
     });
     if (!requester || !requester.isActive) {
         throw new RequesterNotFoundError();
@@ -57,9 +57,10 @@ export async function createTicket(input: CreateTicketInput) {
     const { prefix, baseCount } = await getNextTicketNumberBase();
     const MAX_ATTEMPTS = 10;
     let lastConflict: unknown;
+    let cursor = baseCount;
 
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-        const ticketNumber = buildCandidateTicketNumber(prefix, baseCount, attempt);
+        const ticketNumber = buildCandidateTicketNumber(prefix, cursor, attempt);
         try {
             return await prisma.ticket.create({
                 data: {
@@ -70,6 +71,7 @@ export async function createTicket(input: CreateTicketInput) {
                     summary: input.summary.trim(),
                     description: input.description.trim(),
                     requestedPriority: input.requestedPriority,
+                    itPriority: input.requestedPriority,
                     currentStatus: "NEW",
                 },
             });
@@ -77,8 +79,12 @@ export async function createTicket(input: CreateTicketInput) {
             if (!isTicketNumberUniqueViolation(err)) {
                 throw err;
             }
-            // Another concurrent request took this exact number — try the next one.
+            // Another concurrent writer took this exact number — or our cursor
+            // went stale (deletions make the max-based cursor regress mid-run).
+            // Re-read the highest used sequence before the next attempt instead
+            // of burning pre-computed candidates that may all be taken.
             lastConflict = err;
+            cursor = await getHighestTicketSequence(prefix);
         }
     }
 
@@ -97,8 +103,8 @@ export interface ListTicketsOptions {
 }
 
 export async function listTickets(options: ListTicketsOptions) {
-    const requester = await prisma.devRequester.findUnique({
-        where: { id: options.requesterId },
+    const requester = await prisma.user.findFirst({
+        where: { id: options.requesterId, role: "REQUESTER" },
     });
     if (!requester || !requester.isActive) {
         throw new RequesterNotFoundError();
@@ -136,6 +142,7 @@ export async function listTickets(options: ListTicketsOptions) {
             select: {
                 id: true,
                 ticketNumber: true,
+                requesterId: true,
                 summary: true,
                 category: { select: { id: true, name: true } },
                 relatedSystem: { select: { id: true, name: true } },
@@ -181,6 +188,7 @@ export async function getTicketById(requesterId: number, ticketId: number) {
             description: true,
             requestedPriority: true,
             currentStatus: true,
+            appearsResolved: true,
             createdAt: true,
             updatedAt: true,
         },

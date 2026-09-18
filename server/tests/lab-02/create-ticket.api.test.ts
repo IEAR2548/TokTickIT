@@ -2,34 +2,29 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../src/app";
 import { prisma } from "../../src/lib/prisma";
+import { signSessionToken } from "../../src/lib/session";
 
 // Ref: docs/lab-02/api-spec.md POST /api/tickets
 // Ref: docs/lab-02/specification.md AC-01, AC-04, BR-01, BR-02, BR-07, BR-08, BR-11
 // Ref: docs/lab-02/tests.md API-01 through API-05
 
 let requesterId: number;
-let inactiveRequesterId: number;
 let categoryId: number;
 let relatedSystemId: number;
+let requesterToken: string;
 
 describe("POST /api/tickets", () => {
     beforeAll(async () => {
         await prisma.attachment.deleteMany({});
         await prisma.ticket.deleteMany({});
 
-        const requester = await prisma.devRequester.upsert({
+        const requester = await prisma.user.upsert({
             where: { email: "alice.tanaka@example.com" },
             update: { isActive: true },
             create: { name: "Alice Tanaka", email: "alice.tanaka@example.com", isActive: true },
         });
         requesterId = requester.id;
-
-        const inactive = await prisma.devRequester.upsert({
-            where: { email: "eve.former@example.com" },
-            update: { isActive: false },
-            create: { name: "Eve Former", email: "eve.former@example.com", isActive: false },
-        });
-        inactiveRequesterId = inactive.id;
+        requesterToken = signSessionToken({ userId: requesterId, role: "REQUESTER", mustChangePassword: false });
 
         const category = await prisma.category.upsert({
             where: { name: "Hardware" },
@@ -60,8 +55,8 @@ describe("POST /api/tickets", () => {
     it("creates a ticket with valid data and returns 201 with official Ticket Number (API-01, AC-01, BR-01, BR-02)", async () => {
         const res = await request(app)
             .post("/api/tickets")
+            .set("Cookie", `toktickit_session=${requesterToken}`)
             .send({
-                requesterId,
                 categoryId,
                 relatedSystemId,
                 summary: "Laptop battery drains quickly",
@@ -84,8 +79,8 @@ describe("POST /api/tickets", () => {
     it("creates a ticket with CRITICAL priority (BR-11)", async () => {
         const res = await request(app)
             .post("/api/tickets")
+            .set("Cookie", `toktickit_session=${requesterToken}`)
             .send({
-                requesterId,
                 categoryId,
                 relatedSystemId,
                 summary: "Server is completely down",
@@ -100,8 +95,8 @@ describe("POST /api/tickets", () => {
     it("rejects a ticket with empty Summary (API-02, AC-04, BR-07)", async () => {
         const res = await request(app)
             .post("/api/tickets")
+            .set("Cookie", `toktickit_session=${requesterToken}`)
             .send({
-                requesterId,
                 categoryId,
                 relatedSystemId,
                 summary: "   ",
@@ -120,8 +115,8 @@ describe("POST /api/tickets", () => {
     it("rejects a ticket with Summary shorter than 5 chars (API-03, AC-04, BR-07)", async () => {
         const res = await request(app)
             .post("/api/tickets")
+            .set("Cookie", `toktickit_session=${requesterToken}`)
             .send({
-                requesterId,
                 categoryId,
                 relatedSystemId,
                 summary: "Hi",
@@ -137,8 +132,8 @@ describe("POST /api/tickets", () => {
     it("rejects a ticket with Description shorter than 10 chars (API-04, AC-04, BR-08)", async () => {
         const res = await request(app)
             .post("/api/tickets")
+            .set("Cookie", `toktickit_session=${requesterToken}`)
             .send({
-                requesterId,
                 categoryId,
                 relatedSystemId,
                 summary: "Valid summary here",
@@ -154,8 +149,8 @@ describe("POST /api/tickets", () => {
     it("rejects a ticket with invalid requestedPriority value (API-05, AC-04, BR-11)", async () => {
         const res = await request(app)
             .post("/api/tickets")
+            .set("Cookie", `toktickit_session=${requesterToken}`)
             .send({
-                requesterId,
                 categoryId,
                 relatedSystemId,
                 summary: "Valid summary text",
@@ -168,11 +163,10 @@ describe("POST /api/tickets", () => {
         expect(res.body.fields).toHaveProperty("requestedPriority");
     });
 
-    it("returns 404 when requesterId does not match an active Requester", async () => {
+    it("returns 401 UNAUTHENTICATED when no session cookie is provided", async () => {
         const res = await request(app)
             .post("/api/tickets")
             .send({
-                requesterId: inactiveRequesterId,
                 categoryId,
                 relatedSystemId,
                 summary: "Valid summary text",
@@ -180,15 +174,15 @@ describe("POST /api/tickets", () => {
                 requestedPriority: "MEDIUM",
             });
 
-        expect(res.status).toBe(404);
-        expect(res.body.error).toBe("REQUESTER_NOT_FOUND");
+        expect(res.status).toBe(401);
+        expect(res.body.error).toBe("UNAUTHENTICATED");
     });
 
     it("returns 404 when categoryId does not exist", async () => {
         const res = await request(app)
             .post("/api/tickets")
+            .set("Cookie", `toktickit_session=${requesterToken}`)
             .send({
-                requesterId,
                 categoryId: 999999,
                 relatedSystemId,
                 summary: "Valid summary text",
@@ -203,8 +197,8 @@ describe("POST /api/tickets", () => {
     it("returns 404 when relatedSystemId does not exist", async () => {
         const res = await request(app)
             .post("/api/tickets")
+            .set("Cookie", `toktickit_session=${requesterToken}`)
             .send({
-                requesterId,
                 categoryId,
                 relatedSystemId: 999999,
                 summary: "Valid summary text",
@@ -215,4 +209,4 @@ describe("POST /api/tickets", () => {
         expect(res.status).toBe(404);
         expect(res.body.error).toBe("RELATED_SYSTEM_NOT_FOUND");
     });
-});
+});

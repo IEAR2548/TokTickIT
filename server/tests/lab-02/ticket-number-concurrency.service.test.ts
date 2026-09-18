@@ -11,7 +11,7 @@ describe("createTicket() under concurrent load", () => {
     const createdTicketIds: number[] = [];
 
     beforeAll(async () => {
-        const requester = await prisma.devRequester.upsert({
+        const requester = await prisma.user.upsert({
             where: { email: "concurrency.regression@example.com" },
             update: { isActive: true },
             create: { name: "Concurrency Regression", email: "concurrency.regression@example.com", isActive: true },
@@ -28,7 +28,7 @@ describe("createTicket() under concurrent load", () => {
         if (createdTicketIds.length > 0) {
             await prisma.ticket.deleteMany({ where: { id: { in: createdTicketIds } } });
         }
-        await prisma.devRequester.deleteMany({ where: { email: "concurrency.regression@example.com" } });
+        await prisma.user.deleteMany({ where: { email: "concurrency.regression@example.com" } });
         await prisma.$disconnect();
     });
 

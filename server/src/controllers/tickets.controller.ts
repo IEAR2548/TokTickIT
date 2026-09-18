@@ -13,6 +13,7 @@ import {
 
 export async function createTicketHandler(req: Request, res: Response) {
     const body = req.body as Partial<CreateTicketInput>;
+    body.requesterId = req.user!.userId;
     const fieldErrors = validateCreateTicket(body);
     if (hasErrors(fieldErrors)) {
         return res.status(400).json({
@@ -52,14 +53,7 @@ export async function createTicketHandler(req: Request, res: Response) {
 }
 
 export async function listTicketsHandler(req: Request, res: Response) {
-    const requesterIdRaw = req.query.requesterId;
-    const requesterId = Number(requesterIdRaw);
-    if (!requesterIdRaw || !Number.isInteger(requesterId) || requesterId <= 0) {
-        return res.status(400).json({
-            error: "VALIDATION_ERROR",
-            message: "requesterId is required and must be a positive integer",
-        });
-    }
+    const requesterId = req.user!.userId;
 
     let page = 1;
     if (req.query.page !== undefined) {
@@ -146,17 +140,9 @@ export async function listTicketsHandler(req: Request, res: Response) {
 }
 
 export async function getTicketDetailHandler(req: Request, res: Response) {
-    const requesterIdRaw = req.query.requesterId;
-    const requesterId = Number(requesterIdRaw);
-    if (!requesterIdRaw || !Number.isInteger(requesterId) || requesterId <= 0) {
-        return res.status(400).json({
-            error: "VALIDATION_ERROR",
-            message: "requesterId is required and must be a positive integer",
-        });
-    }
+    const requesterId = req.user!.userId;
 
-    // Section 5 only documents VALIDATION_ERROR for requesterId, not for the
-    // :id param itself. A malformed/non-integer :id can never match a real
+    // A malformed/non-integer :id can never match a real
     // row, so it is treated the same as "does not exist" -> 404 NOT_FOUND,
     // rather than adding an undocumented error code here.
     const ticketId = Number(req.params.id);

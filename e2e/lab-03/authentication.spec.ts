@@ -1,0 +1,135 @@
+import { test, expect } from "@playwright/test";
+import { loginAs, adminCreateUser, DEV_PASSWORD, projectTag, RUN_ID } from "../auth-helpers";
+
+// Ref: docs/lab-03/specification.md AC-01, AC-02, BR-02, BR-07
+// Ref: docs/lab-03/ui-spec.md Section 2, Section 3
+// Ref: docs/lab-03/tests.md E2E-01, E2E-02
+//
+// Parallel-safety: fullyParallel runs this spec once per browser project. E2E-01
+// MUTATES its user (changes the password), so each project provisions its own
+// user through the Admin API — sharing one user across projects broke the other
+// workers' logins mid-flight (the old marcus.vance-based version).
+
+test.describe("Lab 3 Authentication & Session E2E", () => {
+    // 90s per-test budget: E2E-01 provisions a user via the Admin API and
+    // performs two logins plus the forced-change flow — over the 30s default
+    // under peak parallel load.
+    test.setTimeout(90_000);
+    test("E2E-01: Login -> forced password change -> app access (AC-01, AC-02)", async ({ page }, testInfo) => {
+        // 0. Provision a dedicated must-change-password user for this project.
+        //    loginAs sets the admin's session cookie in this browser context,
+        //    which page.request shares. Tag includes retry so a retried attempt
+        //    provisions fresh fixtures instead of colliding with its own first run.
+        const tag = `pw${projectTag(testInfo.project.name)}${testInfo.retry}`;
+        await loginAs(page, "alex.morgan@example.com"); // seed Administrator (self-heals its own flag)
+        const user = await adminCreateUser(page, {
+            name: `E2E One ${tag}`,
+            // RUN_ID makes the email unique across runs: the seed never deletes
+            // e2e fixture users, so a stable email would 409 on the next run.
+            email: `e2e01.${tag}.${RUN_ID}@example.com`,
+            role: "REQUESTER",
+            isActive: true,
+            initialPassword: DEV_PASSWORD,
+        });
+        expect(user.mustChangePassword).toBe(true);
+
+        // Start clean: log out the admin so the flow under test begins unauthenticated.
+        // (Direct logout via API would work too; the UI button is equivalent.)
+        const logoutBtn = page.getByRole("button", { name: /logout/i });
+        await expect(logoutBtn).toBeVisible();
+        await logoutBtn.click();
+        await expect(page).toHaveURL(/\/login/);
+
+        // 1. Log in with the dedicated user
+        await page.getByTestId("login-email").fill(user.email);
+        await page.getByTestId("login-password").fill(DEV_PASSWORD);
+
+        await Promise.all([
+            page.waitForResponse(
+                (res) => res.url().includes("/api/auth/login") && res.status() === 200
+            ),
+            page.getByTestId("login-submit").click(),
+        ]);
+
+        // 2. AC-02: Must be redirected to /change-password
+        await expect(page).toHaveURL(/\/change-password/);
+        await expect(page.getByTestId("change-password-current")).toBeVisible();
+        await expect(page.getByTestId("change-password-new")).toBeVisible();
+        await expect(page.getByTestId("change-password-confirm")).toBeVisible();
+
+        // 3. Normal app screens remain unavailable while mustChangePassword is true (AC-02, BR-02)
+        await page.goto("/staff/queue");
+        await expect(page).toHaveURL(/\/change-password/);
+
+        await page.goto("/my-tickets");
+        await expect(page).toHaveURL(/\/change-password/);
+
+        // 4. Fill current password
+        await page.getByTestId("change-password-current").fill(DEV_PASSWORD);
+
+        // 5. Test password rule checklist (BR-07, UI-03)
+        await page.getByTestId("change-password-new").fill("short");
+        await expect(page.getByTestId("change-password-rule-length")).not.toHaveClass(/satisfied/);
+
+        const NEW_PASSWORD = `NewSecretPass@${tag}!A1`;
+        await page.getByTestId("change-password-new").fill(NEW_PASSWORD);
+        await expect(page.getByTestId("change-password-rule-length")).toHaveClass(/satisfied/);
+        await expect(page.getByTestId("change-password-rule-case")).toHaveClass(/satisfied/);
+        await expect(page.getByTestId("change-password-rule-number-special")).toHaveClass(/satisfied/);
+
+        // 6. Confirm password mismatch: submit disabled
+        await page.getByTestId("change-password-confirm").fill("MismatchPass@2026!");
+        await expect(page.getByTestId("change-password-submit")).toBeDisabled();
+
+        // Match confirm password: submit enabled
+        await page.getByTestId("change-password-confirm").fill(NEW_PASSWORD);
+        await expect(page.getByTestId("change-password-submit")).toBeEnabled();
+
+        // 7. Submit password change
+        await Promise.all([
+            page.waitForResponse(
+                (res) => res.url().includes("/api/auth/change-password") && res.status() === 200
+            ),
+            page.getByTestId("change-password-submit").click(),
+        ]);
+
+        // 8. Normal app access is granted (redirected to my-tickets for REQUESTER)
+        await expect(page).toHaveURL(/\/my-tickets/);
+        await expect(
+            page.getByTestId("my-tickets-loading").or(page.getByTestId("my-tickets-empty")).or(page.getByTestId("my-tickets-no-results"))
+        ).toBeVisible();
+    });
+
+    test("E2E-02: Logout -> direct URL access blocked (AC-07)", async ({ page }) => {
+        // Navigate to login
+        await page.goto("/login");
+
+        // Fill credentials for active user
+        await page.getByTestId("login-email").fill("samira.chen@example.com");
+        await page.getByTestId("login-password").fill(DEV_PASSWORD);
+
+        await Promise.all([
+            page.waitForResponse(
+                (res) => res.url().includes("/api/auth/login") && res.status() === 200
+            ),
+            page.getByTestId("login-submit").click(),
+        ]);
+
+        // Expect to be logged in and see logout button
+        const logoutBtn = page.getByRole("button", { name: /logout/i });
+        await expect(logoutBtn).toBeVisible();
+
+        // Perform logout
+        await logoutBtn.click();
+
+        // Should redirect to /login
+        await expect(page).toHaveURL(/\/login/);
+
+        // Attempt direct navigation to a protected URL
+        await page.goto("/my-tickets");
+
+        // Should be blocked and redirected to /login
+        await expect(page).toHaveURL(/\/login/);
+        await expect(page.getByTestId("login-email")).toBeVisible();
+    });
+});

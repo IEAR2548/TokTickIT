@@ -2,13 +2,17 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import request from "supertest";
 import app from "../../src/app";
 import { prisma } from "../../src/lib/prisma";
+import { signSessionToken } from "../../src/lib/session";
 
 let requesterA: number;
 let requesterB: number;
-let inactiveRequesterId: number;
 let hardwareCategoryId: number;
 let softwareCategoryId: number;
 let relatedSystemId: number;
+
+// Session tokens signed for each test user
+let tokenA: string;
+let tokenB: string;
 
 async function createTicket(overrides: Partial<{
     requesterId: number;
@@ -41,22 +45,19 @@ describe("GET /api/tickets", () => {
     beforeAll(async () => {
         await prisma.attachment.deleteMany({});
         await prisma.ticket.deleteMany({});
-        await prisma.devRequester.deleteMany({ where: { email: { contains: "mytickets.test" } } });
+        await prisma.user.deleteMany({ where: { email: { contains: "mytickets.test" } } });
 
-        const a = await prisma.devRequester.create({
+        const a = await prisma.user.create({
             data: { name: "Requester A", email: "a.mytickets.test@example.com", isActive: true },
         });
         requesterA = a.id;
+        tokenA = signSessionToken({ userId: requesterA, role: "REQUESTER", mustChangePassword: false });
 
-        const b = await prisma.devRequester.create({
+        const b = await prisma.user.create({
             data: { name: "Requester B", email: "b.mytickets.test@example.com", isActive: true },
         });
         requesterB = b.id;
-
-        const inactive = await prisma.devRequester.create({
-            data: { name: "Inactive Requester", email: "inactive.mytickets.test@example.com", isActive: false },
-        });
-        inactiveRequesterId = inactive.id;
+        tokenB = signSessionToken({ userId: requesterB, role: "REQUESTER", mustChangePassword: false });
 
         const hw = await prisma.category.upsert({
             where: { name: "Hardware" },
@@ -83,7 +84,7 @@ describe("GET /api/tickets", () => {
     afterAll(async () => {
         await prisma.attachment.deleteMany({});
         await prisma.ticket.deleteMany({});
-        await prisma.devRequester.deleteMany({ where: { email: { contains: "mytickets.test" } } });
+        await prisma.user.deleteMany({ where: { email: { contains: "mytickets.test" } } });
         await prisma.$disconnect();
     });
 
@@ -93,7 +94,9 @@ describe("GET /api/tickets", () => {
         await createTicket({ requesterId: requesterA, summary: "A ticket two" });
         await createTicket({ requesterId: requesterB, summary: "B ticket one" });
 
-        const res = await request(app).get(`/api/tickets?requesterId=${requesterA}`);
+        const res = await request(app)
+            .get("/api/tickets")
+            .set("Cookie", `toktickit_session=${tokenA}`);
 
         expect(res.status).toBe(200);
         expect(res.body.tickets).toHaveLength(2);
@@ -119,13 +122,17 @@ describe("GET /api/tickets", () => {
         await createTicket({ requesterId: requesterA, ticketNumber: "TK-20260904-0020", summary: "Cannot connect to VPN" });
 
         // Search in summary
-        const resSummary = await request(app).get(`/api/tickets?requesterId=${requesterA}&search=laptop`);
+        const resSummary = await request(app)
+            .get("/api/tickets?search=laptop")
+            .set("Cookie", `toktickit_session=${tokenA}`);
         expect(resSummary.status).toBe(200);
         expect(resSummary.body.tickets).toHaveLength(1);
         expect(resSummary.body.tickets[0].summary).toMatch(/laptop/i);
 
         // Search in ticketNumber
-        const resNumber = await request(app).get(`/api/tickets?requesterId=${requesterA}&search=0020`);
+        const resNumber = await request(app)
+            .get("/api/tickets?search=0020")
+            .set("Cookie", `toktickit_session=${tokenA}`);
         expect(resNumber.status).toBe(200);
         expect(resNumber.body.tickets).toHaveLength(1);
         expect(resNumber.body.tickets[0].ticketNumber).toBe("TK-20260904-0020");
@@ -136,7 +143,9 @@ describe("GET /api/tickets", () => {
         await createTicket({ requesterId: requesterA, categoryId: hardwareCategoryId, summary: "Hardware ticket" });
         await createTicket({ requesterId: requesterA, categoryId: softwareCategoryId, summary: "Software ticket" });
 
-        const res = await request(app).get(`/api/tickets?requesterId=${requesterA}&categoryId=${hardwareCategoryId}&status=NEW`);
+        const res = await request(app)
+            .get(`/api/tickets?categoryId=${hardwareCategoryId}&status=NEW`)
+            .set("Cookie", `toktickit_session=${tokenA}`);
 
         expect(res.status).toBe(200);
         expect(res.body.tickets).toHaveLength(1);
@@ -157,7 +166,9 @@ describe("GET /api/tickets", () => {
             createdAt: new Date("2026-09-04T10:00:00.000Z"),
         });
 
-        const res = await request(app).get(`/api/tickets?requesterId=${requesterA}`);
+        const res = await request(app)
+            .get("/api/tickets")
+            .set("Cookie", `toktickit_session=${tokenA}`);
 
         expect(res.status).toBe(200);
         expect(res.body.tickets[0].id).toBe(second.id);
@@ -177,7 +188,9 @@ describe("GET /api/tickets", () => {
             updatedAt: new Date("2026-09-03T10:00:00.000Z"),
         });
 
-        const resAsc = await request(app).get(`/api/tickets?requesterId=${requesterA}&sortBy=updatedAt&sortOrder=asc`);
+        const resAsc = await request(app)
+            .get("/api/tickets?sortBy=updatedAt&sortOrder=asc")
+            .set("Cookie", `toktickit_session=${tokenA}`);
         expect(resAsc.status).toBe(200);
         expect(resAsc.body.tickets[0].id).toBe(t1.id);
         expect(resAsc.body.tickets[1].id).toBe(t2.id);
@@ -189,7 +202,9 @@ describe("GET /api/tickets", () => {
             await createTicket({ requesterId: requesterA, summary: `Ticket number ${i}` });
         }
 
-        const res = await request(app).get(`/api/tickets?requesterId=${requesterA}&page=2&pageSize=10`);
+        const res = await request(app)
+            .get("/api/tickets?page=2&pageSize=10")
+            .set("Cookie", `toktickit_session=${tokenA}`);
 
         expect(res.status).toBe(200);
         expect(res.body.tickets).toHaveLength(5); // 15 total, page 2 of size 10 -> remaining 5
@@ -202,21 +217,27 @@ describe("GET /api/tickets", () => {
     });
 
     it("rejects invalid pageSize (e.g. 7) with 400 VALIDATION_ERROR (API-13, BR-24)", async () => {
-        const res = await request(app).get(`/api/tickets?requesterId=${requesterA}&pageSize=7`);
+        const res = await request(app)
+            .get("/api/tickets?pageSize=7")
+            .set("Cookie", `toktickit_session=${tokenA}`);
 
         expect(res.status).toBe(400);
         expect(res.body.error).toBe("VALIDATION_ERROR");
     });
 
     it("rejects page < 1 with 400 VALIDATION_ERROR (api-spec.md Sec. 5)", async () => {
-        const res = await request(app).get(`/api/tickets?requesterId=${requesterA}&page=0`);
+        const res = await request(app)
+            .get("/api/tickets?page=0")
+            .set("Cookie", `toktickit_session=${tokenA}`);
 
         expect(res.status).toBe(400);
         expect(res.body.error).toBe("VALIDATION_ERROR");
     });
 
     it("returns empty tickets array with valid pagination for an out-of-range page", async () => {
-        const res = await request(app).get(`/api/tickets?requesterId=${requesterA}&page=999`);
+        const res = await request(app)
+            .get("/api/tickets?page=999")
+            .set("Cookie", `toktickit_session=${tokenA}`);
 
         expect(res.status).toBe(200);
         expect(res.body.tickets).toEqual([]);
@@ -227,7 +248,9 @@ describe("GET /api/tickets", () => {
     it("returns an empty tickets array when the Requester has zero tickets (AC-13)", async () => {
         await prisma.ticket.deleteMany({ where: { requesterId: requesterB } });
 
-        const res = await request(app).get(`/api/tickets?requesterId=${requesterB}`);
+        const res = await request(app)
+            .get("/api/tickets")
+            .set("Cookie", `toktickit_session=${tokenB}`);
 
         expect(res.status).toBe(200);
         expect(res.body.tickets).toEqual([]);
@@ -235,20 +258,10 @@ describe("GET /api/tickets", () => {
         expect(res.body.pagination.totalPages).toBe(0);
     });
 
-    it("rejects requests without requesterId with 400 VALIDATION_ERROR (api-spec.md Sec. 5)", async () => {
+    it("returns 401 UNAUTHENTICATED when no session cookie is provided", async () => {
         const res = await request(app).get("/api/tickets");
 
-        expect(res.status).toBe(400);
-        expect(res.body.error).toBe("VALIDATION_ERROR");
-    });
-
-    it("returns 404 REQUESTER_NOT_FOUND when requesterId does not match an active Requester (api-spec.md Sec. 5)", async () => {
-        const resInactive = await request(app).get(`/api/tickets?requesterId=${inactiveRequesterId}`);
-        expect(resInactive.status).toBe(404);
-        expect(resInactive.body.error).toBe("REQUESTER_NOT_FOUND");
-
-        const resNonExistent = await request(app).get("/api/tickets?requesterId=999999");
-        expect(resNonExistent.status).toBe(404);
-        expect(resNonExistent.body.error).toBe("REQUESTER_NOT_FOUND");
+        expect(res.status).toBe(401);
+        expect(res.body.error).toBe("UNAUTHENTICATED");
     });
 });

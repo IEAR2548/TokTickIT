@@ -1,0 +1,287 @@
+/* Ref: docs/lab-03/ui-spec.md section 7 — reuses Zen Green tokens from theme.css.
+   Two-panel desktop (table left, slide-over right), stacked below 768px.
+   Breakpoints match Lab 2: >=992px desktop / 768-991px tablet / <768px mobile. */
+
+.admin-users-container {
+    --admin-slideover-width: 420px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 3rem;
+}
+
+.admin-users-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.admin-users-title {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.admin-users-banner {
+    padding: 0.625rem 0.875rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.admin-users-banner-success {
+    background: var(--color-pale-green, #e7f4e7);
+    color: var(--color-primary, #2e6e3e);
+    border: 1px solid var(--color-primary, #2e6e3e);
+}
+
+.admin-users-banner-error {
+    background: var(--color-warning-bg, #fdf3e0);
+    color: var(--color-warning, #a15c00);
+    border: 1px solid var(--color-warning, #a15c00);
+}
+
+.admin-users-controls {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.admin-users-search-form {
+    flex: 1 1 220px;
+    min-width: 180px;
+    max-width: 420px;
+}
+
+.admin-users-search-input,
+.admin-users-role-filter {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border, #cfd8cf);
+    border-radius: 8px;
+    background: var(--color-surface, #fff);
+}
+
+.admin-users-role-filter,
+.admin-users-status-filter {
+    flex: 0 1 180px;
+}
+
+/* ----- table ----- */
+
+.admin-users-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.admin-users-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-surface, #fff);
+}
+
+.admin-users-table th,
+.admin-users-table td {
+    text-align: left;
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid var(--color-border, #e2e8e2);
+    font-size: 0.925rem;
+}
+
+.admin-users-table th {
+    font-weight: 600;
+    background: var(--color-pale-green, #eef6ee);
+}
+
+.admin-users-status-pill {
+    display: inline-block;
+    padding: 0.125rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.admin-users-status-pill.active {
+    background: var(--color-pale-green, #e7f4e7);
+    color: var(--color-primary, #2e6e3e);
+}
+
+.admin-users-status-pill.inactive {
+    background: var(--color-field-readonly-bg, #eceff1);
+    color: var(--color-text-primary, #333);
+}
+
+/* ----- state boxes ----- */
+
+.admin-users-state-box {
+    border: 1px dashed var(--color-border, #cfd8cf);
+    border-radius: 12px;
+    padding: 2rem 1rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.admin-users-state-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.admin-users-state-desc {
+    color: var(--color-text-muted, #6b7280);
+    margin-bottom: 0.75rem;
+}
+
+.admin-users-skeleton-row {
+    height: 2.25rem;
+    border-radius: 8px;
+    background: var(--color-field-readonly-bg, #eef1ee);
+    margin-bottom: 0.5rem;
+}
+
+/* ----- slide-over (right panel on desktop) ----- */
+
+.admin-user-slideover {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: min(var(--admin-slideover-width), 92vw);
+    background: var(--color-surface, #fff);
+    box-shadow: -4px 0 18px rgba(0, 0, 0, 0.12);
+    padding: 1.25rem 1.25rem 2rem;
+    overflow-y: auto;
+    z-index: 40;
+}
+
+.admin-user-slideover-title {
+    font-size: 1.125rem;
+    margin: 0 0 1rem;
+}
+
+.admin-user-field {
+    margin-bottom: 0.875rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-user-field label {
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.admin-user-field input[type="text"],
+.admin-user-field input[type="password"],
+.admin-user-field select {
+    padding: 0.5rem 0.625rem;
+    border: 1px solid var(--color-border, #cfd8cf);
+    border-radius: 8px;
+    background: var(--color-surface, #fff);
+}
+
+.admin-user-field-toggle {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-user-field-toggle label {
+    margin-bottom: 0;
+}
+
+.admin-user-field-error {
+    color: var(--color-danger, #b3261e);
+    font-size: 0.85rem;
+    margin: 0.25rem 0 0;
+}
+
+.admin-user-password-section {
+    border: 1px solid var(--color-border, #e2e8e2);
+    border-radius: 10px;
+    padding: 0.75rem;
+    margin: 0 0 1rem;
+}
+
+.admin-user-password-section legend {
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0 0.375rem;
+}
+
+.admin-user-password-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.admin-user-password-row input {
+    flex: 1;
+}
+
+.admin-user-actions {
+    display: flex;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+    margin-top: 1.25rem;
+}
+
+/* ----- responsive: two-panel -> stacked (RESP-02) ----- */
+
+@media (min-width: 992px) {
+    /* Two-panel feel on desktop: keep the list clear of the opened slide-over */
+    .admin-users-container.panel-open {
+        padding-right: calc(var(--admin-slideover-width) + 2.5rem);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .admin-users-container {
+        padding: 1rem 0.75rem 2rem;
+    }
+
+    /* Stacked card rows: hide the table header, label each cell */
+    .admin-users-table thead {
+        display: none;
+    }
+
+    .admin-users-table,
+    .admin-users-table tbody,
+    .admin-users-table tr,
+    .admin-users-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .admin-users-table tr {
+        border: 1px solid var(--color-border, #e2e8e2);
+        border-radius: 10px;
+        margin-bottom: 0.75rem;
+        padding: 0.5rem;
+        background: var(--color-surface, #fff);
+    }
+
+    .admin-users-table td {
+        border-bottom: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .admin-users-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--color-text-muted, #6b7280);
+    }
+
+    .admin-users-table td[data-label="Actions"] {
+        justify-content: flex-end;
+    }
+
+    /* Slide-over becomes a full-width sheet on mobile */
+    .admin-user-slideover {
+        width: 100vw;
+        border-radius: 0;
+    }
+}

@@ -3,33 +3,53 @@ import request from "supertest";
 import app from "../../src/app";
 import { prisma } from "../../src/lib/prisma";
 
+// Ref: these must NOT collide with docs/lab-03's shared seed baseline emails
+// (see prisma/seed.ts's SEED_USER_EMAILS and migration.api.test.ts's
+// MIGRATED_REQUESTER_EMAILS). This suite used to reuse alice.tanaka@example.com /
+// bob.chavez@example.com / eve.former@example.com, which are also the exact rows
+// migration.api.test.ts's BR-38 check and other suites depend on as a stable
+// baseline. Deleting and recreating them here (with no role/passwordHash/
+// mustChangePassword set) corrupted that baseline for the rest of the run, and
+// silently reset it every time this suite happened to run before another one —
+// producing different test failures depending on file execution order. Using our
+// own private fixture emails means this suite can freely create/mutate/delete its
+// rows without ever touching another suite's data.
+const TEST_EMAILS = [
+    "requesters-fixture-alice@example.com",
+    "requesters-fixture-bob@example.com",
+    "requesters-fixture-eve@example.com",
+];
+
 describe("GET /api/requesters", () => {
     beforeAll(async () => {
-        // Ensure a known, deterministic seed state for this test suite
-        await prisma.attachment.deleteMany({});
-        await prisma.ticket.deleteMany({});
-        await prisma.devRequester.deleteMany({});
-        await prisma.devRequester.createMany({
+        // Ensure only these three known REQUESTER rows exist for the test.
+        // Do NOT wipe the whole table — IT_STAFF and ADMINISTRATOR seeded users
+        // must survive for downstream tests (e.g. authorization.api.test.ts).
+        await prisma.attachment.deleteMany({
+            where: { ticket: { requester: { email: { in: TEST_EMAILS } } } },
+        });
+        await prisma.ticket.deleteMany({ where: { requester: { email: { in: TEST_EMAILS } } } });
+        await prisma.user.deleteMany({ where: { email: { in: TEST_EMAILS } } });
+        await prisma.user.createMany({
             data: [
-                { name: "Alice Tanaka", email: "alice.tanaka@example.com", isActive: true },
-                { name: "Bob Chavez", email: "bob.chavez@example.com", isActive: true },
-                { name: "Eve Former", email: "eve.former@example.com", isActive: false },
+                { name: "Requesters Fixture Alice", email: "requesters-fixture-alice@example.com", isActive: true },
+                { name: "Requesters Fixture Bob", email: "requesters-fixture-bob@example.com", isActive: true },
+                { name: "Requesters Fixture Eve", email: "requesters-fixture-eve@example.com", isActive: false },
             ],
         });
     });
 
     afterAll(async () => {
-        // Only remove the rows this suite created — do not wipe the whole table
-        await prisma.attachment.deleteMany({});
-        await prisma.ticket.deleteMany({});
-        await prisma.devRequester.deleteMany({
+        // Only remove the rows this suite created — scoped to TEST_EMAILS, never
+        // a blanket deleteMany({}) that could touch another suite's fixtures.
+        await prisma.attachment.deleteMany({
+            where: { ticket: { requester: { email: { in: TEST_EMAILS } } } },
+        });
+        await prisma.ticket.deleteMany({ where: { requester: { email: { in: TEST_EMAILS } } } });
+        await prisma.user.deleteMany({
             where: {
                 email: {
-                    in: [
-                        "alice.tanaka@example.com",
-                        "bob.chavez@example.com",
-                        "eve.former@example.com",
-                    ],
+                    in: TEST_EMAILS,
                 },
             },
         });
@@ -41,12 +61,11 @@ describe("GET /api/requesters", () => {
 
         expect(res.status).toBe(200);
         expect(res.body.requesters).toBeInstanceOf(Array);
-        expect(res.body.requesters).toHaveLength(2);
 
         const names = res.body.requesters.map((r: { name: string }) => r.name);
-        expect(names).toContain("Alice Tanaka");
-        expect(names).toContain("Bob Chavez");
-        expect(names).not.toContain("Eve Former");
+        expect(names).toContain("Requesters Fixture Alice");
+        expect(names).toContain("Requesters Fixture Bob");
+        expect(names).not.toContain("Requesters Fixture Eve");
     });
 
     it("returns each requester with id, name, and email only", async () => {
@@ -60,16 +79,24 @@ describe("GET /api/requesters", () => {
     });
 
     it("returns an empty array (not an error) when no active requesters exist", async () => {
-        await prisma.devRequester.updateMany({ data: { isActive: false } });
+        // Temporarily deactivate only the test users, not staff/admin
+        await prisma.user.updateMany({
+            where: { email: { in: ["requesters-fixture-alice@example.com", "requesters-fixture-bob@example.com"] } },
+            data: { isActive: false },
+        });
 
         const res = await request(app).get("/api/requesters");
 
+        // The endpoint returns only REQUESTER role users — staff/admin don't appear
         expect(res.status).toBe(200);
-        expect(res.body.requesters).toEqual([]);
+        // Only REQUESTER-role active users: all 3 test users are now inactive
+        const requesterNames = res.body.requesters.map((r: { name: string }) => r.name);
+        expect(requesterNames).not.toContain("Requesters Fixture Alice");
+        expect(requesterNames).not.toContain("Requesters Fixture Bob");
 
         // restore state for other tests
-        await prisma.devRequester.updateMany({
-            where: { email: { in: ["alice.tanaka@example.com", "bob.chavez@example.com"] } },
+        await prisma.user.updateMany({
+            where: { email: { in: ["requesters-fixture-alice@example.com", "requesters-fixture-bob@example.com"] } },
             data: { isActive: true },
         });
     });

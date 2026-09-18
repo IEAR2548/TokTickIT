@@ -1,0 +1,40 @@
+/* Login password input with the show/hide eye toggle INSIDE the box.
+   Ref: ui-spec section 2 — password field with show/hide toggle icon.
+   Colors come from theme.css tokens only — no new hex values. */
+
+.password-input-wrapper {
+    position: relative;
+    display: block;
+}
+
+/* Right padding reserves space for the overlaid toggle so text never
+   slides under the icon. */
+.password-input-wrapper .form-control {
+    padding-right: 42px;
+    width: 100%;
+}
+
+.password-toggle-btn {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: var(--color-text-secondary, #4a6357);
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
+.password-toggle-btn:hover {
+    color: var(--color-primary, #006b3c);
+    background: var(--color-pale-green, #eaf6ef);
+}
+
+.password-toggle-btn:focus-visible {
+    outline: 2px solid var(--color-primary, #006b3c);
+    outline-offset: 1px;
+}

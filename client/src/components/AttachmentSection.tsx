@@ -11,6 +11,13 @@ import "./AttachmentSection.css";
 interface AttachmentSectionProps {
     ticketId: number;
     requesterId: number;
+    /**
+     * Read-only mode for IT Staff/Admin views: upload, download, and remove are
+     * Requester-only operations per the Lab 3 authorization matrix (api-spec —
+     * POST/PATCH /api/attachments and /api/tickets/:id/attachments are 🔒 Requester).
+     * Staff may still VIEW the attachment list (GET is staff-permitted).
+     */
+    readOnly?: boolean;
 }
 
 const MAX_ACTIVE_ATTACHMENTS = 5;
@@ -44,7 +51,7 @@ function formatDateTime(iso: string | null): string {
     return `${d.toISOString().slice(0, 10)} ${d.toISOString().slice(11, 16)}`;
 }
 
-export function AttachmentSection({ ticketId, requesterId }: AttachmentSectionProps) {
+export function AttachmentSection({ ticketId, requesterId, readOnly = false }: AttachmentSectionProps) {
     const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploadError, setUploadError] = useState<string | null>(null);
@@ -60,6 +67,10 @@ export function AttachmentSection({ ticketId, requesterId }: AttachmentSectionPr
         fetchTicketAttachments(requesterId, ticketId)
             .then((data) => {
                 if (!cancelled) setAttachments(data);
+            })
+            .catch(() => {
+                // Non-fatal: leave the list empty instead of letting the
+                // rejection escape as an unhandled promise rejection.
             })
             .finally(() => {
                 if (!cancelled) setLoading(false);
@@ -124,27 +135,29 @@ export function AttachmentSection({ ticketId, requesterId }: AttachmentSectionPr
         <section data-testid="attachment-section" className="attachment-section">
             <h2 className="fs-5 fw-bold">Attachments</h2>
 
-            <div className="attachment-add">
-                <input
-                    type="file"
-                    aria-label="Add Attachment"
-                    data-testid="attachment-add-input"
-                    accept="image/jpeg,image/png,image/webp,application/pdf"
-                    onChange={handleFileSelected}
-                    disabled={atLimit}
-                    title={atLimit ? `Maximum of ${MAX_ACTIVE_ATTACHMENTS} active attachments reached` : undefined}
-                />
-                {atLimit && (
-                    <p className="attachment-limit-note" data-testid="attachment-limit-note">
-                        Maximum of {MAX_ACTIVE_ATTACHMENTS} active attachments reached.
-                    </p>
-                )}
-                {uploadError && (
-                    <p role="alert" className="attachment-error">
-                        {uploadError}
-                    </p>
-                )}
-            </div>
+            {!readOnly && (
+                <div className="attachment-add">
+                    <input
+                        type="file"
+                        aria-label="Add Attachment"
+                        data-testid="attachment-add-input"
+                        accept="image/jpeg,image/png,image/webp,application/pdf"
+                        onChange={handleFileSelected}
+                        disabled={atLimit}
+                        title={atLimit ? `Maximum of ${MAX_ACTIVE_ATTACHMENTS} active attachments reached` : undefined}
+                    />
+                    {atLimit && (
+                        <p className="attachment-limit-note" data-testid="attachment-limit-note">
+                            Maximum of {MAX_ACTIVE_ATTACHMENTS} active attachments reached.
+                        </p>
+                    )}
+                    {uploadError && (
+                        <p role="alert" className="attachment-error">
+                            {uploadError}
+                        </p>
+                    )}
+                </div>
+            )}
 
             {!loading && activeAttachments.length > 0 && (
                 <ul className="attachment-active-list" data-testid="attachment-active-list">
@@ -154,21 +167,25 @@ export function AttachmentSection({ ticketId, requesterId }: AttachmentSectionPr
                             <span className="attachment-meta">
                                 ({formatFileType(a.mimeType)}, {formatSize(a.sizeBytes)}, {formatDate(a.uploadedAt)})
                             </span>
-                            <a
-                                href={getAttachmentDownloadUrl(a.id, requesterId)}
-                                className="attachment-download-btn"
-                                data-testid={`attachment-download-link-${a.id}`}
-                            >
-                                Download
-                            </a>
-                            <button
-                                type="button"
-                                className="attachment-remove-btn"
-                                data-testid={`attachment-remove-button-${a.id}`}
-                                onClick={() => openRemovalDialog(a)}
-                            >
-                                Remove
-                            </button>
+                            {!readOnly && (
+                                <>
+                                    <a
+                                        href={getAttachmentDownloadUrl(a.id, requesterId)}
+                                        className="attachment-download-btn"
+                                        data-testid={`attachment-download-link-${a.id}`}
+                                    >
+                                        Download
+                                    </a>
+                                    <button
+                                        type="button"
+                                        className="attachment-remove-btn"
+                                        data-testid={`attachment-remove-button-${a.id}`}
+                                        onClick={() => openRemovalDialog(a)}
+                                    >
+                                        Remove
+                                    </button>
+                                </>
+                            )}
                         </li>
                     ))}
                 </ul>

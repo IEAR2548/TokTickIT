@@ -7,8 +7,8 @@ export interface RequesterDTO {
 }
 
 export async function getActiveRequesters(): Promise<RequesterDTO[]> {
-    const requesters = await prisma.devRequester.findMany({
-        where: { isActive: true },
+    const requesters = await prisma.user.findMany({
+        where: { role: "REQUESTER", isActive: true },
         orderBy: { name: "asc" },
         select: {
             id: true,

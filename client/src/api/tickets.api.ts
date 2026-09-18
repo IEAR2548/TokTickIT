@@ -200,9 +200,13 @@ export interface TicketDetail {
     summary: string;
     description: string;
     requestedPriority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+    itPriority?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL" | null;
     currentStatus: string;
+    resolutionSummary?: string | null;
+    appearsResolved?: boolean;
     createdAt: string;
     updatedAt: string;
+    attachments?: unknown[];
 }
 
 export async function fetchTicketDetail(requesterId: number, ticketId: number): Promise<TicketDetail> {
@@ -219,3 +223,67 @@ export async function fetchTicketDetail(requesterId: number, ticketId: number): 
 
     return body.ticket;
 }
+
+export interface PublicComment {
+    id: number;
+    ticketId: number;
+    authorId: number;
+    authorName: string;
+    authorRole: string;
+    content: string;
+    createdAt: string;
+}
+
+export async function fetchPublicComments(ticketId: number): Promise<PublicComment[]> {
+    const res = await fetch(`/api/tickets/${ticketId}/comments`);
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.message ?? body.error ?? "Failed to load comments");
+    return body.data ?? [];
+}
+
+export async function postPublicComment(ticketId: number, content: string): Promise<PublicComment> {
+    const res = await fetch(`/api/tickets/${ticketId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.message ?? body.error ?? "Failed to post comment");
+    return body.data;
+}
+
+export async function patchAppearsResolved(ticketId: number): Promise<{ id: number; appearsResolved: boolean }> {
+    const res = await fetch(`/api/tickets/${ticketId}/appears-resolved`, { method: "PATCH" });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.message ?? body.error ?? "Failed to update");
+    return body.data;
+}
+
+// Internal Notes — IT Staff/Administrator only (api-spec endpoints 17-18, BR-04/BR-28)
+export interface InternalNote {
+    id: number;
+    ticketId: number;
+    authorId: number;
+    authorName: string;
+    authorRole: string;
+    content: string;
+    createdAt: string;
+}
+
+export async function fetchInternalNotes(ticketId: number): Promise<InternalNote[]> {
+    const res = await fetch(`/api/tickets/${ticketId}/notes`);
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.message ?? body.error ?? "Failed to load notes");
+    return body.data ?? [];
+}
+
+export async function postInternalNote(ticketId: number, content: string): Promise<InternalNote> {
+    const res = await fetch(`/api/tickets/${ticketId}/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+    });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.message ?? body.error ?? "Failed to add note");
+    return body.data;
+}

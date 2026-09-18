@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState, FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, FormEvent } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { useRequester } from "../context/RequesterContext";
 import { fetchMyTickets, TicketListItem, PaginationMeta } from "../api/tickets.api";
 import { fetchCategories, ReferenceItem } from "../api/referenceData.api";
@@ -19,6 +20,7 @@ const DEFAULT_FILTERS = {
 };
 
 export function MyTickets() {
+    const { user } = useAuth();
     const { selectedRequester } = useRequester();
     const [state, setState] = useState<ScreenState>("loading");
     const [tickets, setTickets] = useState<TicketListItem[]>([]);
@@ -28,13 +30,18 @@ export function MyTickets() {
     const [page, setPage] = useState(1);
     const [categories, setCategories] = useState<ReferenceItem[]>([]);
     const [hasEverHadTickets, setHasEverHadTickets] = useState<boolean | null>(null);
+    // Guards against stale responses: only the most recent load() may commit
+    // its results (e.g. the initial unfiltered fetch must not overwrite a
+    // newer filtered search that resolved first).
+    const latestLoadIdRef = useRef(0);
 
     const categoryNamesById = Object.fromEntries(categories.map((c) => [c.id, c.name]));
 
-    const requesterId = selectedRequester?.id;
+    const requesterId = user?.id ?? selectedRequester?.id;
 
     const load = useCallback(async () => {
         if (!requesterId) return;
+        const loadId = ++latestLoadIdRef.current;
         setState("loading");
         try {
             const result = await fetchMyTickets(requesterId, {
@@ -46,6 +53,16 @@ export function MyTickets() {
                 page,
                 pageSize: 10,
             });
+            if (loadId !== latestLoadIdRef.current) {
+                // A newer load superseded this one — its list/meta must not be
+                // committed. The "has ever had tickets" fact is cumulative,
+                // though, so an unfiltered response stays valid to commit.
+                const isUnfiltered = !filters.search && !filters.categoryId && !filters.status;
+                if (isUnfiltered) {
+                    setHasEverHadTickets(result.pagination.total > 0);
+                }
+                return;
+            }
             setTickets(result.tickets);
             setMeta(result.pagination);
 
@@ -56,6 +73,7 @@ export function MyTickets() {
 
             setState("ready");
         } catch {
+            if (loadId !== latestLoadIdRef.current) return; // a newer load superseded this one
             setState("error");
         }
     }, [requesterId, filters, page]);

@@ -88,12 +88,12 @@ const ATTACHMENT_LIST_SELECT = {
     uploadedAt: true,
 } as const;
 
-export async function getAttachmentsByTicket(requesterId: number, ticketId: number) {
+export async function getAttachmentsByTicket(requesterId: number, ticketId: number, callerRole?: string) {
     const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
     if (!ticket) {
         throw new TicketNotFoundError();
     }
-    if (ticket.requesterId !== requesterId) {
+    if (callerRole !== "IT_STAFF" && callerRole !== "ADMINISTRATOR" && ticket.requesterId !== requesterId) {
         throw new TicketNotOwnedError();
     }
 
