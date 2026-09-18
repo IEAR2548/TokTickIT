@@ -20,10 +20,13 @@ async function parseError(res: Response, fallback: string): Promise<AdminApiErro
     return err;
 }
 
-export async function fetchUsers(params: { search?: string; role?: string } = {}): Promise<AdminUser[]> {
+export async function fetchUsers(
+    params: { search?: string; role?: string; isActive?: boolean } = {}
+): Promise<AdminUser[]> {
     const searchParams = new URLSearchParams();
     if (params.search) searchParams.set("search", params.search);
     if (params.role) searchParams.set("role", params.role);
+    if (params.isActive !== undefined) searchParams.set("isActive", String(params.isActive));
 
     const url = `/api/admin/users${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
     const res = await fetch(url);

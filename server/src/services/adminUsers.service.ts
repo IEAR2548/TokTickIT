@@ -34,10 +34,14 @@ function toSafeUser(user: {
 
 // ---------------------------------------------------------------------------
 // Endpoint 26: GET /api/admin/users
-// Search by name/email substring + optional exact role filter.
-// No pagination by design (Decision D-4).
+// Search by name/email substring + optional exact role filter + optional exact
+// active-state filter. No pagination by design (Decision D-4).
 // ---------------------------------------------------------------------------
-export async function listAdminUsers(options: { search?: string; role?: string }) {
+export async function listAdminUsers(options: {
+    search?: string;
+    role?: string;
+    isActive?: boolean;
+}) {
     const where: any = {};
 
     if (options.search && options.search.trim().length > 0) {
@@ -50,6 +54,10 @@ export async function listAdminUsers(options: { search?: string; role?: string }
 
     if (options.role) {
         where.role = options.role;
+    }
+
+    if (options.isActive !== undefined) {
+        where.isActive = options.isActive;
     }
 
     const users = await prisma.user.findMany({

@@ -56,6 +56,7 @@ export function UserManagement() {
     const [searchInput, setSearchInput] = useState("");
     const [search, setSearch] = useState("");
     const [roleFilter, setRoleFilter] = useState("");
+    const [activeFilter, setActiveFilter] = useState("");
 
     const [panelMode, setPanelMode] = useState<PanelMode>("closed");
     const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
@@ -75,7 +76,7 @@ export function UserManagement() {
 
     const requestSeqRef = useRef(0);
 
-    const isFiltered = Boolean(search || roleFilter);
+    const isFiltered = Boolean(search || roleFilter || activeFilter);
 
     const loadUsers = useCallback(async () => {
         const seq = ++requestSeqRef.current;
@@ -86,6 +87,7 @@ export function UserManagement() {
             const data = await fetchUsers({
                 search: search || undefined,
                 role: roleFilter || undefined,
+                isActive: activeFilter === "" ? undefined : activeFilter === "true",
             });
             if (seq !== requestSeqRef.current) return;
 
@@ -99,7 +101,7 @@ export function UserManagement() {
             setErrorMessage(err.message || "Failed to load users.");
             setStatus("error");
         }
-    }, [search, roleFilter, isFiltered]);
+    }, [search, roleFilter, activeFilter, isFiltered]);
 
     useEffect(() => {
         if (!authLoading) {
@@ -144,6 +146,7 @@ export function UserManagement() {
         setSearchInput("");
         setSearch("");
         setRoleFilter("");
+        setActiveFilter("");
     }
 
     function handleSearchSubmit(e: FormEvent) {
@@ -282,6 +285,17 @@ export function UserManagement() {
                             {r.label}
                         </option>
                     ))}
+                </select>
+                <select
+                    className="admin-users-status-filter"
+                    data-testid="admin-user-status-filter"
+                    aria-label="Filter by status"
+                    value={activeFilter}
+                    onChange={(e) => setActiveFilter(e.target.value)}
+                >
+                    <option value="">All Statuses</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
                 </select>
             </div>
 

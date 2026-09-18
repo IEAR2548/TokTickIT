@@ -444,6 +444,95 @@ describe("Admin User Management API (endpoints 26-29)", () => {
         });
     });
 
+    describe("API-31: Optional status (isActive) filter on the user list (FR-20, AC-17)", () => {
+        let activeTarget: any;
+        let inactiveTarget: any;
+
+        beforeAll(async () => {
+            activeTarget = await prisma.user.create({
+                data: {
+                    name: "Api ThirtyOne Active",
+                    email: `api31.active${TEST_EMAIL_DOMAIN}`,
+                    passwordHash: bcrypt.hashSync(VALID_PASSWORD, 10),
+                    role: "REQUESTER",
+                    isActive: true,
+                    mustChangePassword: false,
+                },
+            });
+            inactiveTarget = await prisma.user.create({
+                data: {
+                    name: "Api ThirtyOne Inactive",
+                    email: `api31.inactive${TEST_EMAIL_DOMAIN}`,
+                    passwordHash: bcrypt.hashSync(VALID_PASSWORD, 10),
+                    role: "REQUESTER",
+                    isActive: false,
+                    mustChangePassword: false,
+                },
+            });
+        });
+
+        it("isActive=true returns only active users", async () => {
+            const res = await request(app)
+                .get("/api/admin/users?isActive=true")
+                .set("Cookie", cookieFor(adminUser));
+
+            expect(res.status).toBe(200);
+            expect(Array.isArray(res.body.data)).toBe(true);
+            for (const u of res.body.data) {
+                expect(u.isActive).toBe(true);
+            }
+            expect(res.body.data.some((u: any) => u.id === activeTarget.id)).toBe(true);
+            expect(res.body.data.some((u: any) => u.id === inactiveTarget.id)).toBe(false);
+        });
+
+        it("isActive=false returns only inactive users", async () => {
+            const res = await request(app)
+                .get("/api/admin/users?isActive=false")
+                .set("Cookie", cookieFor(adminUser));
+
+            expect(res.status).toBe(200);
+            for (const u of res.body.data) {
+                expect(u.isActive).toBe(false);
+            }
+            expect(res.body.data.some((u: any) => u.id === inactiveTarget.id)).toBe(true);
+            expect(res.body.data.some((u: any) => u.id === activeTarget.id)).toBe(false);
+        });
+
+        it("combines role + isActive (AND semantics)", async () => {
+            const res = await request(app)
+                .get("/api/admin/users?role=REQUESTER&isActive=false")
+                .set("Cookie", cookieFor(adminUser));
+
+            expect(res.status).toBe(200);
+            for (const u of res.body.data) {
+                expect(u.role).toBe("REQUESTER");
+                expect(u.isActive).toBe(false);
+            }
+            expect(res.body.data.some((u: any) => u.id === inactiveTarget.id)).toBe(true);
+        });
+
+        it("combines search + isActive (AND semantics)", async () => {
+            const res = await request(app)
+                .get(`/api/admin/users?search=api31.active&isActive=true`)
+                .set("Cookie", cookieFor(adminUser));
+
+            expect(res.status).toBe(200);
+            expect(res.body.data.length).toBe(1);
+            expect(res.body.data[0].id).toBe(activeTarget.id);
+        });
+
+        it("omitting isActive returns users of both states (All Statuses)", async () => {
+            const res = await request(app)
+                .get("/api/admin/users")
+                .set("Cookie", cookieFor(adminUser));
+
+            expect(res.status).toBe(200);
+            const ids = res.body.data.map((u: any) => u.id);
+            expect(ids).toContain(activeTarget.id);
+            expect(ids).toContain(inactiveTarget.id);
+        });
+    });
+
     describe("API-30: Edit user name+role happy path -> 200, record updated (AC-31, FR-22, BR-30)", () => {
         let target: any;
 

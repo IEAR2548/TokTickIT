@@ -45,6 +45,7 @@ verifies it.
 | API-28 | API | AC-29 | Valid status transition (happy path) | 200; currentStatus updated to target status | `server/tests/lab-03/staff-ticket-detail.api.test.ts` | Pass |
 | API-29 | API | AC-30 | Create user (happy path) | 201; user created with mustChangePassword=true | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
 | API-30 | API | AC-31 | Edit user name and role (happy path) | 200; user record updated accordingly | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
+| API-31 | API | AC-17/FR-20 | Optional isActive status filter on user list | isActive=true/false return only matching users; combinable with search/role | `server/tests/lab-03/users-admin.api.test.ts` | Pass |
 | SEC-01 | Security | AC-22 | Non-Admin calls /api/admin/users directly | 403, independent of any UI | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-02 | Security | AC-10 | Requester calls PATCH it-priority directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
 | SEC-03 | Security | AC-32 | Requester calls PATCH status directly | 403 | `server/tests/lab-03/authorization.api.test.ts` | Pass |
@@ -67,6 +68,7 @@ verifies it.
 | UI-11 | UI | AC-20/21 | Deactivate button disabled for self/last-admin | Button disabled + tooltip, not just hidden | `client/src/tests/lab-03/UserManagement.test.tsx` | Pass |
 | UI-12 | UI | AC-16 | Staff Ticket Detail appears-resolved badge | Badge rendered near status dropdown when appearsResolved is true | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
 | UI-13 | UI | BR-27 | Comment content XSS-safe rendering | Stored markup renders as plain text — script/img never executed | `client/src/tests/lab-03/StaffTicketDetail.test.tsx` | Pass |
+| UI-14 | UI | AC-17/FR-20 | Admin status (Active/Inactive) filter | Status dropdown narrows the list server-side; All restores both states | `client/src/tests/lab-03/UserManagement.test.tsx` | Pass |
 | STYLE-01 | Style | ui-spec §1 | Role badge class per role | Correct badge-role-* class + visible text | `client/src/tests/lab-03/Badges.style.test.tsx` | Pass |
 | STYLE-02 | Style | ui-spec §2 | Login card + submit token classes | Card carries the --color-surface class, submit the --color-primary class | `client/src/tests/lab-03/LabScreensStyle.style.test.tsx` | Pass |
 | STYLE-03 | Style | ui-spec §3 | Password rule checklist indicator class | Items carry rule-unmet/rule-met classes that flip as rules are satisfied | `client/src/tests/lab-03/LabScreensStyle.style.test.tsx` | Pass |
@@ -99,7 +101,7 @@ verifies it.
 | E2E-02 | E2E | AC-07 | Logout → direct URL access blocked | Redirect to /login, no protected content flashes | `e2e/lab-03/authentication.spec.ts` | Pass |
 | E2E-03 | E2E | AC-08, AC-09, AC-28, AC-29 | Claim → set IT Priority → change status → post comment → add note | Full staff workflow succeeds end-to-end | `e2e/lab-03/staff-ticket-flow.spec.ts` | Pass |
 | E2E-04 | E2E | AC-04, AC-14 | Internal Note never visible to Requester | Requester's own Ticket Detail view never renders the note content | `e2e/lab-03/staff-ticket-flow.spec.ts` | Pass |
-| E2E-05 | E2E | AC-17..AC-21, AC-30, AC-31 | Create/edit user, set password, safety rules | Full admin workflow incl. all safety-rule rejections | `e2e/lab-03/user-administration.spec.ts` | Planned |
+| E2E-05 | E2E | AC-17..AC-21, AC-30, AC-31 | Create/edit user, set password, safety rules, filters | Full admin workflow incl. all safety-rule rejections | `e2e/lab-03/user-administration.spec.ts` | Pass |
 
 ## 3. Acceptance-Criterion Traceability
 
@@ -121,11 +123,11 @@ verifies it.
 | AC-14 | API-16, E2E-04 |
 | AC-15 | API-17 |
 | AC-16 | API-18, UI-09, UI-12 |
-| AC-17 | API-20 |
+| AC-17 | API-20, API-31, E2E-05 |
 | AC-18 | API-21, UI-10 |
-| AC-19 | API-22 |
-| AC-20 | API-23, UI-11 |
-| AC-21 | API-24, API-26, UI-11 |
+| AC-19 | API-22, E2E-05 |
+| AC-20 | API-23, UI-11, E2E-05 |
+| AC-21 | API-24, API-26, UI-11, E2E-05 |
 | AC-22 | SEC-01, SEC-04 |
 | AC-23 | API-19, UI-06 |
 | AC-24 | MIG-02 |
@@ -139,6 +141,7 @@ verifies it.
 | AC-32 | SEC-03 |
 | AC-33 | SEC-07 |
 | FR-07 | SEC-09 |
+| FR-20 | API-20, API-31, UI-14, E2E-05 |
 
 ## 4. Coverage Gaps (flagged, not silently resolved)
 - BR-06 (5-failed-attempts logging) — resolved in #31 with UNIT-02b (`server/tests/lab-03/unit/loginAttempts.unit.test.ts`).
@@ -156,7 +159,6 @@ _Not applicable yet — no implementation exists. To be filled in during Issue #
 (Release Integration), mirroring the Lab 2 Issue #28 pattern._
 
 ## 7. Known Limitations or Deferred Tests
-- E2E-05 (full admin workflow incl. safety-rule rejections) remains Planned — assigned to Issue #38 (End-to-End Tests).
 - ui-spec §10 Visual Inspection Checklist is fully automated (VISUAL-CHK-01..07); screenshot evidence lives in
   `artifacts/lab-03/screenshots/` (VISUAL-01..06) for the human-eye review pass.
 - STYLE-02..06 assert the className-to-token contract in jsdom (jsdom cannot compute real CSS); the computed-style
