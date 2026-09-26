@@ -13,7 +13,9 @@
   - **My Recent Tickets** (left, wider): up to 5 Tickets ordered by `updatedAt` desc, each row
     showing Ticket number, title, status badge, and updated date. "View all" link routes to the
     Ticket Queue filtered to the current user's owned Tickets.
-  - **Quick Actions** (right): Create Ticket, Search Tickets, My Queue — icon + label buttons.
+  - **Quick Actions** (right): Search Tickets, My Queue — icon + label buttons. Note: "Create
+    Ticket" is not shown for IT Staff/Admin (per Lab 3 Decision D-5 / SEC-09; only Requesters
+    may create Tickets).
 
 ### 1.2 Interaction
 - Each metric card is a link/button; activating it opens the Ticket Queue pre-filtered to that
@@ -166,7 +168,7 @@ Same breakpoint behavior as §1.4, with 4 metric cards instead of 5 (2×2 on tab
 ### 4.2 Advisory "Looks Resolved" (Requester only)
 - Separate, clearly secondary control near the status area, visible to Requesters on their own
   Tickets, labeled "Mark as looks resolved" (checkbox or toggle). Activating it calls the
-  requester-confirmation endpoint; it never changes the visible status badge, and copy next to it
+  appears-resolved endpoint; it never changes the visible status badge, and copy next to it
   states plainly: "This lets IT Staff know you think it's fixed — they'll still confirm and close
   it."
 - This flag is automatically reset to unchecked if the Ticket is later Reopened or the Requester
@@ -191,3 +193,31 @@ Same breakpoint behavior as §1.4, with 4 metric cards instead of 5 (2×2 on tab
   desktop) scroll only within their own container if content genuinely overflows.
 - Any leftover placeholder text, temporary debug UI, or duplicate controls from Labs 1–3 found
   during hardening are removed as part of this sprint, not left "for later."
+
+---
+
+## 6. Visual & Accessibility Checklist
+
+The following checklist must be completed for all Lab 4 screens before submission. Each item
+is verified at desktop (1280 px), tablet (768 px), and mobile (375 px) widths.
+
+- [ ] **Design consistency** — all new components use Zen Green design tokens (colors,
+  typography, spacing, border radii) matching Labs 1–3 screens.
+- [ ] **Dashboards** — Metric cards are properly aligned, equally sized, and readable at all
+  breakpoints; numeric values use a consistent font weight and size.
+- [ ] **Actions Taken** — the panel/table and create/edit form are visually consistent with
+  existing Public Comments / Internal Notes styling; follow-up badges use icon + text, not
+  color alone.
+- [ ] **Editable / read-only fields** — editable fields have clear input affordance (border,
+  background); read-only fields are visually distinct (no input border, muted background).
+- [ ] **Validation placement** — inline error messages appear directly below the relevant
+  field; error state uses the standard red/error token, not a custom color.
+- [ ] **Keyboard focus ring & accessibility labels** — every interactive element (cards, rows,
+  buttons, toggles, modals) has a visible focus outline and a semantic or `aria-label` where
+  the visible text is ambiguous; tab order is logical.
+- [ ] **No clipping** — no text, badge, card, or button is clipped or truncated beyond its
+  container at any breakpoint.
+- [ ] **No overlapping controls** — no interactive elements overlap or obscure each other at
+  any breakpoint, including when validation errors are shown.
+- [ ] **No horizontal overflow** — no page-level horizontal scrollbar appears at 375 px,
+  768 px, or 1280 px; wide tables scroll within their own container only.
