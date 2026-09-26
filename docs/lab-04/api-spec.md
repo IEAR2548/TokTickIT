@@ -14,12 +14,12 @@ the Ticket is within their accessible scope (per Lab 2/3 Ticket-access rules).
 {
   "data": [
     {
-      "id": "uuid",
-      "ticketId": "uuid",
+      "id": 42,
+      "ticketId": 5,
       "actionDateTime": "2026-09-20T10:15:00Z",
       "description": "Replaced network cable, re-tested port.",
       "result": "Connection stable after replacement.",
-      "performedBy": { "id": "uuid", "name": "Somchai P." },
+      "performedBy": { "id": 7, "name": "Somchai P." },
       "followUpRequired": true,
       "followUpNote": "Check again after 24h under load.",
       "attachmentNotes": "See photo IMG_0231.jpg in ticket attachments.",
@@ -135,14 +135,18 @@ Change a Ticket's status per the transition matrix in `specification.md` §5.1.
 (`Cancelled`, from `New`/`Open`, BR-15) also goes through this endpoint but is authorized for the
 Requester specifically when they own the Ticket and the current status is `New` or `Open`.
 
+**Backward compatibility:** this endpoint consolidates the Lab 3
+`PATCH /api/staff/tickets/:id/status` route (see `specification.md` Assumption #16).
+The Lab 3 route may be retained as an alias during migration.
+
 **Request:**
 ```json
-{ "status": "Resolved", "expectedUpdatedAt": "2026-09-20T09:00:00Z" }
+{ "status": "Resolved", "resolutionSummary": "Replaced faulty cable, confirmed stable.", "expectedUpdatedAt": "2026-09-20T09:00:00Z" }
 ```
 
 **Response `200`:**
 ```json
-{ "data": { "id": "uuid", "status": "Resolved", "updatedAt": "2026-09-20T10:20:00Z" } }
+{ "data": { "id": 5, "status": "Resolved", "updatedAt": "2026-09-20T10:20:00Z" } }
 ```
 
 **Duplicate submissions (FR-15):** this endpoint uses no separate idempotency key. A retried
@@ -176,7 +180,7 @@ Compare the two:
   reserved for future use) or Requester attempting anything other than their own `Cancelled`
   self-service case.
 - `404` Ticket not found.
-- `409` — **two distinct causes, distinguished by error code (see `specification.md` §10.1);
+- `409` / `400` — **two distinct error codes (see `specification.md` §10.1);
   `expectedUpdatedAt` is checked first:**
   - **`STALE_UPDATE`** — the submitted `expectedUpdatedAt` does not match the Ticket's current
     `updatedAt`. Returned regardless of whether the requested status change would otherwise have
@@ -195,26 +199,32 @@ Compare the two:
     is an intentional, accepted limit on precision (`specification.md` Assumption #15), not a gap
     to close. The distinguishing comparison is still a client-side responsibility, using data the
     client already has (the status it requested).
-  - **`INVALID_TRANSITION`** — `expectedUpdatedAt` matched current data, but the requested
+  - **`INVALID_TRANSITION`** (400 Bad Request) — `expectedUpdatedAt` matched current data, but the requested
     `(from, to, role)` combination is not permitted by §5.1 (AC-05).
     ```json
     { "error": { "code": "INVALID_TRANSITION", "message": "Cannot move from New directly to Resolved.",
       "data": { "current": { "status": "New", "updatedAt": "2026-09-20T09:00:00Z" } } } }
     ```
 
-### 2.2 `PATCH /api/tickets/:ticketId/requester-confirmation`
+- `400` **`RESOLUTION_SUMMARY_REQUIRED`** — status is `Resolved` or `Closed` but
+  `resolutionSummary` is missing or blank (carried forward from Lab 3 BR-22):
+  ```json
+  { "error": { "code": "RESOLUTION_SUMMARY_REQUIRED", "message": "A resolution summary is required when changing status to Resolved or Closed." } }
+  ```
+
+### 2.2 `PATCH /api/tickets/:ticketId/appears-resolved`
 Set the Requester's advisory "looks resolved" flag. Never changes `status` (FR-09, AC-06).
 
 **Authorization:** the Requester who owns the Ticket, only.
 
 **Request:**
 ```json
-{ "requesterConfirmedResolved": true, "expectedUpdatedAt": "2026-09-20T09:00:00Z" }
+{ "appearsResolved": true, "expectedUpdatedAt": "2026-09-20T09:00:00Z" }
 ```
 
 **Response `200`:**
 ```json
-{ "data": { "id": "uuid", "requesterConfirmedResolved": true, "status": "In Progress",
+{ "data": { "id": 5, "appearsResolved": true, "status": "In Progress",
   "updatedAt": "2026-09-20T10:21:00Z" } }
 ```
 
@@ -243,7 +253,7 @@ or exposes another Requester's data.
   "data": {
     "counts": { "open": 3, "inProgress": 2, "resolved": 5, "closed": 12 },
     "recentTickets": [
-      { "id": "uuid", "number": "TKT-2025-001234", "title": "Laptop battery drains quickly",
+      { "id": 12, "ticketNumber": "TKT-2025-001234", "summary": "Laptop battery drains quickly",
         "status": "In Progress", "updatedAt": "2026-09-20T09:00:00Z" }
     ]
   }
@@ -269,7 +279,7 @@ or exposes another Requester's data.
     "counts": { "new": 14, "open": 23, "inProgress": 18, "waitingForRequester": 7,
       "myAssigned": 16 },
     "recentTickets": [
-      { "id": "uuid", "number": "TKT-2025-000234", "title": "Laptop battery drains quickly",
+      { "id": 8, "ticketNumber": "TKT-2025-000234", "summary": "Laptop battery drains quickly",
         "status": "In Progress", "updatedAt": "2026-09-20T09:14:00Z" }
     ]
   }
@@ -299,7 +309,8 @@ or exposes another Requester's data.
 | `TICKET_CANCELLED` | 409 | Write attempted on a Ticket in the terminal `Cancelled` state. |
 | `EDIT_WINDOW_EXPIRED` | 403 | Action Taken edit attempted outside the BR-10 window by a non-Admin. |
 | `STALE_UPDATE` | 409 | `expectedUpdatedAt` did not match the current record. Applies uniformly to Action Taken updates (§1.3) **and** Ticket status changes (§2.1, §2.2) — not limited to Actions Taken. On §2.1 specifically, this code doubles as the FR-15 duplicate-submission signal for a retried, already-applied status change; the client must compare `data.current.status` to its requested `status` to tell that case apart from a genuine conflict (see §2.1, `specification.md` §10.1/Assumption #14). |
-| `INVALID_TRANSITION` | 409 | Requested status change is not permitted from the current status/role, with `expectedUpdatedAt` otherwise current. Distinct from `STALE_UPDATE` (see §2.1). |
+| `INVALID_TRANSITION` | 400 | Requested status change is not permitted from the current status/role, with `expectedUpdatedAt` otherwise current. Distinct from `STALE_UPDATE` (see §2.1). This remains `400` for backward compatibility with Lab 3. |
+| `RESOLUTION_SUMMARY_REQUIRED` | 400 | Transition to `Resolved` or `Closed` submitted without a non-empty `resolutionSummary` (carried forward from Lab 3 BR-22). |
 
 All other error codes (`UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`, etc.) reuse the Lab 2/3
 conventions unchanged.
