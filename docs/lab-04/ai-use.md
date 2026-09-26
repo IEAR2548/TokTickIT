@@ -12,7 +12,7 @@ The following table documents the key prompts used during the Lab 4 Specificatio
 
 | # | Prompt Name | Actual Prompt Text | Purpose / Outcome |
 |---|---|---|---|
-| 1 | **Creating Specification Documents** | "เขียนไฟล์ specification.md, api-spec.md, ui-spec.md, tests.md ตามlabsheet Lab 4 อย่างละเอียด" | ได้ไฟล์ specification.md, api-spec.md, ui-spec.md, tests.md ที่มีเนื้อหาตาม labsheet Lab 4 |
+| 1 | **Creating Specification Documents** | "เขียนไฟล์ specification.md, api-spec.md, ui-spec.md, tests.md ตามlabsheet Lab 4 อย่างละเอียด" | Generated initial drafts of all four specification files covering Actions Taken, dashboards, status transitions, and test traceability. |
 
 ---
 
