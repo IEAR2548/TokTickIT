@@ -28,7 +28,7 @@ replacing them.
 - Final Ticket status transition matrix, backend-enforced, including the resolution gate.
 - Requester Dashboard and IT Staff Dashboard (Admin reuses IT Staff Dashboard).
 - Prisma migration + idempotent seed covering Lab 1–3 data plus Lab 4 fixtures.
-- REST endpoints for Actions Taken CRUD (create/update), the requester-confirmation flag, Ticket
+- REST endpoints for Actions Taken CRUD (create/update), the advisory looks-resolved flag (`appearsResolved`), Ticket
   status changes, and both dashboards.
 - Optimistic-concurrency (stale-update) protection on Ticket status changes and Actions Taken
   edits.
@@ -78,7 +78,7 @@ Statuses: `New`, `Open`, `In Progress`, `Waiting for Requester`, `Resolved`, `Cl
 | **Reopened** | — | IT Staff/Admin | — | — | — | — | IT Staff/Admin |
 | **Cancelled** | — | — | — | — | — | — | terminal (BR-09) |
 
-Blank cells are forbidden transitions and are rejected by the backend with `409 Conflict`
+Blank cells are forbidden transitions and are rejected by the backend with `400 Bad Request` (`INVALID_TRANSITION`)
 regardless of which UI path (or direct API call) attempted them. A Requester may only trigger the
 `Cancelled` transition on their own Ticket while it is still `New` or `Open` (consistent with the
 Lab 2/3 self-service cancellation convention); once IT Staff has begun work (`In Progress` or
@@ -86,9 +86,12 @@ later) only IT Staff/Admin may cancel.
 
 ### 5.2 Resolution Gate
 - The backend enforces BR-06/BR-07 even if a client bypasses the normal screen (AC-05).
-- A Requester's "looks resolved" flag (`requesterConfirmedResolved`) is **advisory only**; it
-  never auto-changes `status` (FR-09, AC-06), and is reset to `false` per BR-16 whenever the
-  Ticket is Reopened or the Requester edits the Ticket again.
+- Transitions to `Resolved` or `Closed` require a non-empty `resolutionSummary` in the request
+  body (carried forward from Lab 3 BR-22); the backend rejects the request with
+  `400 RESOLUTION_SUMMARY_REQUIRED` otherwise.
+- A Requester's "looks resolved" flag (`appearsResolved`, existing Lab 3 field) is **advisory
+  only**; it never auto-changes `status` (FR-09, AC-06), and is reset to `false` per BR-16
+  whenever the Ticket is Reopened or the Requester edits the Ticket again.
 
 ## 6. Functional Requirements
 
@@ -102,7 +105,7 @@ later) only IT Staff/Admin may cancel.
 | FR-06 | "Performed by" is always the authenticated actor's identity, set by the server — never client-supplied. |
 | FR-07 | The Ticket status control displays **only** the transitions permitted from the current status for the current role (§5.1); invalid options are never shown, not even disabled. If zero transitions are valid for the current role/status, no control is rendered at all — only the status badge. |
 | FR-08 | Changing a Ticket to `Resolved` or `Closed` is permitted only for IT Staff/Admin, and only via the authoritative backend endpoint, regardless of UI path. |
-| FR-09 | A Requester "looks resolved" flag updates a separate advisory field (`requesterConfirmedResolved`) and never automatically transitions Ticket status. |
+| FR-09 | A Requester "looks resolved" flag updates the existing advisory field (`appearsResolved`) and never automatically transitions Ticket status. |
 | FR-10 | The IT Staff Dashboard returns counts for New, Open (including `Reopened`, see BR-12), In Progress, Waiting for Requester, and "My Assigned" (current user as Owner), plus a short "recent Tickets" list. |
 | FR-11 | The Requester Dashboard returns counts for the authenticated Requester's Open, In Progress, Resolved, and Closed Tickets, plus a short "recent Tickets" list, scoped strictly to that Requester. The four counts are mutually exclusive by current status (see BR-11) — no Ticket is counted on more than one card. |
 | FR-12 | Every dashboard metric and list item links to the corresponding filtered Ticket Queue or Ticket Detail screen. |
@@ -119,8 +122,8 @@ later) only IT Staff/Admin may cancel.
 | BR-03 | Action Date/Time defaults to server time at creation and is not client-editable after save. |
 | BR-04 | Follow-up Note is required if and only if Follow-Up Required = Yes; otherwise it must be empty. |
 | BR-05 | Attachment Notes is free text describing where to find related evidence (e.g., filenames); it does not itself store files (Lab 3 Attachments remain the file-storage mechanism). |
-| BR-06 | A Ticket may only move to `Resolved` from `In Progress` or `Waiting for Requester`, and only by IT Staff/Admin. |
-| BR-07 | A Ticket may only move to `Closed` from `Resolved`, by IT Staff/Admin. No auto-close in Lab 4 (excluded scope). |
+| BR-06 | A Ticket may only move to `Resolved` from `In Progress` or `Waiting for Requester`, and only by IT Staff/Admin. A non-empty `resolutionSummary` is required (carried forward from Lab 3 BR-22); the backend returns `400 RESOLUTION_SUMMARY_REQUIRED` if it is missing or blank. |
+| BR-07 | A Ticket may only move to `Closed` from `Resolved`, by IT Staff/Admin. The same `resolutionSummary` requirement from BR-06 applies. No auto-close in Lab 4 (excluded scope). |
 | BR-08 | A `Closed` Ticket may be moved to `Reopened` by IT Staff/Admin only (Requester may request reopen via comment, but cannot change status). |
 | BR-09 | A `Cancelled` Ticket is terminal; no further status transitions or new Actions Taken are permitted (existing Actions Taken remain visible). |
 | BR-10 | An Action Taken can be edited by its creator within 15 minutes of creation, or by an Administrator at any time; edits are recorded with an `updatedAt` timestamp (append-only audit trail is preserved). |
@@ -129,7 +132,7 @@ later) only IT Staff/Admin may cancel.
 | BR-13 | "Recently updated" / "recently resolved" on any dashboard means within the last 7 days, ordered by `updatedAt` descending, limited to 5 items, based on Asia/Bangkok (UTC+7) calendar days. |
 | BR-14 | Optimistic concurrency: every Ticket status change and Action Taken update requires the client to send the last-known `updatedAt`; a mismatch returns `409 Conflict` with code `STALE_UPDATE` and the current server state, distinct from `INVALID_TRANSITION` (see §10.1). This same check also gives Ticket status changes their FR-15 duplicate-submission protection at no extra cost (see Assumption #14). |
 | BR-15 | A Requester may cancel their own Ticket only while it is `New` or `Open`; once IT Staff has begun work (`In Progress` or later), only IT Staff/Admin may cancel it. |
-| BR-16 | `requesterConfirmedResolved` is automatically reset to `false` whenever the Ticket transitions to `Reopened`, or whenever the Requester edits the Ticket. This is a derived side effect, not a client-settable value. |
+| BR-16 | `appearsResolved` is automatically reset to `false` whenever the Ticket transitions to `Reopened`, or whenever the Requester edits the Ticket. This is a derived side effect, not a client-settable value. |
 | BR-17 | `Idempotency-Key` is a required header on `POST /api/tickets/:ticketId/actions`; a request that omits it is rejected outright with `400 VALIDATION_ERROR` and never reaches the de-dup logic below. If the same key is replayed for the same Ticket within the server's de-dup window, the original created record is returned again (200, not 201) instead of creating a duplicate. As defense in depth against a client that retries with a **different** key for what is logically the same submission (e.g., a UI that generates a fresh key per attempt), the server also collapses a second identical creation (same `ticketId` + `performedById` + `description` + `result`) received within a 5-second window, returning the original record rather than creating a duplicate. |
 
 ## 8. UI Specification Summary
@@ -137,7 +140,7 @@ later) only IT Staff/Admin may cancel.
 Full detail in `ui-spec.md`. Summary:
 - **IT Staff Dashboard** (`/dashboard`, IT Staff/Admin): 5 metric cards (New, Open, In Progress,
   Waiting for Requester, My Assigned), "My Recent Tickets" list (View all), Quick Actions
-  (Create Ticket, Search Tickets, My Queue).
+  (Search Tickets, My Queue) — no Create Ticket for IT Staff/Admin per Lab 3 D-5/SEC-09.
 - **Requester Dashboard** (`/dashboard`, Requester): 4 metric cards (My Open, In Progress,
   Resolved, Closed), "My Recent Tickets" list (View all), Quick Actions (Create Ticket, View My
   Tickets).
@@ -161,12 +164,12 @@ Full detail in `ui-spec.md`. Summary:
 
 | Field | Type | Notes |
 |---|---|---|
-| `id` | UUID (PK) | server-generated |
-| `ticketId` | UUID (FK → Ticket.id), **NOT NULL** | indexed, `onDelete: Restrict` — enforces BR-01 at the schema level; an Action Taken cannot exist without referencing exactly one Ticket |
+| `id` | Int (PK, autoincrement) | server-generated, consistent with all other models |
+| `ticketId` | Int (FK → Ticket.id), **NOT NULL** | indexed, `onDelete: Restrict` — enforces BR-01 at the schema level; an Action Taken cannot exist without referencing exactly one Ticket |
 | `actionDateTime` | DateTime | server-set at creation (BR-03) |
 | `description` | Text | required |
 | `result` | Text | required |
-| `performedById` | UUID (FK → User.id) | server-set from session (FR-06), indexed |
+| `performedById` | Int (FK → User.id) | server-set from session (FR-06), indexed |
 | `followUpRequired` | Boolean | default `false` |
 | `followUpNote` | Text, nullable | required iff `followUpRequired = true` (BR-04) — enforced at API layer, not DB constraint alone |
 | `attachmentNotes` | Text, nullable | free text |
@@ -180,7 +183,7 @@ queries.
 
 | Field | Type | Notes |
 |---|---|---|
-| `requesterConfirmedResolved` | Boolean, default `false` | advisory flag (FR-09), reset to `false` per BR-16 on any subsequent Requester edit or Reopen |
+| `appearsResolved` | *(existing Lab 3 field, no migration needed)* | advisory flag (FR-09), continues to be reset to `false` per BR-16 on any subsequent Requester edit or Reopen |
 | `updatedAt` | reused | used as the optimistic-concurrency token for status changes (BR-14), and doubles as the FR-15 duplicate-submission guard for that endpoint (Assumption #14) |
 
 ### 9.3 Design Decisions (justification)
@@ -240,20 +243,20 @@ Full detail in `api-spec.md`. Summary of new/changed endpoints:
 | POST | `/api/tickets/:ticketId/actions` | Create an Action Taken |
 | PATCH | `/api/tickets/:ticketId/actions/:actionId` | Update an Action Taken (BR-10 window) |
 | PATCH | `/api/tickets/:ticketId/status` | Change Ticket status (concurrency-checked) |
-| PATCH | `/api/tickets/:ticketId/requester-confirmation` | Set the Requester's advisory "looks resolved" flag |
+| PATCH | `/api/tickets/:ticketId/appears-resolved` | Set the Requester's advisory "looks resolved" flag (existing Lab 3 endpoint, continued) |
 | GET | `/api/dashboard/requester` | Requester dashboard metrics + recent Tickets |
 | GET | `/api/dashboard/staff` | IT Staff/Admin dashboard metrics + recent Tickets |
 
 All endpoints require authentication; authorization enforced per §4; all mutating endpoints
 validate input and return RFC-consistent error shapes (see `api-spec.md` §Errors).
 
-### 10.1 Status-Change Conflict vs. Invalid-Transition Codes
+### 10.1 Status-Change Error Codes
 
-`PATCH /api/tickets/:ticketId/status` returns `409 Conflict` for two distinct situations, which
-**must** be distinguished by error code so the client knows whether to resync (stale data) or
-present a different choice (matrix violation):
+`PATCH /api/tickets/:ticketId/status` returns two distinct error codes — `409 Conflict`
+(`STALE_UPDATE`) for concurrency conflicts and `400 Bad Request` (`INVALID_TRANSITION`) for
+matrix violations — so the client knows whether to resync or present a different choice:
 
-- **`STALE_UPDATE`** — the submitted `expectedUpdatedAt` does not match the record's current
+- **`STALE_UPDATE`** (409 Conflict) — the submitted `expectedUpdatedAt` does not match the record's current
   `updatedAt`, regardless of whether the requested transition would otherwise have been valid.
   Checked first. This is also the code returned when a double-click or network retry resubmits a
   request that already succeeded (FR-15, Assumption #14).
@@ -281,8 +284,9 @@ present a different choice (matrix violation):
   These two cases are distinguishable via the comparison above. Note that the comparison proves
   matching *state*, not matching *requester* — see Assumption #15 for why that narrower, more
   honest claim doesn't change the resulting client behavior.
-- **`INVALID_TRANSITION`** — `expectedUpdatedAt` matched (data was current), but the requested
-  `(from status, to status, role)` combination is not permitted by §5.1.
+- **`INVALID_TRANSITION`** (400 Bad Request) — `expectedUpdatedAt` matched (data was current),
+  but the requested `(from status, to status, role)` combination is not permitted by §5.1.
+  This remains `400` for backward compatibility with Lab 3's existing tests and implementation.
 
 Both return the current server state in `data.current` so the client can resync either way.
 
@@ -294,8 +298,8 @@ Both return the current server state in `data.current` so the client can resync 
 | AC-02 | Given an authenticated Requester, when dashboard data is retrieved, then only metrics and recent Tickets owned by that Requester are returned. |
 | AC-03 | Given an Action Taken create request with `followUpRequired = true` and empty `followUpNote`, when submitted, then the API returns 400 with a field-level validation error and no record is created. |
 | AC-04 | Given a Ticket in `In Progress`, when IT Staff changes status to `Resolved`, then the change succeeds and the Ticket Detail summary refreshes to show `Resolved`. |
-| AC-05 | Given a Ticket in `New`, when a client attempts to set status directly to `Resolved` (bypassing the normal screen), then the backend rejects the request with 409 `INVALID_TRANSITION` and the status is unchanged. |
-| AC-06 | Given a Requester marks "looks resolved" on their Ticket, when the flag is saved, then `requesterConfirmedResolved` becomes `true` and the Ticket `status` is unchanged. |
+| AC-05 | Given a Ticket in `New`, when a client attempts to set status directly to `Resolved` (bypassing the normal screen), then the backend rejects the request with 400 `INVALID_TRANSITION` and the status is unchanged. |
+| AC-06 | Given a Requester marks "looks resolved" on their Ticket, when the flag is saved, then `appearsResolved` becomes `true` and the Ticket `status` is unchanged. |
 | AC-07 | Given two clients loaded the same Ticket, when both submit a status change using the same stale `updatedAt` **and the second request's resulting `data.current.status` differs from what it requested**, then the second request receives 409 `STALE_UPDATE`, does not overwrite the first change, and the UI shows the genuine-conflict banner (§10.1). |
 | AC-08 | Given a Requester, when they view a Ticket they do not own, then Actions Taken and dashboard data for that Ticket are not returned (403/404 per existing Lab 2/3 convention). |
 | AC-09 | Given the IT Staff Dashboard is requested with no Tickets matching a given card, then that card renders `0` with an empty-state affordance rather than an error. |
@@ -303,7 +307,7 @@ Both return the current server state in `data.current` so the client can resync 
 | AC-11 | Given all Lab 1–3 regression scenarios (auth, My Tickets, Ticket Detail, Attachments, Public Comments, Internal Notes, Admin user management), when re-run after the Lab 4 migration, then all pass unchanged. |
 | AC-12 | Given a Ticket that is `Cancelled`, when IT Staff attempts to create a new Action Taken on it, then the API rejects the request with 409 and no record is created. |
 | AC-13 | Given a seeded Requester with one Ticket in `In Progress`, when the Requester dashboard is retrieved, then that Ticket is counted under "In Progress" and **not** under "My Open Tickets" (BR-11). |
-| AC-14 | Given a Ticket is `Reopened`, or a Requester edits a Ticket that previously had `requesterConfirmedResolved = true`, then the flag is reset to `false` (BR-16). |
+| AC-14 | Given a Ticket is `Reopened`, or a Requester edits a Ticket that previously had `appearsResolved = true`, then the flag is reset to `false` (BR-16). |
 | AC-15 | Given a Requester with zero Tickets, when their dashboard is requested, then all four counts return `0` and `recentTickets` returns an empty array — never `null` or an error. |
 | AC-16 | Given a status-change request that already succeeded, when the identical request (same `expectedUpdatedAt`, same target `status`) is retried due to a double-click or network retry, then the retry receives `409 STALE_UPDATE` with `data.current.status` equal to the originally-requested status, the transition is **not** reapplied, and the client resyncs silently **without** showing the genuine-conflict banner (§10.1, distinct from AC-07). |
 
@@ -334,7 +338,7 @@ Both return the current server state in `data.current` so the client can resync 
       (a retried, already-applied request correctly returns `STALE_UPDATE` and is resynced
       silently rather than reapplying the transition or showing a misleading conflict banner —
       AC-16).
-- [ ] `requesterConfirmedResolved` reset-on-Reopen/edit behavior implemented and tested (AC-14).
+- [ ] `appearsResolved` reset-on-Reopen/edit behavior implemented and tested (AC-14).
 - [ ] Full Labs 1–3 regression suite passes on `main` (AC-11).
 - [ ] Zen Green visual/accessibility checklist completed for all new and modified screens.
 - [ ] Desktop/tablet/mobile screenshots captured for all Lab 4 screens; no horizontal scroll,
@@ -371,7 +375,7 @@ Both return the current server state in `data.current` so the client can resync 
    might suggest, so that the reference mock's numbers (3/2/5/12) are each independently
    reproducible from a single, non-overlapping DB query per card — an aggregate reading would
    double-count `In Progress` Tickets across two cards.
-10. **`requesterConfirmedResolved` reset on Reopen/Requester-edit** (BR-16) is a derived
+10. **`appearsResolved` reset on Reopen/Requester-edit** (BR-16) is a derived
     side-effect the handout implies but does not name as a numbered rule; it is called out here
     explicitly so it has independent test coverage rather than being an unstated behavior of the
     Reopen/edit code paths.
@@ -443,3 +447,12 @@ Both return the current server state in `data.current` so the client can resync 
     4's scope, in the same spirit as Assumption #11's accepted false-positive risk on the BR-17
     fallback window: both trade a small, well-understood imprecision for a materially simpler
     implementation, because the user-visible outcome is correct in every case that matters.
+16. **Unified status-change endpoint** (`PATCH /api/tickets/:ticketId/status`) replaces the Lab 3
+    `PATCH /api/staff/tickets/:id/status` route, extending it to also handle Requester
+    self-service cancellation (BR-15). The Lab 3 route may be retained as an alias during
+    migration to avoid breaking existing clients and tests.
+17. **Rubric Part 6 terminology mapping**: "assign" and "inactive-assignee rejection" refer to
+    the Lab 3 Ticket Owner assignment and the existing inactive-user check on reassignment.
+    "Complete" maps to the `Resolved` → `Closed` workflow (BR-06/BR-07). "Cancel" maps to the
+    `Cancelled` terminal status (BR-09/BR-15). "Show different Actions Taken on one Ticket" is
+    demonstrated via the seeded data (§9.5).
