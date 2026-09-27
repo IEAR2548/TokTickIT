@@ -70,12 +70,12 @@ Statuses: `New`, `Open`, `In Progress`, `Waiting for Requester`, `Resolved`, `Cl
 | From ↓ / To → | Open | In Progress | Waiting for Requester | Resolved | Closed | Reopened | Cancelled |
 |---|---|---|---|---|---|---|---|
 | **New** | IT Staff/Admin | — | — | — | — | — | IT Staff/Admin, or Requester (own Ticket) |
-| **Open** | — | IT Staff/Admin | — | — | — | — | IT Staff/Admin, or Requester (own Ticket) |
+| **Open** | — | IT Staff/Admin | IT Staff/Admin | — | — | — | IT Staff/Admin, or Requester (own Ticket) |
 | **In Progress** | — | — | IT Staff/Admin | IT Staff/Admin (BR-06) | — | — | IT Staff/Admin |
 | **Waiting for Requester** | — | IT Staff/Admin | — | IT Staff/Admin (BR-06) | — | — | IT Staff/Admin |
-| **Resolved** | — | — | — | — | IT Staff/Admin (BR-07) | — | — |
+| **Resolved** | — | — | — | — | IT Staff/Admin (BR-07) | IT Staff/Admin (BR-08 inverse) | — |
 | **Closed** | — | — | — | — | — | IT Staff/Admin (BR-08) | — |
-| **Reopened** | — | IT Staff/Admin | — | — | — | — | IT Staff/Admin |
+| **Reopened** | — | IT Staff/Admin | IT Staff/Admin | — | — | — | IT Staff/Admin |
 | **Cancelled** | — | — | — | — | — | — | terminal (BR-09) |
 
 Blank cells are forbidden transitions and are rejected by the backend with `400 Bad Request` (`INVALID_TRANSITION`)
@@ -204,9 +204,10 @@ queries.
    never `null`/error.
 
 ### 9.4 Migration & Backfill
-- New Prisma migration adds the `ActionTaken` table and the two `Ticket` columns above with safe
-  defaults (`false` for booleans), so existing rows require no backfill logic.
-- Rollback: standard Prisma down-migration dropping the new table and columns; documented and
+- New Prisma migration adds the `ActionTaken` table and its relation back to `Ticket`.
+  The `appearsResolved` and `updatedAt` columns on `Ticket` already exist from the Lab 3
+  schema — no new Ticket columns are added in this migration.
+- Rollback: standard Prisma down-migration dropping the new table; documented and
   dry-run tested against a copy of the Lab 3 seeded database before merging.
 - The `ticketId` foreign key is created `NOT NULL` with no default, since every Action Taken must
   be created through the API (which always supplies a `ticketId` from the route) — there is no
