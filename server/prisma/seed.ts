@@ -44,6 +44,9 @@ async function main() {
         });
         await prisma.publicComment.deleteMany({ where: { authorId: { in: fixtureIds } } });
         await prisma.internalNote.deleteMany({ where: { authorId: { in: fixtureIds } } });
+        await prisma.actionTaken.deleteMany({
+            where: { ticket: { OR: [{ requesterId: { in: fixtureIds } }, { ownerId: { in: fixtureIds } }] } },
+        });
         await prisma.ticket.deleteMany({
             where: { OR: [{ requesterId: { in: fixtureIds } }, { ownerId: { in: fixtureIds } }] },
         });
@@ -330,6 +333,21 @@ async function main() {
             resolutionSummary: 'Cleared jammed cardstock from tray 2 feed roller and ran printer self-test.',
             appearsResolved: true,
             createdAt: new Date('2026-08-29T13:15:00.000Z'),
+        },
+        {
+            ticketNumber: 'TK-20260910-0001',
+            requesterEmail: 'carol.meier@example.com',
+            categoryName: 'Network',
+            relatedSystemName: 'VPN',
+            summary: 'VPN tunnel reopens after apparent fix',
+            description: 'VPN access was reported fixed but the failure returned the next day.',
+            requestedPriority: 'HIGH' as const,
+            itPriority: 'HIGH' as const,
+            ownerId: liamId,
+            currentStatus: 'REOPENED' as const,
+            resolutionSummary: 'Initial fix reverted after failure recurrence.',
+            appearsResolved: false,
+            createdAt: new Date('2026-09-10T09:00:00.000Z'),
         },
 
         // David Sorn
@@ -651,6 +669,107 @@ async function main() {
                 ],
             });
         }
+    }
+
+    const lab4ActionsByTicket: Array<{
+        ticketNumber: string;
+        actions: Array<{
+            performedByEmail: string;
+            description: string;
+            result: string;
+            followUpRequired: boolean;
+            followUpNote: string | null;
+            attachmentNotes: string | null;
+            actionDateTime: Date;
+        }>;
+    }> = [
+        {
+            ticketNumber: 'TK-20260824-0001',
+            actions: [
+                {
+                    performedByEmail: 'samira.chen@example.com',
+                    description: 'Ran battery diagnostic and confirmed abnormal cell degradation.',
+                    result: 'Replacement battery pack ordered from authorized vendor.',
+                    followUpRequired: false,
+                    followUpNote: null,
+                    attachmentNotes: 'Diagnostic log stored as battery-report.txt in ticket attachments.',
+                    actionDateTime: new Date('2026-09-02T09:00:00.000Z'),
+                },
+            ],
+        },
+        {
+            ticketNumber: 'TK-20260830-0001',
+            actions: [
+                {
+                    performedByEmail: 'samira.chen@example.com',
+                    description: 'Reproduced LEB2 session expiry using a staged quiz.',
+                    result: 'Captured server-side session timeout logs.',
+                    followUpRequired: false,
+                    followUpNote: null,
+                    attachmentNotes: null,
+                    actionDateTime: new Date('2026-09-03T10:15:00.000Z'),
+                },
+                {
+                    performedByEmail: 'liam.oconnor@example.com',
+                    description: 'Increased session token lifetime for the LEB2 application pool.',
+                    result: 'Session no longer expires mid-quiz in test runs.',
+                    followUpRequired: true,
+                    followUpNote: 'Check again after 24h under real exam load.',
+                    attachmentNotes: null,
+                    actionDateTime: new Date('2026-09-04T11:30:00.000Z'),
+                },
+                {
+                    performedByEmail: 'marcus.vance@example.com',
+                    description: 'Confirmed fix with the requester over a shared screen.',
+                    result: 'Requester observed a full practice quiz without logout.',
+                    followUpRequired: false,
+                    followUpNote: null,
+                    attachmentNotes: null,
+                    actionDateTime: new Date('2026-09-05T09:45:00.000Z'),
+                },
+            ],
+        },
+        {
+            ticketNumber: 'TK-20260827-0001',
+            actions: [
+                {
+                    performedByEmail: 'samira.chen@example.com',
+                    description: 'Verified identity and issued a temporary email password.',
+                    result: 'Requester regained access to institutional email.',
+                    followUpRequired: false,
+                    followUpNote: null,
+                    attachmentNotes: 'See identity-verification-form.pdf in ticket attachments.',
+                    actionDateTime: new Date('2026-09-01T08:00:00.000Z'),
+                },
+            ],
+        },
+    ];
+
+    for (const fixture of lab4ActionsByTicket) {
+        const ticket = await prisma.ticket.findUnique({ where: { ticketNumber: fixture.ticketNumber } });
+        if (!ticket) continue;
+        const existingCount = await prisma.actionTaken.count({ where: { ticketId: ticket.id } });
+        if (existingCount > 0) continue;
+
+        await prisma.actionTaken.createMany({
+            data: fixture.actions
+                .map((a) => {
+                    const performedById = userMap.get(a.performedByEmail);
+                    if (!performedById) return null;
+                    return {
+                        ticketId: ticket.id,
+                        actionDateTime: a.actionDateTime,
+                        description: a.description,
+                        result: a.result,
+                        performedById,
+                        followUpRequired: a.followUpRequired,
+                        followUpNote: a.followUpNote,
+                        attachmentNotes: a.attachmentNotes,
+                        createdAt: a.actionDateTime,
+                    };
+                })
+                .filter((row): row is NonNullable<typeof row> => row !== null),
+        });
     }
 
     console.log('Seeding completed successfully.');
