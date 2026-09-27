@@ -16,6 +16,7 @@ let requesterToken: string;
 describe("POST /api/tickets", () => {
     beforeAll(async () => {
         await prisma.attachment.deleteMany({});
+        await prisma.actionTaken.deleteMany({});
         await prisma.ticket.deleteMany({});
 
         const requester = await prisma.user.upsert({
@@ -43,11 +44,13 @@ describe("POST /api/tickets", () => {
 
     beforeEach(async () => {
         await prisma.attachment.deleteMany({});
+        await prisma.actionTaken.deleteMany({});
         await prisma.ticket.deleteMany({});
     });
 
     afterAll(async () => {
         await prisma.attachment.deleteMany({});
+        await prisma.actionTaken.deleteMany({});
         await prisma.ticket.deleteMany({});
         await prisma.$disconnect();
     });
