@@ -221,3 +221,38 @@ is verified at desktop (1280 px), tablet (768 px), and mobile (375 px) widths.
   any breakpoint, including when validation errors are shown.
 - [ ] **No horizontal overflow** — no page-level horizontal scrollbar appears at 375 px,
   768 px, or 1280 px; wide tables scroll within their own container only.
+
+---
+
+## 7. `data-testid` Conventions (Lab 4 Components)
+
+Following the Lab 3 convention of explicit `data-testid` attributes for Playwright E2E and
+component tests. All new Lab 4 components should use these identifiers:
+
+### IT Staff Dashboard
+`staff-dashboard-card-new`, `staff-dashboard-card-open`, `staff-dashboard-card-in-progress`,
+`staff-dashboard-card-waiting`, `staff-dashboard-card-my-assigned`,
+`staff-dashboard-recent-tickets`, `staff-dashboard-refresh-btn`,
+`staff-dashboard-quick-action-search`, `staff-dashboard-quick-action-queue`.
+
+### Requester Dashboard
+`requester-dashboard-card-open`, `requester-dashboard-card-in-progress`,
+`requester-dashboard-card-resolved`, `requester-dashboard-card-closed`,
+`requester-dashboard-recent-tickets`, `requester-dashboard-quick-action-create`,
+`requester-dashboard-quick-action-my-tickets`.
+
+### Actions Taken Panel (Ticket Detail)
+`actions-taken-table`, `actions-taken-row-{id}`, `actions-taken-add-btn`,
+`actions-taken-form`, `actions-taken-description-input`, `actions-taken-result-input`,
+`actions-taken-follow-up-toggle`, `actions-taken-follow-up-note-input`,
+`actions-taken-attachment-notes-input`, `actions-taken-submit-btn`,
+`actions-taken-edit-btn-{id}`, `actions-taken-empty-state`,
+`actions-taken-cancelled-notice`.
+
+### Ticket Status Control
+`ticket-status-select`, `ticket-status-confirm-dialog`,
+`ticket-status-confirm-btn`, `ticket-status-cancel-btn`,
+`ticket-status-conflict-banner`, `ticket-status-badge`.
+
+### Advisory "Looks Resolved"
+`appears-resolved-toggle`, `appears-resolved-helper-text`.
