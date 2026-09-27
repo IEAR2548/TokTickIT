@@ -43,6 +43,7 @@
 | API-26 | API | BR-12 | `GET /api/dashboard/staff` against a seeded dataset that includes a Ticket in `Reopened` status | `counts.open` includes that Ticket (i.e., equals the manually-queried count of `Open` + `Reopened` Tickets in scope), not just `Open` | `server/tests/lab-04/staff-dashboard.api.test.ts` | Planned |
 | API-27 | API | BR-17, AC-10, FR-15 | Two `POST .../actions` requests with identical `ticketId`/`description`/`result` but a **different** `Idempotency-Key`, sent within the 5-second fallback window | Only one record created; second response returns the original record via the fallback de-dup path, not a new one | `server/tests/lab-04/actions-taken.api.test.ts` | Planned |
 | API-28 | API | BR-14, FR-15, AC-16 | `PATCH .../status` retried with the same `expectedUpdatedAt` and same target `status` immediately after an identical request already succeeded | Second request returns 409 `STALE_UPDATE`, with `data.current.status` **equal to** the requested status (not reapplied); Ticket status changed exactly once | `server/tests/lab-04/ticket-workflow.api.test.ts` | Planned |
+| API-29 | API | BR-06, BR-07, §5.2 | `PATCH .../status` to `Resolved` or `Closed` with `resolutionSummary` empty or omitted | 400 `RESOLUTION_SUMMARY_REQUIRED`, status unchanged, no record created | `server/tests/lab-04/ticket-workflow.api.test.ts` | Planned |
 
 ## 3. Authorization Tests
 
@@ -163,7 +164,7 @@ Every BR is exercised by at least one test: BR-01 (MIG-04, API-03), BR-02 (WF-03
 (API-20), BR-04 (UNIT-01/UNIT-02), BR-05 (a definitional/scope statement with no separate
 file-storage code path to exercise — not independently testable beyond confirming Attachment
 Notes has no upload affordance, already covered by the absence of such a control in
-`ActionsTaken.test.tsx`), BR-06/BR-07/BR-08 (UNIT-03, WF-01, as part of the full transition
+`ActionsTaken.test.tsx`), BR-06/BR-07/BR-08 (UNIT-03, WF-01, API-29, as part of the full transition
 matrix), BR-09 (WF-02), BR-10 (API-06/API-07), BR-11 (API-17), BR-12 (API-26), BR-13 (UNIT-04),
 BR-14 (API-08/API-11/API-21/API-28), BR-15 (API-12/API-13), BR-16 (UNIT-05/API-24), BR-17
 (API-18/API-23/API-27), and the full §5.1 matrix by UNIT-03 and WF-01.
@@ -175,7 +176,8 @@ BR-14 (API-08/API-11/API-21/API-28), BR-15 (API-12/API-13), BR-16 (UNIT-05/API-2
 - `INVALID_TRANSITION` was `400` in Lab 3; `specification.md` §10.1 now explicitly documents this
   as `400 Bad Request` for backward compatibility. Lab 4 tests continue to assert `400`.
 - `resolutionSummary` enforcement (Lab 3 BR-22) was not originally mentioned in Lab 4 spec; now
-  explicitly carried forward in `specification.md` §5.2 and BR-06/BR-07.
+  explicitly carried forward in `specification.md` §5.2 and BR-06/BR-07, with dedicated test
+  coverage in API-29.
 
 ## 14. Test Commands
 
