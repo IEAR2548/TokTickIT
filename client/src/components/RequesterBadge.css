@@ -58,14 +58,17 @@
     transition: all 0.15s ease;
 }
 
+/* The header sits on --color-primary (#006b3c), so the hover/active pill darkens
+   rather than lightens the background: white text on a lightening overlay fell to
+   4.28:1 (below the 4.5:1 WCAG AA threshold) on the active link. */
 .app-nav-link:hover {
     color: #ffffff !important;
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.12);
 }
 
 .app-nav-link.active {
     color: #ffffff !important;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.22);
     font-weight: 600;
 }
 
