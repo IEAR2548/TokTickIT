@@ -11,6 +11,7 @@ import {
 } from "../api/tickets.api";
 import { Badge } from "../components/Badge";
 import { AttachmentSection } from "../components/AttachmentSection";
+import { ActionsTaken } from "../components/ActionsTaken";
 import "./RequesterTicketDetail.css";
 
 type ScreenState = "loading" | "ready" | "error";
@@ -271,6 +272,16 @@ export function RequesterTicketDetail() {
                         <li className="ticket-comment-empty">No comments yet.</li>
                     )}
                 </ul>
+            </section>
+
+            {/* Actions Taken — always read-only for a Requester (FR-03, ui-spec §3.2) */}
+            <section className="ticket-actions-taken-section mb-4">
+                <ActionsTaken
+                    ticketId={ticket.id}
+                    ticketStatus={ticket.currentStatus}
+                    role="REQUESTER"
+                    currentUserId={requesterId}
+                />
             </section>
 
             <AttachmentSection ticketId={ticket.id} requesterId={requesterId} />
