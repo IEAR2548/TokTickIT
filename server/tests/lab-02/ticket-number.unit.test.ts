@@ -12,6 +12,7 @@ describe("generateTicketNumber", () => {
 
     beforeAll(async () => {
         await prisma.attachment.deleteMany({});
+        await prisma.actionTaken.deleteMany({});
         await prisma.ticket.deleteMany({});
 
         const requester = await prisma.user.upsert({
@@ -39,6 +40,7 @@ describe("generateTicketNumber", () => {
 
     afterAll(async () => {
         await prisma.attachment.deleteMany({});
+        await prisma.actionTaken.deleteMany({});
         await prisma.ticket.deleteMany({});
         await prisma.$disconnect();
     });

@@ -9,8 +9,27 @@ import {
     getInternalNotesHandler,
     markAppearsResolvedHandler,
 } from "../controllers/commentsNotes.controller";
+import {
+    listActionsHandler,
+    createActionHandler,
+    updateActionHandler,
+} from "../controllers/actionsTaken.controller";
 
 const router = Router();
+
+router.get(
+    "/:ticketId/actions",
+    requireRole("REQUESTER", "IT_STAFF", "ADMINISTRATOR"),
+    listActionsHandler
+);
+
+router.post("/:ticketId/actions", requireRole("IT_STAFF", "ADMINISTRATOR"), createActionHandler);
+
+router.patch(
+    "/:ticketId/actions/:actionId",
+    requireRole("IT_STAFF", "ADMINISTRATOR"),
+    updateActionHandler
+);
 
 // Endpoint 1: GET /api/tickets
 router.get("/", requireRole("REQUESTER"), listTicketsHandler);

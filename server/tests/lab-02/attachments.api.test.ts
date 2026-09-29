@@ -16,6 +16,7 @@ describe("POST /api/tickets/:id/attachments", () => {
 
     beforeAll(async () => {
         await prisma.attachment.deleteMany({});
+        await prisma.actionTaken.deleteMany({});
         await prisma.ticket.deleteMany({});
 
         const requester = await prisma.user.upsert({
@@ -62,6 +63,7 @@ describe("POST /api/tickets/:id/attachments", () => {
 
     afterAll(async () => {
         await prisma.attachment.deleteMany({});
+        await prisma.actionTaken.deleteMany({});
         await prisma.ticket.deleteMany({});
         await prisma.$disconnect();
     });
@@ -155,6 +157,7 @@ describe("GET /api/attachments/:id/download", () => {
 
     beforeAll(async () => {
         await prisma.attachment.deleteMany({});
+        await prisma.actionTaken.deleteMany({});
         await prisma.ticket.deleteMany({});
 
         const owner = await prisma.user.upsert({
@@ -232,6 +235,7 @@ describe("GET /api/attachments/:id/download", () => {
 
     afterAll(async () => {
         await prisma.attachment.deleteMany({});
+        await prisma.actionTaken.deleteMany({});
         await prisma.ticket.deleteMany({});
         await prisma.$disconnect();
     });
@@ -278,6 +282,7 @@ describe("PATCH /api/attachments/:id/remove", () => {
 
     beforeAll(async () => {
         await prisma.attachment.deleteMany({});
+        await prisma.actionTaken.deleteMany({});
         await prisma.ticket.deleteMany({});
 
         const owner = await prisma.user.upsert({
@@ -353,6 +358,7 @@ describe("PATCH /api/attachments/:id/remove", () => {
 
     afterAll(async () => {
         await prisma.attachment.deleteMany({});
+        await prisma.actionTaken.deleteMany({});
         await prisma.ticket.deleteMany({});
         await prisma.$disconnect();
     });
