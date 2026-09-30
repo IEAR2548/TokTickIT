@@ -18,6 +18,7 @@ import {
 } from "../api/tickets.api";
 import { useAuth } from "../context/AuthContext";
 import { AttachmentSection } from "../components/AttachmentSection";
+import { ActionsTaken, ActionsTakenRole } from "../components/ActionsTaken";
 import { Badge } from "../components/Badge";
 import {
     permittedTransitions,
@@ -26,7 +27,7 @@ import {
 } from "../utils/statusTransitions";
 import "./StaffTicketDetail.css";
 
-type TabId = "public-comments" | "internal-notes" | "attachments";
+type TabId = "public-comments" | "internal-notes" | "actions-taken" | "attachments";
 
 function formatDateTime(iso: string): string {
     try {
@@ -424,6 +425,16 @@ export function StaffTicketDetail() {
                     <button
                         type="button"
                         role="tab"
+                        aria-selected={activeTab === "actions-taken"}
+                        data-testid="tab-actions-taken"
+                        className={`staff-ticket-tab-btn ${activeTab === "actions-taken" ? "active" : ""}`}
+                        onClick={() => setActiveTab("actions-taken")}
+                    >
+                        Actions Taken
+                    </button>
+                    <button
+                        type="button"
+                        role="tab"
                         aria-selected={activeTab === "attachments"}
                         data-testid="tab-attachments"
                         className={`staff-ticket-tab-btn ${activeTab === "attachments" ? "active" : ""}`}
@@ -518,6 +529,19 @@ export function StaffTicketDetail() {
                         {notes.length === 0 && (
                             <p className="text-muted">No internal notes yet.</p>
                         )}
+                    </div>
+                )}
+
+                {/* Actions Taken panel — IT Staff/Admin create + edit per the Lab 4
+                    authorization matrix (specification.md §4, BR-10) */}
+                {activeTab === "actions-taken" && (
+                    <div className="staff-ticket-tab-panel" data-testid="actions-taken-tab-panel">
+                        <ActionsTaken
+                            ticketId={ticket.id}
+                            ticketStatus={ticket.currentStatus}
+                            role={(user?.role ?? "REQUESTER") as ActionsTakenRole}
+                            currentUserId={user?.id ?? 0}
+                        />
                     </div>
                 )}
 

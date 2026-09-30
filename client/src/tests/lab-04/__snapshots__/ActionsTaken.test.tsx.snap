@@ -1,0 +1,15 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Actions Taken panel (UI-04, UI-05, UI-06, UI-09, STYLE-02) > STYLE-02: the follow-up badge carries an icon and text, never colour alone (§5 ui-spec) 1`] = `
+<span
+  class="actions-taken-followup-badge"
+  data-testid="actions-taken-followup-badge-303"
+>
+  <span
+    aria-hidden="true"
+  >
+    ⚑
+  </span>
+   Follow-up needed
+</span>
+`;

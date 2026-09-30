@@ -1,10 +1,8 @@
 import { prisma } from "../lib/prisma";
+import { normalizeAndValidate } from "../validators/actionsTaken.validator";
 
 export const EDIT_WINDOW_MS = 15 * 60 * 1000;
 export const FALLBACK_DEDUP_WINDOW_MS = 5 * 1000;
-
-const MAX_TEXT_LENGTH = 4000;
-const MAX_ATTACHMENT_NOTES_LENGTH = 1000;
 
 const actionSelect = {
     id: true,
@@ -54,61 +52,6 @@ function toResponse(action: ActionRecord) {
         attachmentNotes: action.attachmentNotes,
         createdAt: action.createdAt,
         updatedAt: action.updatedAt,
-    };
-}
-
-interface NormalizedFields {
-    fields: Record<string, string>;
-    description: string;
-    result: string;
-    followUpRequired: boolean;
-    followUpNote: string | null;
-    attachmentNotes: string | null;
-}
-
-function normalizeAndValidate(
-    body: Record<string, unknown>,
-    existing?: ActionRecord
-): NormalizedFields {
-    const fields: Record<string, string> = {};
-
-    const rawDescription = body.description !== undefined ? body.description : existing?.description ?? "";
-    const description = typeof rawDescription === "string" ? rawDescription.trim() : "";
-    if (description.length < 1 || description.length > MAX_TEXT_LENGTH) {
-        fields.description = description.length < 1 ? "Description is required." : `Description must be at most ${MAX_TEXT_LENGTH} characters.`;
-    }
-
-    const rawResult = body.result !== undefined ? body.result : existing?.result ?? "";
-    const result = typeof rawResult === "string" ? rawResult.trim() : "";
-    if (result.length < 1 || result.length > MAX_TEXT_LENGTH) {
-        fields.result = result.length < 1 ? "Result is required." : `Result must be at most ${MAX_TEXT_LENGTH} characters.`;
-    }
-
-    const followUpRequired =
-        body.followUpRequired === undefined ? existing?.followUpRequired ?? false : body.followUpRequired === true;
-
-    const rawNote = body.followUpNote !== undefined ? body.followUpNote : existing?.followUpNote ?? "";
-    const followUpNote = typeof rawNote === "string" ? rawNote.trim() : "";
-    if (followUpRequired && followUpNote.length === 0) {
-        fields.followUpNote = "Required when Follow-Up Required is Yes.";
-    }
-
-    const rawAttachment = body.attachmentNotes !== undefined ? body.attachmentNotes : existing?.attachmentNotes ?? null;
-    const attachmentNotes =
-        rawAttachment === null || rawAttachment === undefined || rawAttachment === ""
-            ? null
-            : String(rawAttachment);
-    if (attachmentNotes !== null && attachmentNotes.length > MAX_ATTACHMENT_NOTES_LENGTH) {
-        fields.attachmentNotes = `Attachment notes must be at most ${MAX_ATTACHMENT_NOTES_LENGTH} characters.`;
-    }
-
-    return {
-        fields,
-        description,
-        result,
-        followUpRequired,
-        followUpNote: followUpRequired ? followUpNote : null,
-        attachmentNotes,
     };
 }
 
