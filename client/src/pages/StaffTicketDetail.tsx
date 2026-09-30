@@ -4,7 +4,6 @@ import {
     fetchStaffTicketDetail,
     StaffTicketDetail as TicketData,
     updateStaffTicketPriority,
-    updateStaffTicketStatus,
     claimStaffTicket,
     assignStaffTicket,
 } from "../api/staffTickets.api";
@@ -19,12 +18,8 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { AttachmentSection } from "../components/AttachmentSection";
 import { ActionsTaken, ActionsTakenRole } from "../components/ActionsTaken";
+import { TicketWorkflow, TicketWorkflowRole } from "../components/TicketWorkflow";
 import { Badge } from "../components/Badge";
-import {
-    permittedTransitions,
-    STATUS_LABELS,
-    TicketStatus,
-} from "../utils/statusTransitions";
 import "./StaffTicketDetail.css";
 
 type TabId = "public-comments" | "internal-notes" | "actions-taken" | "attachments";
@@ -48,12 +43,8 @@ export function StaffTicketDetail() {
     const [errorMsg, setErrorMsg] = useState("");
 
     // Editable field states
-    const [selectedStatus, setSelectedStatus] = useState<string>("");
-    const [resolutionSummary, setResolutionSummary] = useState<string>("");
     const [selectedItPriority, setSelectedItPriority] = useState<string>("");
-    const [savingStatus, setSavingStatus] = useState(false);
     const [savingPriority, setSavingPriority] = useState(false);
-    const [statusError, setStatusError] = useState<string>("");
     const [priorityError, setPriorityError] = useState<string>("");
 
     // Tabs
@@ -83,9 +74,7 @@ export function StaffTicketDetail() {
             .then((data) => {
                 if (cancelled) return;
                 setTicket(data);
-                setSelectedStatus(data.currentStatus);
                 setSelectedItPriority(data.itPriority ?? data.requestedPriority);
-                setResolutionSummary(data.resolutionSummary ?? "");
                 setScreenState("ready");
             })
             .catch((err) => {
@@ -108,20 +97,18 @@ export function StaffTicketDetail() {
             .catch(() => { /* non-fatal */ });
     }, [ticketId, screenState]);
 
-    async function handleStatusSave() {
-        if (!ticket) return;
-        if (selectedStatus === ticket.currentStatus) return;
-        setSavingStatus(true);
-        setStatusError("");
-        try {
-            const updated = await updateStaffTicketStatus(ticketId, selectedStatus, resolutionSummary || undefined);
-            setTicket((prev) => prev ? { ...prev, currentStatus: updated.currentStatus, resolutionSummary: updated.resolutionSummary } : prev);
-        } catch (err: any) {
-            setStatusError(err.message ?? "Failed to update status");
-            setSelectedStatus(ticket.currentStatus);
-        } finally {
-            setSavingStatus(false);
-        }
+    function handleStatusChange(result: { status: string; resolutionSummary: string | null; updatedAt: string; appearsResolved: boolean }) {
+        setTicket((prev) =>
+            prev
+                ? {
+                      ...prev,
+                      currentStatus: result.status,
+                      resolutionSummary: result.resolutionSummary,
+                      updatedAt: result.updatedAt,
+                      appearsResolved: result.appearsResolved,
+                  }
+                : prev
+        );
     }
 
     async function handlePrioritySave() {
@@ -218,10 +205,6 @@ export function StaffTicketDetail() {
         );
     }
 
-    const currentStatus = ticket.currentStatus as TicketStatus;
-    const permittedNextStatuses = permittedTransitions(currentStatus);
-    const needsResolutionSummary = selectedStatus === "RESOLVED" || selectedStatus === "CLOSED";
-
     return (
         <div className="container mt-4 staff-ticket-detail-page">
             <Link to="/staff/queue" className="staff-ticket-back-link">← Back to Queue</Link>
@@ -254,36 +237,21 @@ export function StaffTicketDetail() {
                         <dd><Badge kind="priority" value={ticket.requestedPriority} /></dd>
                     </div>
 
-                    {/* Current Status — editable */}
+                    {/* Current Status — the consolidated Lab 4 status control (§5.1 matrix, FR-07).
+                        The select keeps its Lab 3 test id during migration so existing
+                        screen-level tests and clients are not broken. */}
                     <div className="staff-ticket-header-field">
                         <dt>Current Status</dt>
                         <dd>
                             <div className="staff-ticket-status-row">
-                                <select
-                                    data-testid="staff-ticket-status-select"
-                                    value={selectedStatus}
-                                    onChange={(e) => {
-                                        setSelectedStatus(e.target.value);
-                                        setStatusError("");
-                                    }}
-                                    className="staff-ticket-select"
-                                    aria-label="Change ticket status"
-                                >
-                                    <option value={ticket.currentStatus}>{STATUS_LABELS[currentStatus] ?? currentStatus}</option>
-                                    {permittedNextStatuses.map((s) => (
-                                        <option key={s} value={s}>{STATUS_LABELS[s] ?? s}</option>
-                                    ))}
-                                </select>
-                                {selectedStatus !== ticket.currentStatus && (
-                                    <button
-                                        type="button"
-                                        className="btn btn-sm btn-primary ms-2"
-                                        onClick={handleStatusSave}
-                                        disabled={savingStatus}
-                                    >
-                                        {savingStatus ? "Saving…" : "Save"}
-                                    </button>
-                                )}
+                                <TicketWorkflow
+                                    ticketId={ticket.id}
+                                    status={ticket.currentStatus}
+                                    role={(user?.role ?? "IT_STAFF") as TicketWorkflowRole}
+                                    updatedAt={ticket.updatedAt}
+                                    selectTestId="staff-ticket-status-select"
+                                    onStatusChange={handleStatusChange}
+                                />
                             </div>
                             {ticket.appearsResolved && (
                                 <span
@@ -292,9 +260,6 @@ export function StaffTicketDetail() {
                                 >
                                     Requester marked: Problem Appears Resolved
                                 </span>
-                            )}
-                            {statusError && (
-                                <p className="staff-ticket-field-error">{statusError}</p>
                             )}
                         </dd>
                     </div>
@@ -383,19 +348,13 @@ export function StaffTicketDetail() {
                 </div>
             </section>
 
-            {/* Resolution Summary */}
-            {(needsResolutionSummary || ticket.resolutionSummary) && (
+            {/* Resolution Summary — recorded through the status confirmation step (§5.2). */}
+            {ticket.resolutionSummary && (
                 <section className="mb-4">
                     <h2 className="staff-ticket-body-label">Resolution Summary</h2>
-                    <textarea
-                        data-testid="staff-ticket-resolution-summary"
-                        className="staff-ticket-textarea"
-                        placeholder="Add resolution summary (visible to requester)…"
-                        value={resolutionSummary}
-                        onChange={(e) => setResolutionSummary(e.target.value)}
-                        rows={4}
-                        maxLength={2000}
-                    />
+                    <p className="staff-ticket-field-value" data-testid="staff-ticket-resolution-summary">
+                        {ticket.resolutionSummary}
+                    </p>
                 </section>
             )}
 
