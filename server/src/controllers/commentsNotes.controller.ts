@@ -156,8 +156,14 @@ export async function markAppearsResolvedHandler(req: Request, res: Response) {
         });
     }
 
+    const body = (req.body ?? {}) as Record<string, unknown>;
+
     try {
-        const result = await markTicketAppearsResolved(ticketId, req.user!.userId);
+        // Ref: docs/lab-04/api-spec.md §2.2 — PATCH carries `appearsResolved` + `expectedUpdatedAt`.
+        const result = await markTicketAppearsResolved(ticketId, req.user!.userId, {
+            appearsResolved: body.appearsResolved,
+            expectedUpdatedAt: body.expectedUpdatedAt,
+        });
         if (result.notFound) {
             return res.status(404).json({
                 error: "NOT_FOUND",
@@ -168,6 +174,17 @@ export async function markAppearsResolvedHandler(req: Request, res: Response) {
             return res.status(403).json({
                 error: "FORBIDDEN",
                 message: "Access denied",
+            });
+        }
+        if ("stale" in result) {
+            // STALE_UPDATE is a Lab 4 code (api-spec §4), so it uses the nested envelope; the
+            // pre-existing 404/403 keep Lab 3's string envelope unchanged.
+            return res.status(409).json({
+                error: {
+                    code: "STALE_UPDATE",
+                    message: "This ticket was changed by someone else.",
+                    data: { current: result.current },
+                },
             });
         }
 

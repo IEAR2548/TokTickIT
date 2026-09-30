@@ -165,7 +165,18 @@ export async function getInternalNotes(ticketId: number) {
     };
 }
 
-export async function markTicketAppearsResolved(ticketId: number, requesterId: number) {
+// Ref: docs/lab-04/api-spec.md §2.2, specification.md FR-09/AC-06, BR-16
+export interface MarkAppearsResolvedOptions {
+    /** Defaults to true for backward compatibility with the Lab 3 body-less call. */
+    appearsResolved?: unknown;
+    expectedUpdatedAt?: unknown;
+}
+
+export async function markTicketAppearsResolved(
+    ticketId: number,
+    requesterId: number,
+    options: MarkAppearsResolvedOptions = {}
+) {
     const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
     if (!ticket) return { notFound: true };
 
@@ -173,14 +184,38 @@ export async function markTicketAppearsResolved(ticketId: number, requesterId: n
         return { forbidden: true };
     }
 
+    // BR-14: the same optimistic-concurrency check applies here. Omitted for Lab 3 clients.
+    if (options.expectedUpdatedAt !== undefined) {
+        const expected = new Date(String(options.expectedUpdatedAt));
+        if (Number.isNaN(expected.getTime()) || expected.getTime() !== ticket.updatedAt.getTime()) {
+            return {
+                stale: true,
+                current: { status: ticket.currentStatus, updatedAt: ticket.updatedAt },
+            };
+        }
+    }
+
+    const appearsResolved =
+        typeof options.appearsResolved === "boolean" ? options.appearsResolved : true;
+
     const updated = await prisma.ticket.update({
         where: { id: ticketId },
-        data: { appearsResolved: true },
+        data: { appearsResolved },
         select: {
             id: true,
             appearsResolved: true,
+            currentStatus: true,
+            updatedAt: true,
         },
     });
 
-    return { data: updated };
+    // Never touches `status` (FR-09/AC-06): it is only ever *read* back for the client.
+    return {
+        data: {
+            id: updated.id,
+            appearsResolved: updated.appearsResolved,
+            status: updated.currentStatus,
+            updatedAt: updated.updatedAt,
+        },
+    };
 }
