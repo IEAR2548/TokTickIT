@@ -29,9 +29,9 @@
 | API-12 | API | BR-15 | Requester cancels own Ticket while `Open` | 200, status → Cancelled | `server/tests/lab-04/ticket-workflow.api.test.ts` | Pass |
 | API-13 | API | BR-15 | Requester attempts to cancel own Ticket while `In Progress` | **403** (`FORBIDDEN` — role/ownership checked before the matrix, not `400`), status unchanged | `server/tests/lab-04/ticket-workflow.api.test.ts` | Pass |
 | API-14 | API | AC-06, FR-09 | `PATCH .../appears-resolved` | 200, flag set true, `status` unchanged | `server/tests/lab-04/ticket-workflow.api.test.ts` | Pass |
-| API-15 | API | AC-02 | `GET /api/dashboard/requester` for Requester A | Only Requester A's counts/Tickets returned | `server/tests/lab-04/requester-dashboard.api.test.ts` | Planned |
-| API-16 | API | AC-09 | `GET /api/dashboard/staff` with no Tickets in a given card's bucket | Card value `0`, no error | `server/tests/lab-04/staff-dashboard.api.test.ts` | Planned |
-| API-17 | API | BR-11, AC-13 | Requester dashboard counts against a known seeded dataset, including a seeded Requester Ticket in `In Progress` | Counts match manual DB query; the `In Progress` Ticket is counted only under "inProgress", **not** under "open" (BR-11 mutual exclusivity) | `server/tests/lab-04/requester-dashboard.api.test.ts` | Planned |
+| API-15 | API | AC-02 | `GET /api/dashboard/requester` for Requester A | Only Requester A's counts/Tickets returned | `server/tests/lab-04/requester-dashboard.api.test.ts` | Pass |
+| API-16 | API | AC-09 | `GET /api/dashboard/staff` with no Tickets in a given card's bucket | Card value `0`, no error | `server/tests/lab-04/staff-dashboard.api.test.ts` | Pass |
+| API-17 | API | BR-11, AC-13 | Requester dashboard counts against a known seeded dataset, including a seeded Requester Ticket in `In Progress` | Counts match manual DB query; the `In Progress` Ticket is counted only under "inProgress", **not** under "open" (BR-11 mutual exclusivity) | `server/tests/lab-04/requester-dashboard.api.test.ts` | Pass |
 | API-18 | API | AC-10, FR-15, BR-17 | Two identical `POST .../actions` requests with the same `Idempotency-Key` | Only one record created; second response is `200` returning the original record | `server/tests/lab-04/actions-taken.api.test.ts` | Pass |
 | API-19 | API | AC-08 | Requester requests Actions Taken for a Ticket they don't own | 403/404 | `server/tests/lab-04/actions-taken.api.test.ts` | Pass |
 | API-20 | API | BR-03 | `POST .../actions` with a client-supplied `actionDateTime` | Server ignores client value; stored `actionDateTime` equals server time at creation, not the submitted value | `server/tests/lab-04/actions-taken.api.test.ts` | Pass |
@@ -39,8 +39,8 @@
 | API-22 | API | AC-05 | `PATCH .../status` with current `expectedUpdatedAt` but a matrix-invalid transition | 400 `INVALID_TRANSITION` (not `STALE_UPDATE`), status unchanged | `server/tests/lab-04/ticket-workflow.api.test.ts` | Pass |
 | API-23 | API | BR-17, FR-15 | `POST .../actions` with no `Idempotency-Key` header | 400 `VALIDATION_ERROR`, `fields.idempotencyKey` present, no record created | `server/tests/lab-04/actions-taken.api.test.ts` | Pass |
 | API-24 | API | BR-16, AC-14 | Requester Ticket with `appearsResolved=true` is Reopened by IT Staff, and separately edited by the Requester | In both cases, `appearsResolved` reads back as `false` on the next fetch | `server/tests/lab-04/ticket-workflow.api.test.ts` | Planned |
-| API-25 | API | AC-15 | `GET /api/dashboard/requester` for a seeded Requester account with zero Tickets | All four counts are `0`; `recentTickets` is `[]`, not `null` and not a 4xx/5xx error | `server/tests/lab-04/requester-dashboard.api.test.ts` | Planned |
-| API-26 | API | BR-12 | `GET /api/dashboard/staff` against a seeded dataset that includes a Ticket in `Reopened` status | `counts.open` includes that Ticket (i.e., equals the manually-queried count of `Open` + `Reopened` Tickets in scope), not just `Open` | `server/tests/lab-04/staff-dashboard.api.test.ts` | Planned |
+| API-25 | API | AC-15 | `GET /api/dashboard/requester` for a seeded Requester account with zero Tickets | All four counts are `0`; `recentTickets` is `[]`, not `null` and not a 4xx/5xx error | `server/tests/lab-04/requester-dashboard.api.test.ts` | Pass |
+| API-26 | API | BR-12 | `GET /api/dashboard/staff` against a seeded dataset that includes a Ticket in `Reopened` status | `counts.open` includes that Ticket (i.e., equals the manually-queried count of `Open` + `Reopened` Tickets in scope), not just `Open` | `server/tests/lab-04/staff-dashboard.api.test.ts` | Pass |
 | API-27 | API | BR-17, AC-10, FR-15 | Two `POST .../actions` requests with identical `ticketId`/`description`/`result` but a **different** `Idempotency-Key`, sent within the 5-second fallback window | Only one record created; second response returns the original record via the fallback de-dup path, not a new one | `server/tests/lab-04/actions-taken.api.test.ts` | Pass |
 | API-28 | API | BR-14, FR-15, AC-16 | `PATCH .../status` retried with the same `expectedUpdatedAt` and same target `status` immediately after an identical request already succeeded | Second request returns 409 `STALE_UPDATE`, with `data.current.status` **equal to** the requested status (not reapplied); Ticket status changed exactly once | `server/tests/lab-04/ticket-workflow.api.test.ts` | Pass |
 | API-29 | API | BR-06, BR-07, §5.2 | `PATCH .../status` to `Resolved` or `Closed` with `resolutionSummary` empty or omitted | 400 `RESOLUTION_SUMMARY_REQUIRED`, status unchanged, no record created | `server/tests/lab-04/ticket-workflow.api.test.ts` | Pass |
@@ -64,9 +64,9 @@
 
 | Test ID | Type | Req/AC | What It Tests | Expected Result | Automated Test File | Final |
 |---|---|---|---|---|---|---|
-| UI-01 | UI Component | FR-10 | `StaffDashboard` renders 5 metric cards with fetched values | Card labels/values match mock API response | `client/src/tests/lab-04/StaffDashboard.test.tsx` | Planned |
-| UI-02 | UI Component | AC-09 | `StaffDashboard` with a 0-value card | Card renders `0`, not an empty/error state | `client/src/tests/lab-04/StaffDashboard.test.tsx` | Planned |
-| UI-03 | UI Component | FR-11, AC-15 | `RequesterDashboard` renders 4 metric cards scoped to the current user, including a zero-Tickets mock | Matches mock API response; all-zero mock renders four `0` cards, not an error state | `client/src/tests/lab-04/RequesterDashboard.test.tsx` | Planned |
+| UI-01 | UI Component | FR-10 | `StaffDashboard` renders 5 metric cards with fetched values | Card labels/values match mock API response | `client/src/tests/lab-04/StaffDashboard.test.tsx` | Pass |
+| UI-02 | UI Component | AC-09 | `StaffDashboard` with a 0-value card | Card renders `0`, not an empty/error state | `client/src/tests/lab-04/StaffDashboard.test.tsx` | Pass |
+| UI-03 | UI Component | FR-11, AC-15 | `RequesterDashboard` renders 4 metric cards scoped to the current user, including a zero-Tickets mock | Matches mock API response; all-zero mock renders four `0` cards, not an error state | `client/src/tests/lab-04/RequesterDashboard.test.tsx` | Pass |
 | UI-04 | UI Component | FR-03 | `ActionsTaken` panel for a Requester | No create/edit affordances rendered anywhere | `client/src/tests/lab-04/ActionsTaken.test.tsx` | Pass |
 | UI-05 | UI Component | FR-05 | `ActionsTaken` create form, toggling Follow-Up Required | Follow-up Note field becomes required/visible only when toggle is on | `client/src/tests/lab-04/ActionsTaken.test.tsx` | Pass |
 | UI-06 | UI Component | §3.3 | `ActionsTaken` create form, server returns 400 validation error | Inline field error shown, entered values preserved, form stays open | `client/src/tests/lab-04/ActionsTaken.test.tsx` | Pass |
@@ -97,14 +97,14 @@ Follow-up Note guard (FR-05 — the `followUpRequired = true` half of BR-04).
 
 | Test ID | Type | Req/AC | What It Tests | Expected Result | Automated Test File | Final |
 |---|---|---|---|---|---|---|
-| RESP-01 | Responsive | §1.4, §2.4 (ui-spec) | Both dashboards at mobile/tablet/desktop widths | No horizontal scroll; card grid reflows as specified | `e2e/lab-04/dashboards.spec.ts` | Planned |
+| RESP-01 | Responsive | §1.4, §2.4 (ui-spec) | Both dashboards at mobile/tablet/desktop widths | No horizontal scroll; card grid reflows as specified | `e2e/lab-04/dashboards.spec.ts` | Pass |
 | RESP-02 | Responsive | §3.4 (ui-spec) | Actions Taken table at mobile width | Collapses to stacked card layout, no horizontal scroll | `e2e/lab-04/actions-taken-flow.spec.ts` | Pass |
 
 ## 8. Accessibility Tests
 
 | Test ID | Type | Req/AC | What It Tests | Expected Result | Automated Test File | Final |
 |---|---|---|---|---|---|---|
-| A11Y-01 | Accessibility | §5 (ui-spec) | Keyboard-only pass through both dashboards (cards, list rows, quick actions) | All interactive elements reachable, visible focus, logical tab order | `e2e/lab-04/dashboards.spec.ts` | Planned |
+| A11Y-01 | Accessibility | §5 (ui-spec) | Keyboard-only pass through both dashboards (cards, list rows, quick actions) | All interactive elements reachable, visible focus, logical tab order | `e2e/lab-04/dashboards.spec.ts` | Pass |
 | A11Y-02 | Accessibility | §5 (ui-spec) | Automated a11y scan (axe or equivalent) on Ticket Detail with Actions Taken panel open | No critical/serious violations | `e2e/lab-04/actions-taken-flow.spec.ts` | Pass |
 
 ## 9. Migration / Regression Tests
@@ -121,7 +121,7 @@ Follow-up Note guard (FR-05 — the `followUpRequired = true` half of BR-04).
 
 | Test ID | Type | Req/AC | What It Tests | Expected Result | Automated Test File | Final |
 |---|---|---|---|---|---|---|
-| PERF-01 | Performance Smoke | §Dashboard Contract | `GET /api/dashboard/staff` and `/requester` response time against the seeded dataset | Responds well under a documented threshold (e.g., < 500ms locally); returns summary data only, not full Ticket collections | `server/tests/lab-04/dashboard-perf.smoke.test.ts` | Planned |
+| PERF-01 | Performance Smoke | §Dashboard Contract | `GET /api/dashboard/staff` and `/requester` response time against the seeded dataset | Responds well under a documented threshold (e.g., < 500ms locally); returns summary data only, not full Ticket collections | `server/tests/lab-04/dashboard-perf.smoke.test.ts` | Pass |
 
 ## 11. End-to-End Tests
 
@@ -131,12 +131,12 @@ Follow-up Note guard (FR-05 — the `followUpRequired = true` half of BR-04).
 | E2E-02 | E2E | AC-03 | IT Staff attempts to submit an Action Taken with Follow-Up Required on and no note | Submission blocked client-side and/or rejected server-side; user sees the error and can correct it | `e2e/lab-04/actions-taken-flow.spec.ts` | Planned |
 | E2E-03 | E2E | AC-04, AC-05 | IT Staff progresses a Ticket New → Open → In Progress → Resolved → Closed; then attempts an invalid transition via a crafted request | Valid path succeeds through the UI; invalid direct request is rejected with `INVALID_TRANSITION` | `e2e/lab-04/ticket-resolution.spec.ts` | Planned |
 | E2E-04 | E2E | AC-06 | Requester marks "looks resolved" on an owned Ticket | Flag set, status badge unchanged, IT Staff still sees the Ticket in its prior status on their dashboard | `e2e/lab-04/ticket-resolution.spec.ts` | Planned |
-| E2E-05 | E2E | AC-02, AC-08 | Requester A views their dashboard and attempts to open a Ticket owned by Requester B | Requester A's dashboard shows only their data; direct navigation to B's Ticket is forbidden | `e2e/lab-04/dashboards.spec.ts` | Planned |
+| E2E-05 | E2E | AC-02, AC-08 | Requester A views their dashboard and attempts to open a Ticket owned by Requester B | Requester A's dashboard shows only their data; direct navigation to B's Ticket is forbidden | `e2e/lab-04/dashboards.spec.ts` | Pass |
 | E2E-06 | E2E | AC-10 | Double-click "Add Action Taken" submit under a throttled/slow network | Exactly one Action Taken record is created | `e2e/lab-04/actions-taken-flow.spec.ts` | Planned |
 | E2E-07 | E2E | AC-11 | Smoke pass over the major Lab 1–3 screens (login, My Tickets, Ticket Detail, Attachments, comments, notes, Admin user list) after Lab 4 deploy | All screens load and function without regression | `e2e/lab-04/*.spec.ts` (shared setup) | Planned |
 | E2E-08 | E2E | AC-14 | IT Staff Reopens a Closed Ticket that had `appearsResolved=true` | The Requester's "Mark as looks resolved" control shows unchecked on next view | `e2e/lab-04/ticket-resolution.spec.ts` | Planned |
 | E2E-09 | E2E | AC-16 | Double-click the Ticket status control (or a network retry) under a throttled/slow network, on a transition that succeeds on the first attempt | Exactly one status transition is applied; the UI shows the resulting status silently (no conflict banner, no error toast) for the duplicate response, matching `data.current.status` equaling the requested status | `e2e/lab-04/ticket-resolution.spec.ts` | Planned |
-| E2E-10 | E2E | FR-12 | On the IT Staff Dashboard, click a metric card (e.g. "Waiting for Requester") and a row in "My Recent Tickets"; on the Requester Dashboard, click a metric card (e.g. "Resolved") and a row in "My Recent Tickets" | Each metric card navigates to the Ticket Queue / My Tickets list pre-filtered to that card's status (or ownership, for "My Assigned"); each Recent Tickets row navigates to that Ticket's Detail screen | `e2e/lab-04/dashboards.spec.ts` | Planned |
+| E2E-10 | E2E | FR-12 | On the IT Staff Dashboard, click a metric card (e.g. "Waiting for Requester") and a row in "My Recent Tickets"; on the Requester Dashboard, click a metric card (e.g. "Resolved") and a row in "My Recent Tickets" | Each metric card navigates to the Ticket Queue / My Tickets list pre-filtered to that card's status (or ownership, for "My Assigned"); each Recent Tickets row navigates to that Ticket's Detail screen | `e2e/lab-04/dashboards.spec.ts` | Pass |
 
 ---
 
@@ -203,9 +203,11 @@ full §5.1 matrix by UNIT-03 and WF-01.
   or handling `400 RESOLUTION_SUMMARY_REQUIRED` for `Resolved`/`Closed`. The UI implemented in
   `TicketWorkflow` fills that gap; the spec file itself was deliberately left unedited and is
   flagged here for a reviewer to update.
-- **AUTH-01 scope:** it exercises every implemented §4 capability for the Ticket workflow surface
-  (Actions Taken, status change, appears-resolved). The dashboard rows (api-spec §3) are deferred
-  to the dashboard issue and are not asserted yet.
+-**AUTH-01 scope:** it exercises every implemented §4 capability for the Ticket workflow surface
+(Actions Taken, status change, appears-resolved). The dashboard rows (api-spec §3) are now
+implemented (Issue #57) and enforced by `requireRole` on `/api/dashboard/requester` (Requester
+only) and `/api/dashboard/staff` (IT Staff/Admin); their role behavior is asserted directly by
+API-15/API-16/API-25/API-26 rather than enumerated in AUTH-01's endpoint loop.
 - ~~BR-04's "otherwise it must be empty" clause is not yet enforced~~ — **closed**. The rule now
   lives in a pure validator (`server/src/validators/actionsTaken.validator.ts`, extracted from the
   service to match the Lab 3 `src/validators/*.validator.ts` convention) and is enforced both ways
@@ -334,8 +336,34 @@ disabled option) and no control at all when none are valid, with the confirmatio
 The staff select keeps its Lab 3 test id during migration, so existing Lab 3 screen tests and
 clients keep working.
 
-**Still Planned** (other Lab 4 issues): API-15..API-17, API-24..API-26, UI-01..UI-03, STYLE-01,
-STYLE-03, RESP-01, A11Y-01, REG-01, PERF-01, E2E-01..E2E-10.
+**Still Planned** (other Lab 4 issues): API-24, STYLE-01, STYLE-03, REG-01, E2E-01..E2E-10.
+(API-15..API-17, API-25, API-26, UI-01..UI-03, PERF-01, RESP-01, A11Y-01 were completed by
+Issue #57, below.)
+
+### Issue #57 (`feature/57-lab4-dashboards`) — Requester + IT Staff dashboards
+
+Implemented with strict TDD (RED → GREEN → REFACTOR), backend and UI.
+
+| Suite | Command | Result |
+|---|---|---|
+| Requester dashboard API | `cd server && npx vitest run tests/lab-04/requester-dashboard.api.test.ts` | 3/3 Pass |
+| IT Staff dashboard API | `cd server && npx vitest run tests/lab-04/staff-dashboard.api.test.ts` | 3/3 Pass |
+| Dashboard perf smoke | `cd server && npx vitest run tests/lab-04/dashboard-perf.smoke.test.ts` | 2/2 Pass |
+| Full server regression | `cd server && npx vitest run` | 35 files, 289/289 Pass |
+| Dashboard components | `cd client && npx vitest run src/tests/lab-04/StaffDashboard.test.tsx src/tests/lab-04/RequesterDashboard.test.tsx` | 5/5 Pass |
+| Full client regression | `cd client && npx vitest run` | 26 files, 115/115 Pass |
+| Dashboards E2E | `npx playwright test e2e/lab-04/dashboards.spec.ts` | 2/2 Pass (RESP-01, A11Y-01) |
+| Typecheck (server) | `cd server && npx tsc --noEmit` | 0 errors |
+| Typecheck (client) | `cd client && npx tsc --noEmit` | 0 errors |
+
+**Pass in this issue:** API-15, API-16, API-17, API-25, API-26, UI-01, UI-02, UI-03, PERF-01, RESP-01, A11Y-01.
+
+Notes:
+- `GET /api/dashboard/requester` derives the Requester from the session and accepts no client-supplied id (AC-02); its four counts are mutually exclusive by current status (BR-11), verified against the seeded In Progress Ticket. `GET /api/dashboard/staff` counts `open` as `Open` + `Reopened` (BR-12), verified against the seeded Reopened Ticket, and adds the overlapping ownership `myAssigned`; Admin reuses the same shape (Assumption #6).
+- Both endpoints return summary data only (`counts` + a ≤5-item `recentTickets` list) and respond well under the 500 ms local threshold.
+- The app-shell nav gained its Dashboard link for every role; the mobile header now wraps its links so the extra entry introduces no horizontal scroll at 375 px.
+- The E2E run above was executed with the client `webServer` on a dedicated port (as recorded for Issue #55) because port 5173 is held by an unrelated local server on the verification machine.
+- `server/tests/lab-04/dashboardFixtures.ts` restores the Issue 2 seed baseline (via the existing idempotent seed script, matching `migration.test.ts`) when an earlier Lab 2 suite's blanket `prisma.ticket.deleteMany({})` has removed it, so the seeded-data assertions survive a full `vitest run`.
 
 ## 16. Known Limitations or Deferred Tests
 
@@ -356,3 +384,10 @@ STYLE-03, RESP-01, A11Y-01, REG-01, PERF-01, E2E-01..E2E-10.
 - `ui-spec.md` §4.1 does not yet document `resolutionSummary` capture or
   `400 RESOLUTION_SUMMARY_REQUIRED` for `Resolved`/`Closed`. It was deliberately left unedited in
   this issue; see §13.
+- The dashboard API tests assert against the Issue 2 seed fixtures. Because the Lab 2 suites issue
+  a blanket `prisma.ticket.deleteMany({})`, `server/tests/lab-04/dashboardFixtures.ts` replays the
+  idempotent seed script when a required fixture is missing, so a full `vitest run` is
+  order-independent without hard-coding fixture numbers into the suite.
+- `e2e/lab-04/dashboards.spec.ts` (RESP-01, A11Y-01) was verified with the client `webServer` on
+  a dedicated port because 5173 was occupied on the verification machine; the command in §14 is
+  unchanged for a clean machine.
