@@ -12,6 +12,7 @@ import ticketsRoute from "./routes/tickets.route";
 import attachmentsRoute from "./routes/attachments.route";
 import staffTicketsRoute from "./routes/staffTickets.route";
 import adminUsersRoute from "./routes/adminUsers.route";
+import dashboardRoute from "./routes/dashboard.route";
 
 const app = express();
 
@@ -41,5 +42,6 @@ app.use("/api/tickets", ticketsRoute);
 app.use("/api/attachments", attachmentsRoute);
 app.use("/api/staff/tickets", staffTicketsRoute);
 app.use("/api/admin/users", adminUsersRoute);
+app.use("/api/dashboard", dashboardRoute);
 
 export default app;

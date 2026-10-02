@@ -123,7 +123,21 @@
 
     .app-shell-left {
         width: 100%;
+        flex-wrap: wrap;
+        row-gap: 6px;
         justify-content: space-between;
+    }
+
+    /* The primary nav now carries a Dashboard link for every role; let the links wrap
+       instead of pushing the header past the viewport at narrow widths. */
+    .app-nav {
+        flex-wrap: wrap;
+        row-gap: 4px;
+    }
+
+    .app-nav-link {
+        padding: 5px 10px;
+        font-size: 13px;
     }
 }
 
