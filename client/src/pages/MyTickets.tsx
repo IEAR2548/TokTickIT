@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useRequester } from "../context/RequesterContext";
 import { fetchMyTickets, TicketListItem, PaginationMeta } from "../api/tickets.api";
@@ -7,6 +7,7 @@ import { fetchCategories, ReferenceItem } from "../api/referenceData.api";
 import { TicketList } from "../components/TicketList";
 import { Pagination } from "../components/Pagination";
 import { Button } from "../components/form/Button";
+import { STATUS_LABELS } from "../utils/statusTransitions";
 import "./MyTickets.css";
 
 type ScreenState = "loading" | "ready" | "error";
@@ -25,7 +26,13 @@ export function MyTickets() {
     const [state, setState] = useState<ScreenState>("loading");
     const [tickets, setTickets] = useState<TicketListItem[]>([]);
     const [meta, setMeta] = useState<PaginationMeta>({ page: 1, pageSize: 10, total: 0, totalPages: 1 });
-    const [filters, setFilters] = useState(DEFAULT_FILTERS);
+    // FR-12: a dashboard metric card links here with ?status=<enum> so the list opens
+    // pre-filtered to that card's status (e.g. /my-tickets?status=RESOLVED).
+    const [searchParams] = useSearchParams();
+    const [filters, setFilters] = useState(() => ({
+        ...DEFAULT_FILTERS,
+        status: searchParams.get("status") ?? "",
+    }));
     const [searchInput, setSearchInput] = useState("");
     const [page, setPage] = useState(1);
     const [categories, setCategories] = useState<ReferenceItem[]>([]);
@@ -168,7 +175,11 @@ export function MyTickets() {
                     onChange={(e) => updateFilter("status", e.target.value)}
                 >
                     <option value="">All Statuses</option>
-                    <option value="NEW">New</option>
+                    {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                        <option key={value} value={value}>
+                            {label}
+                        </option>
+                    ))}
                 </select>
 
                 <select

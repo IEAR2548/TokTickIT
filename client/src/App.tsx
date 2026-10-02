@@ -13,6 +13,16 @@ import { RequesterTicketDetail } from "./pages/RequesterTicketDetail";
 import { StaffQueue } from "./pages/StaffQueue";
 import { StaffTicketDetail } from "./pages/StaffTicketDetail";
 import { UserManagement } from "./pages/UserManagement";
+import { StaffDashboard } from "./pages/StaffDashboard";
+import { RequesterDashboard } from "./pages/RequesterDashboard";
+import { useAuth } from "./context/AuthContext";
+
+// Both roles share the /dashboard route; the screen rendered depends on the session role
+// (ui-spec §1, §2). A Requester therefore only ever sees their own dashboard here.
+function DashboardRoute() {
+  const { user } = useAuth();
+  return user?.role === "REQUESTER" ? <RequesterDashboard /> : <StaffDashboard />;
+}
 
 export default function App() {
   return (
@@ -31,6 +41,16 @@ export default function App() {
               element={
                 <AuthGuard>
                   <SystemCheck />
+                </AuthGuard>
+              }
+            />
+
+            {/* Role-appropriate dashboard (Requester vs IT Staff/Admin) */}
+            <Route
+              path="/dashboard"
+              element={
+                <AuthGuard>
+                  <DashboardRoute />
                 </AuthGuard>
               }
             />

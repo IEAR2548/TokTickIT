@@ -40,6 +40,12 @@ export function RequesterBadge() {
                         TokTickIT
                     </Link>
                     <nav className="app-nav" aria-label="Main Navigation">
+                        <Link
+                            to="/dashboard"
+                            className={`app-nav-link ${location.pathname === "/dashboard" ? "active" : ""}`}
+                        >
+                            Dashboard
+                        </Link>
                         {isRequester && (
                             <>
                                 <Link
