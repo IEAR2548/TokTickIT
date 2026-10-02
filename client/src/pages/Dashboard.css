@@ -1,0 +1,80 @@
+/* Ref: docs/lab-04/ui-spec.md §1.4, §2.4 (responsive), §6 (Zen Green consistency) */
+
+.dashboard-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 3rem;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+.dashboard-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.dashboard-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary, #1a2e23);
+}
+
+.dashboard-subtitle {
+    margin: 0.25rem 0 0;
+    color: var(--color-text-secondary, #4a6357);
+}
+
+.dashboard-refresh:focus-visible {
+    outline: 2px solid var(--color-primary, #006b3c);
+    outline-offset: 2px;
+}
+
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.dashboard-cards--requester {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.dashboard-content {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+/* Tablet: staff wraps to a 3+2 grid, requester to 2x2; content collapses to one column. */
+@media (max-width: 1024px) {
+    .dashboard-cards {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .dashboard-cards--requester {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-content {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* Mobile: metric cards 2 per row, content stacked. */
+@media (max-width: 640px) {
+    .dashboard-cards,
+    .dashboard-cards--requester {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-page {
+        padding: 1rem 0.75rem 2rem;
+    }
+}
