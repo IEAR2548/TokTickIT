@@ -20,3 +20,40 @@ export function isValidStatusTransition(from: TicketStatus, to: TicketStatus): b
     if (!permitted) return false;
     return permitted.includes(to);
 }
+
+// Ref: docs/lab-04/specification.md §5.1 (full matrix incl. the role column), BR-15
+export type TicketTransitionRole = "REQUESTER" | "IT_STAFF" | "ADMINISTRATOR";
+
+export interface TransitionContext {
+    isRequesterOwner?: boolean;
+}
+
+const STAFF_ROLES: readonly string[] = ["IT_STAFF", "ADMINISTRATOR"];
+
+/**
+ * Role-aware view of the §5.1 matrix.
+ *
+ * IT Staff/Admin share the topology in `PERMITTED_STATUS_TRANSITIONS`. A Requester has exactly
+ * one self-service transition — `Cancelled`, and only from `New`/`Open` on their *own* Ticket
+ * (BR-15). Any other combination is not permitted.
+ */
+export function isPermittedTransition(
+    from: TicketStatus,
+    to: TicketStatus,
+    role: string,
+    context: TransitionContext = {}
+): boolean {
+    if (!from || !to || from === to) return false;
+
+    if (STAFF_ROLES.includes(role)) {
+        return isValidStatusTransition(from, to);
+    }
+
+    if (role === "REQUESTER") {
+        if (!context.isRequesterOwner) return false;
+        if (to !== "CANCELLED") return false;
+        return from === "NEW" || from === "OPEN";
+    }
+
+    return false;
+}

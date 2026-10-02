@@ -14,6 +14,7 @@ import {
     createActionHandler,
     updateActionHandler,
 } from "../controllers/actionsTaken.controller";
+import { changeTicketStatusHandler } from "../controllers/ticketWorkflow.controller";
 
 const router = Router();
 
@@ -48,6 +49,16 @@ router.post("/:id/notes", requireRole("IT_STAFF", "ADMINISTRATOR"), createIntern
 
 // Endpoint 18: GET /api/tickets/:id/notes
 router.get("/:id/notes", requireRole("IT_STAFF", "ADMINISTRATOR"), getInternalNotesHandler);
+
+// Lab 4: PATCH /api/tickets/:ticketId/status
+// Consolidated status-change endpoint (specification.md Assumption #16). Enforces the §5.1
+// matrix server-side for every role; the Lab 3 /api/staff/tickets/:id/status route remains as
+// a migration alias.
+router.patch(
+    "/:ticketId/status",
+    requireRole("REQUESTER", "IT_STAFF", "ADMINISTRATOR"),
+    changeTicketStatusHandler
+);
 
 // Endpoint 19: PATCH /api/tickets/:id/appears-resolved
 router.patch("/:id/appears-resolved", requireRole("REQUESTER"), markAppearsResolvedHandler);

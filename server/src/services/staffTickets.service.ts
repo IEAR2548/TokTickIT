@@ -263,6 +263,9 @@ export async function updateStaffTicketStatus(
         data: {
             currentStatus: newStatus as any,
             resolutionSummary: resolutionSummary !== undefined ? (resolutionSummary.trim() || null) : ticket.resolutionSummary,
+            // BR-16 applies to the Reopen transition whichever route performs it, so the Lab 3
+            // migration alias resets the advisory flag exactly like the canonical route does.
+            ...(newStatus === "REOPENED" ? { appearsResolved: false } : {}),
         },
         select: {
             id: true,

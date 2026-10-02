@@ -27,6 +27,27 @@ export function permittedTransitions(from: TicketStatus): TicketStatus[] {
     return PERMITTED_STATUS_TRANSITIONS[from] ?? [];
 }
 
+/**
+ * Role-aware view of the §5.1 matrix for the Ticket Detail status control (FR-07).
+ *
+ * IT Staff/Admin get the shared staff topology. A Requester has exactly one self-service
+ * transition — `Cancelled`, and only from `New`/`Open` on their own Ticket (BR-15). Any other
+ * combination yields no options, and the caller must render no control at all.
+ */
+export function permittedTransitionsFor(
+    status: TicketStatus,
+    role: "REQUESTER" | "IT_STAFF" | "ADMINISTRATOR",
+    isOwner: boolean
+): TicketStatus[] {
+    if (role === "IT_STAFF" || role === "ADMINISTRATOR") {
+        return permittedTransitions(status);
+    }
+    if (role === "REQUESTER" && isOwner && (status === "NEW" || status === "OPEN")) {
+        return ["CANCELLED"];
+    }
+    return [];
+}
+
 export const STATUS_LABELS: Record<TicketStatus, string> = {
     NEW: "New",
     OPEN: "Open",
