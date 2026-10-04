@@ -120,6 +120,17 @@ function ensureDirs(): void {
     }
 }
 
+/**
+ * Freezes the sticky app-shell header (position: static) and scrolls to top
+ * before fullPage capture — fullPage screenshots otherwise repeat/overlay the
+ * fixed header in the middle of stitched images (see Lab 2 ai-use.md).
+ */
+async function captureFullPage(page: Page, path: string): Promise<void> {
+    await page.addStyleTag({ content: ".app-shell-header { position: static !important; }" });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path, fullPage: true });
+}
+
 test.describe("Lab 4 screenshots + visual sweep", () => {
     test.setTimeout(120_000);
 
@@ -137,7 +148,7 @@ test.describe("Lab 4 screenshots + visual sweep", () => {
             await expectNoHorizontalOverflow(page);
             await expectKnownLinks(page);
             await expectCleanVisibleText(page);
-            await page.screenshot({ path: `${ROOT}/staff-dashboard/${vp.name}.png`, fullPage: true });
+            await captureFullPage(page, `${ROOT}/staff-dashboard/${vp.name}.png`);
         }
 
         expect(errors, errors.join("\n")).toEqual([]);
@@ -157,7 +168,7 @@ test.describe("Lab 4 screenshots + visual sweep", () => {
             await expectNoHorizontalOverflow(page);
             await expectKnownLinks(page);
             await expectCleanVisibleText(page);
-            await page.screenshot({ path: `${ROOT}/requester-dashboard/${vp.name}.png`, fullPage: true });
+            await captureFullPage(page, `${ROOT}/requester-dashboard/${vp.name}.png`);
         }
 
         expect(errors, errors.join("\n")).toEqual([]);
@@ -202,20 +213,20 @@ test.describe("Lab 4 screenshots + visual sweep", () => {
             await expect(page.getByTestId("staff-ticket-status-select")).toBeVisible();
             await expectNoHorizontalOverflow(page);
             await expectCleanVisibleText(page);
-            await page.screenshot({ path: `${ROOT}/actions-taken/status-control-${vp.name}.png`, fullPage: true });
+            await captureFullPage(page, `${ROOT}/actions-taken/status-control-${vp.name}.png`);
 
             await page.getByTestId("tab-actions-taken").click();
             await expect(page.getByTestId("actions-taken-panel")).toBeVisible();
             await expect(page.locator("[data-testid^='actions-taken-row-']").first()).toBeVisible();
             await expectNoHorizontalOverflow(page);
-            await page.screenshot({ path: `${ROOT}/actions-taken/list-${vp.name}.png`, fullPage: true });
+            await captureFullPage(page, `${ROOT}/actions-taken/list-${vp.name}.png`);
 
             await page.getByTestId("actions-taken-add-btn").click();
             await expect(page.getByTestId("actions-taken-form")).toBeVisible();
             await page.getByTestId("actions-taken-follow-up-toggle").check();
             await expect(page.getByTestId("actions-taken-follow-up-note-input")).toBeVisible();
             await expectNoHorizontalOverflow(page);
-            await page.screenshot({ path: `${ROOT}/actions-taken/create-form-${vp.name}.png`, fullPage: true });
+            await captureFullPage(page, `${ROOT}/actions-taken/create-form-${vp.name}.png`);
             await page.getByTestId("actions-taken-cancel-btn").click();
         }
 
