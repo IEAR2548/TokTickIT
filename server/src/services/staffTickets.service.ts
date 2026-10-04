@@ -190,6 +190,10 @@ export async function claimStaffTicket(ticketId: number, staffUserId: number) {
             id: true,
             ownerId: true,
             owner: { select: { id: true, name: true, role: true } },
+            // Returned so the client can refresh its BR-14 concurrency token: this
+            // mutation bumps `updatedAt`, and a stale token would make the next
+            // status change look like a conflict with another user.
+            updatedAt: true,
         },
     });
 
@@ -212,6 +216,8 @@ export async function assignStaffTicket(ticketId: number, targetOwnerId: number)
             id: true,
             ownerId: true,
             owner: { select: { id: true, name: true, role: true } },
+            // See claimStaffTicket: keeps the client's concurrency token current.
+            updatedAt: true,
         },
     });
 
@@ -232,6 +238,8 @@ export async function updateStaffTicketPriority(ticketId: number, itPriority: st
         select: {
             id: true,
             itPriority: true,
+            // See claimStaffTicket: keeps the client's concurrency token current.
+            updatedAt: true,
         },
     });
 
