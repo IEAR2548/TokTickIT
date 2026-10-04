@@ -127,9 +127,12 @@ test.describe("Staff Ticket Detail screenshots — states", () => {
             `rsv${projectTag(testInfo.project.name)}${testInfo.retry}`
         );
 
-        // BR-22: selecting Resolved reveals the resolution-summary textarea (not saved)
+        // BR-22: selecting Resolved (not saved). Since Lab 4 the status control is
+        // TicketWorkflow, which captures the resolution summary in its confirmation dialog
+        // before applying the transition (the summary textarea is only rendered there).
         await page.getByTestId("staff-ticket-status-select").selectOption("RESOLVED");
-        await expect(page.getByTestId("staff-ticket-resolution-summary")).toBeVisible();
+        await expect(page.getByTestId("ticket-status-confirm-dialog")).toBeVisible();
+        await expect(page.getByTestId("ticket-status-resolution-summary-input")).toBeVisible();
         await page.screenshot({ path: `${OUT_DIR}/resolution-summary.png`, fullPage: true });
     });
 });
