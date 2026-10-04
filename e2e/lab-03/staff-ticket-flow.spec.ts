@@ -58,11 +58,18 @@ test.describe("Lab 3 IT Staff Ticket Flow E2E", () => {
         await prioritySelect.selectOption("HIGH");
         await page.getByRole("button", { name: "Save" }).first().click();
         await expect(prioritySelect).toHaveValue("HIGH");
+        // The priority update also bumps the Ticket's concurrency token. Wait for the save to
+        // settle (the Save control only disappears once the response has been applied) so the
+        // status change below echoes the refreshed token rather than a stale one.
+        await expect(page.getByRole("button", { name: "Save" })).toHaveCount(0);
 
-        // 4. AC-29: valid status transition NEW -> OPEN
+        // 4. AC-29: valid status transition NEW -> OPEN. Since Lab 4 the status control is
+        //    TicketWorkflow, which applies In Progress / Waiting for Requester / Reopened
+        //    immediately on selection (no separate Save step) and updates the summary badge
+        //    from the response.
         const statusSelect = page.getByTestId("staff-ticket-status-select");
         await statusSelect.selectOption("OPEN");
-        await page.getByRole("button", { name: "Save" }).first().click();
+        await expect(page.getByTestId("ticket-status-badge")).toHaveText("Open");
         await expect(statusSelect).toHaveValue("OPEN");
 
         // 5. AC-13: post a public comment

@@ -86,14 +86,14 @@ export async function fetchStaffTicketDetail(ticketId: number): Promise<StaffTic
     return body.data;
 }
 
-export async function claimStaffTicket(ticketId: number): Promise<{ id: number; ownerId: number; owner: StaffTicketOwner }> {
+export async function claimStaffTicket(ticketId: number): Promise<{ id: number; ownerId: number; owner: StaffTicketOwner; updatedAt: string }> {
     const res = await fetch(`/api/staff/tickets/${ticketId}/claim`, { method: "PATCH" });
     const body = await res.json();
     if (!res.ok) throw new Error(body.message ?? body.error ?? "Failed to claim ticket");
     return body.data;
 }
 
-export async function assignStaffTicket(ticketId: number, ownerId: number | null): Promise<{ id: number; ownerId: number | null; owner: StaffTicketOwner | null }> {
+export async function assignStaffTicket(ticketId: number, ownerId: number | null): Promise<{ id: number; ownerId: number | null; owner: StaffTicketOwner | null; updatedAt: string }> {
     const res = await fetch(`/api/staff/tickets/${ticketId}/assign`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -104,7 +104,7 @@ export async function assignStaffTicket(ticketId: number, ownerId: number | null
     return body.data;
 }
 
-export async function updateStaffTicketPriority(ticketId: number, itPriority: string): Promise<{ id: number; itPriority: string }> {
+export async function updateStaffTicketPriority(ticketId: number, itPriority: string): Promise<{ id: number; itPriority: string; updatedAt: string }> {
     const res = await fetch(`/api/staff/tickets/${ticketId}/it-priority`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },

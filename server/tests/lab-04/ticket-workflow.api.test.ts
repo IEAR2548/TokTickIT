@@ -214,6 +214,52 @@ describe("Ticket status/resolution workflow API (API-09..14, API-21, API-22, API
         expect(stored!.currentStatus).toBe("IN_PROGRESS");
     });
 
+    // BR-16 has two triggers: "whenever the Ticket transitions to Reopened, or whenever the
+    // Requester edits the Ticket". Only the first is reachable in this codebase — there is no
+    // Requester edit-Ticket endpoint anywhere in the app (`PATCH /api/tickets/:id` is not routed;
+    // see docs/lab-04/tests.md §16). The Reopen branch is asserted here; the edit branch is
+    // recorded as a spec-vs-implementation gap rather than implemented, since this hardening
+    // issue adds no new product features.
+    it("API-24: BR-16 resets appearsResolved to false when IT Staff Reopens the Ticket (BR-16, AC-14)", async () => {
+        const reopened = await createTicket({
+            status: "RESOLVED",
+            requesterId: requesterAlice.id,
+            appearsResolved: true,
+        });
+        expect(reopened.appearsResolved).toBe(true);
+
+        const reopenRes = await patchStatus(
+            reopened.id,
+            { status: "REOPENED", expectedUpdatedAt: reopened.updatedAt.toISOString() },
+            samiraToken
+        );
+        expect(reopenRes.status).toBe(200);
+        expect(reopenRes.body.data.status).toBe("REOPENED");
+        expect(reopenRes.body.data.appearsResolved).toBe(false);
+
+        const afterReopen = await prisma.ticket.findUnique({ where: { id: reopened.id } });
+        expect(afterReopen!.currentStatus).toBe("REOPENED");
+        expect(afterReopen!.appearsResolved).toBe(false);
+    });
+
+    it("API-24 (Reopen via the Lab 3 alias): the same BR-16 reset happens through PATCH /api/staff/tickets/:id/status", async () => {
+        const reopened = await createTicket({
+            status: "CLOSED",
+            requesterId: requesterAlice.id,
+            appearsResolved: true,
+        });
+
+        const res = await request(app)
+            .patch(`/api/staff/tickets/${reopened.id}/status`)
+            .set("Cookie", `toktickit_session=${samiraToken}`)
+            .send({ status: "REOPENED", expectedUpdatedAt: reopened.updatedAt.toISOString() });
+        expect(res.status).toBe(200);
+
+        const after = await prisma.ticket.findUnique({ where: { id: reopened.id } });
+        expect(after!.currentStatus).toBe("REOPENED");
+        expect(after!.appearsResolved).toBe(false);
+    });
+
     it("§2.2/BR-14: appears-resolved with a stale expectedUpdatedAt returns 409 STALE_UPDATE and leaves the flag unchanged", async () => {
         const ticket = await createTicket({
             status: "IN_PROGRESS",

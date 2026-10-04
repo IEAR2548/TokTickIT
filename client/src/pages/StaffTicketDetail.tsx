@@ -117,7 +117,9 @@ export function StaffTicketDetail() {
         setPriorityError("");
         try {
             const updated = await updateStaffTicketPriority(ticketId, selectedItPriority);
-            setTicket((prev) => prev ? { ...prev, itPriority: updated.itPriority as any } : prev);
+            // Also refresh `updatedAt`: this mutation bumps the server's concurrency token, so
+            // the status control must not keep echoing the pre-edit value (BR-14/FR-14).
+            setTicket((prev) => prev ? { ...prev, itPriority: updated.itPriority as any, updatedAt: updated.updatedAt } : prev);
         } catch (err: any) {
             // Safe-failure feedback (ui-spec §8.6) — surface the API error, revert selection
             setPriorityError(err.message ?? "Failed to update IT priority");
@@ -132,7 +134,7 @@ export function StaffTicketDetail() {
         setClaimError("");
         try {
             const updated = await claimStaffTicket(ticketId);
-            setTicket((prev) => prev ? { ...prev, ownerId: updated.ownerId, owner: updated.owner } : prev);
+            setTicket((prev) => prev ? { ...prev, ownerId: updated.ownerId, owner: updated.owner, updatedAt: updated.updatedAt } : prev);
         } catch (err: any) {
             // api-spec endpoint 22: 409 CONFLICT if already claimed by someone else (BR-14)
             setClaimError(err.message ?? "Failed to claim ticket");
@@ -148,7 +150,7 @@ export function StaffTicketDetail() {
         try {
             // api-spec endpoint 23: reassign to an active IT Staff/Administrator (BR-15)
             const updated = await assignStaffTicket(ticketId, user.id);
-            setTicket((prev) => prev ? { ...prev, ownerId: updated.ownerId, owner: updated.owner } : prev);
+            setTicket((prev) => prev ? { ...prev, ownerId: updated.ownerId, owner: updated.owner, updatedAt: updated.updatedAt } : prev);
         } catch (err: any) {
             setClaimError(err.message ?? "Failed to assign ticket");
         } finally {
