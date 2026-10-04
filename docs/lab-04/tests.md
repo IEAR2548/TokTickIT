@@ -38,7 +38,7 @@
 | API-21 | API | BR-14, AC-07 | `PATCH .../status` with stale `expectedUpdatedAt`, where the requested transition would otherwise be valid | 409 `STALE_UPDATE` (not `INVALID_TRANSITION`), current record returned | `server/tests/lab-04/ticket-workflow.api.test.ts` | Pass |
 | API-22 | API | AC-05 | `PATCH .../status` with current `expectedUpdatedAt` but a matrix-invalid transition | 400 `INVALID_TRANSITION` (not `STALE_UPDATE`), status unchanged | `server/tests/lab-04/ticket-workflow.api.test.ts` | Pass |
 | API-23 | API | BR-17, FR-15 | `POST .../actions` with no `Idempotency-Key` header | 400 `VALIDATION_ERROR`, `fields.idempotencyKey` present, no record created | `server/tests/lab-04/actions-taken.api.test.ts` | Pass |
-| API-24 | API | BR-16, AC-14 | Requester Ticket with `appearsResolved=true` is Reopened by IT Staff, and separately edited by the Requester | In both cases, `appearsResolved` reads back as `false` on the next fetch | `server/tests/lab-04/ticket-workflow.api.test.ts` | Planned |
+| API-24 | API | BR-16, AC-14 | Requester Ticket with `appearsResolved=true` is Reopened by IT Staff, and separately edited by the Requester | In both cases, `appearsResolved` reads back as `false` on the next fetch | `server/tests/lab-04/ticket-workflow.api.test.ts` | Pass (Reopen branch only — see §16). Covers `PATCH /api/tickets/:ticketId/status` and its Lab 3 alias `PATCH /api/staff/tickets/:id/status`. |
 | API-25 | API | AC-15 | `GET /api/dashboard/requester` for a seeded Requester account with zero Tickets | All four counts are `0`; `recentTickets` is `[]`, not `null` and not a 4xx/5xx error | `server/tests/lab-04/requester-dashboard.api.test.ts` | Pass |
 | API-26 | API | BR-12 | `GET /api/dashboard/staff` against a seeded dataset that includes a Ticket in `Reopened` status | `counts.open` includes that Ticket (i.e., equals the manually-queried count of `Open` + `Reopened` Tickets in scope), not just `Open` | `server/tests/lab-04/staff-dashboard.api.test.ts` | Pass |
 | API-27 | API | BR-17, AC-10, FR-15 | Two `POST .../actions` requests with identical `ticketId`/`description`/`result` but a **different** `Idempotency-Key`, sent within the 5-second fallback window | Only one record created; second response returns the original record via the fallback de-dup path, not a new one | `server/tests/lab-04/actions-taken.api.test.ts` | Pass |
@@ -89,9 +89,9 @@ Follow-up Note guard (FR-05 — the `followUpRequired = true` half of BR-04).
 
 | Test ID | Type | Req/AC | What It Tests | Expected Result | Automated Test File | Final |
 |---|---|---|---|---|---|---|
-| STYLE-01 | UI Style | §5 (ui-spec) | Status badges reuse existing Zen Green badge component/colors | Visual diff / snapshot matches existing badge tokens | `client/src/tests/lab-04/visual-consistency.test.tsx` | Planned |
+| STYLE-01 | UI Style | §5 (ui-spec) | Status badges reuse existing Zen Green badge component/colors | Visual diff / snapshot matches existing badge tokens | `client/src/tests/lab-04/visual-consistency.test.tsx` | Pass (see §17 — verified via the shared `Badge` component, not a new snapshot file) |
 | STYLE-02 | UI Style | §5 (ui-spec) | Follow-up badge is not color-only (icon/text present) | Snapshot includes non-color indicator | `client/src/tests/lab-04/ActionsTaken.test.tsx` | Pass |
-| STYLE-03 | UI Style | §7 handout | Manual visual sweep of all Lab 4 screens for leftover/duplicate/placeholder UI from earlier labs | None found (checklist, tracked in the submission PDF) | Manual — `docs/lab-04/reviewer.md` checklist | Planned |
+| STYLE-03 | UI Style | §7 handout | Manual visual sweep of all Lab 4 screens for leftover/duplicate/placeholder UI from earlier labs | None found (checklist, tracked in the submission PDF) | Manual — `docs/lab-04/reviewer.md` checklist | Pass (sweep recorded in §17 + `reviewer.md`) |
 
 ## 7. Responsive Tests
 
@@ -115,7 +115,7 @@ Follow-up Note guard (FR-05 — the `followUpRequired = true` half of BR-04).
 | MIG-02 | Migration | §9.4 | Rollback (down-migration) after apply | `ActionTaken` table and new Ticket columns removed cleanly; Lab 1–3 data untouched | `server/tests/lab-04/migration.test.ts` | Pass |
 | MIG-03 | Migration | §9.5 | Re-run seed script twice | Second run makes no duplicate/changed rows (idempotent) | `server/tests/lab-04/migration.test.ts` | Pass |
 | MIG-04 | Migration | BR-01 | Schema-level check on `ActionTaken.ticketId`: attempt a direct insert with `ticketId = NULL`, and a direct insert referencing a non-existent Ticket id | Both inserts are rejected by the database (`NOT NULL` / FK constraint violation) — an Action Taken can never exist without referencing exactly one real Ticket | `server/tests/lab-04/migration.test.ts` | Pass |
-| REG-01 | Regression | AC-11, FR-13 | Full Lab 1–3 suite (auth, My Tickets, Ticket Detail, Attachments, Public Comments, Internal Notes, Admin user management) re-run after migration | All pass unchanged | existing `server/tests/lab-0{2,3}/**`, `e2e/lab-0{2,3}/**` | Planned |
+| REG-01 | Regression | AC-11, FR-13 | Full Lab 1–3 suite (auth, My Tickets, Ticket Detail, Attachments, Public Comments, Internal Notes, Admin user management) re-run after migration | All pass unchanged | existing `server/tests/lab-0{2,3}/**`, `e2e/lab-0{2,3}/**` | Pass (one real regression found + fixed, §17) |
 
 ## 10. Performance Smoke Tests
 
@@ -127,15 +127,15 @@ Follow-up Note guard (FR-05 — the `followUpRequired = true` half of BR-04).
 
 | Test ID | Type | Req/AC | What It Tests | Expected Result | Automated Test File | Final |
 |---|---|---|---|---|---|---|
-| E2E-01 | E2E | AC-01, FR-04 | IT Staff logs in, opens a Ticket, adds an Action Taken with follow-up, sees it in the list | Full flow succeeds end-to-end | `e2e/lab-04/actions-taken-flow.spec.ts` | Planned |
-| E2E-02 | E2E | AC-03 | IT Staff attempts to submit an Action Taken with Follow-Up Required on and no note | Submission blocked client-side and/or rejected server-side; user sees the error and can correct it | `e2e/lab-04/actions-taken-flow.spec.ts` | Planned |
-| E2E-03 | E2E | AC-04, AC-05 | IT Staff progresses a Ticket New → Open → In Progress → Resolved → Closed; then attempts an invalid transition via a crafted request | Valid path succeeds through the UI; invalid direct request is rejected with `INVALID_TRANSITION` | `e2e/lab-04/ticket-resolution.spec.ts` | Planned |
-| E2E-04 | E2E | AC-06 | Requester marks "looks resolved" on an owned Ticket | Flag set, status badge unchanged, IT Staff still sees the Ticket in its prior status on their dashboard | `e2e/lab-04/ticket-resolution.spec.ts` | Planned |
+| E2E-01 | E2E | AC-01, FR-04 | IT Staff logs in, opens a Ticket, adds an Action Taken with follow-up, sees it in the list | Full flow succeeds end-to-end | `e2e/lab-04/actions-taken-flow.spec.ts` | Pass |
+| E2E-02 | E2E | AC-03 | IT Staff attempts to submit an Action Taken with Follow-Up Required on and no note | Submission blocked client-side and/or rejected server-side; user sees the error and can correct it | `e2e/lab-04/actions-taken-flow.spec.ts` | Pass |
+| E2E-03 | E2E | AC-04, AC-05 | IT Staff progresses a Ticket New → Open → In Progress → Resolved → Closed; then attempts an invalid transition via a crafted request | Valid path succeeds through the UI; invalid direct request is rejected with `INVALID_TRANSITION` | `e2e/lab-04/ticket-resolution.spec.ts` | Pass |
+| E2E-04 | E2E | AC-06 | Requester marks "looks resolved" on an owned Ticket | Flag set, status badge unchanged, IT Staff still sees the Ticket in its prior status on their dashboard | `e2e/lab-04/ticket-resolution.spec.ts` | Pass |
 | E2E-05 | E2E | AC-02, AC-08 | Requester A views their dashboard and attempts to open a Ticket owned by Requester B | Requester A's dashboard shows only their data; direct navigation to B's Ticket is forbidden | `e2e/lab-04/dashboards.spec.ts` | Pass |
-| E2E-06 | E2E | AC-10 | Double-click "Add Action Taken" submit under a throttled/slow network | Exactly one Action Taken record is created | `e2e/lab-04/actions-taken-flow.spec.ts` | Planned |
-| E2E-07 | E2E | AC-11 | Smoke pass over the major Lab 1–3 screens (login, My Tickets, Ticket Detail, Attachments, comments, notes, Admin user list) after Lab 4 deploy | All screens load and function without regression | `e2e/lab-04/*.spec.ts` (shared setup) | Planned |
-| E2E-08 | E2E | AC-14 | IT Staff Reopens a Closed Ticket that had `appearsResolved=true` | The Requester's "Mark as looks resolved" control shows unchecked on next view | `e2e/lab-04/ticket-resolution.spec.ts` | Planned |
-| E2E-09 | E2E | AC-16 | Double-click the Ticket status control (or a network retry) under a throttled/slow network, on a transition that succeeds on the first attempt | Exactly one status transition is applied; the UI shows the resulting status silently (no conflict banner, no error toast) for the duplicate response, matching `data.current.status` equaling the requested status | `e2e/lab-04/ticket-resolution.spec.ts` | Planned |
+| E2E-06 | E2E | AC-10 | Double-click "Add Action Taken" submit under a throttled/slow network | Exactly one Action Taken record is created | `e2e/lab-04/actions-taken-flow.spec.ts` | Pass |
+| E2E-07 | E2E | AC-11 | Smoke pass over the major Lab 1–3 screens (login, My Tickets, Ticket Detail, Attachments, comments, notes, Admin user list) after Lab 4 deploy | All screens load and function without regression | `e2e/lab-04/*.spec.ts` (shared setup) | Pass |
+| E2E-08 | E2E | AC-14 | IT Staff Reopens a Closed Ticket that had `appearsResolved=true` | The Requester's "Mark as looks resolved" control shows unchecked on next view | `e2e/lab-04/ticket-resolution.spec.ts` | Pass |
+| E2E-09 | E2E | AC-16 | Double-click the Ticket status control (or a network retry) under a throttled/slow network, on a transition that succeeds on the first attempt | Exactly one status transition is applied; the UI shows the resulting status silently (no conflict banner, no error toast) for the duplicate response, matching `data.current.status` equaling the requested status | `e2e/lab-04/ticket-resolution.spec.ts` | Pass |
 | E2E-10 | E2E | FR-12 | On the IT Staff Dashboard, click a metric card (e.g. "Waiting for Requester") and a row in "My Recent Tickets"; on the Requester Dashboard, click a metric card (e.g. "Resolved") and a row in "My Recent Tickets" | Each metric card navigates to the Ticket Queue / My Tickets list pre-filtered to that card's status (or ownership, for "My Assigned"); each Recent Tickets row navigates to that Ticket's Detail screen | `e2e/lab-04/dashboards.spec.ts` | Pass |
 
 ---
@@ -336,7 +336,8 @@ disabled option) and no control at all when none are valid, with the confirmatio
 The staff select keeps its Lab 3 test id during migration, so existing Lab 3 screen tests and
 clients keep working.
 
-**Still Planned** (other Lab 4 issues): API-24, STYLE-01, STYLE-03, REG-01, E2E-01..E2E-10.
+**Still Planned** at the time of Issue #56: API-24, STYLE-01, STYLE-03, REG-01, E2E-01..E2E-10.
+All of these were subsequently completed by Issue #58 (below).
 (API-15..API-17, API-25, API-26, UI-01..UI-03, PERF-01, RESP-01, A11Y-01 were completed by
 Issue #57, below.)
 
@@ -365,6 +366,43 @@ Notes:
 - The E2E run above was executed with the client `webServer` on a dedicated port (as recorded for Issue #55) because port 5173 is held by an unrelated local server on the verification machine.
 - `server/tests/lab-04/dashboardFixtures.ts` restores the Issue 2 seed baseline (via the existing idempotent seed script, matching `migration.test.ts`) when an earlier Lab 2 suite's blanket `prisma.ticket.deleteMany({})` has removed it, so the seeded-data assertions survive a full `vitest run`.
 
+### Issue #58 (`feature/58-lab4-hardening`) — final hardening: regression, cleanup, E2E
+
+No new product features. This issue wrote the remaining E2E coverage, re-ran the full Lab 1–3
+regression, and swept/recorded the Lab 4 visual state.
+
+| Suite | Command | Result |
+|---|---|---|
+| Lab 4 E2E (full, all viewports) | `npx playwright test e2e/lab-04` | 54/54 Pass — 18 cases × desktop/tablet/mobile |
+| Lab 4 E2E repeatability | same, `--retries=0`, 10 consecutive runs | 10/10 runs, 54/54 each (540 executions, 0 failures) |
+| Lab 4 API — ticket workflow (incl. API-24) | `cd server && npx vitest run tests/lab-04/ticket-workflow.api.test.ts` | 17/17 Pass |
+| Full server regression (REG-01) | `cd server && npx vitest run` | 35 files, 291/291 Pass |
+| Full client regression (REG-01) | `cd client && npx vitest run` | 26 files, 115/115 Pass (rerun after API-24; confirmed green) |
+| Lab 2 E2E (functional) | `npx playwright test e2e/lab-02/requester-ticket-flow.spec.ts e2e/lab-02/requester-ticket-detail.spec.ts e2e/lab-02/my-tickets.spec.ts e2e/lab-02/attachments.spec.ts` | 30/30 Pass |
+| Lab 3 E2E (functional) | `npx playwright test e2e/lab-03/authentication.spec.ts e2e/lab-03/user-administration.spec.ts` | 30/30 Pass |
+| Lab 3 E2E (responsive + staff flow + visual) | `npx playwright test e2e/lab-03/responsive.spec.ts e2e/lab-03/staff-ticket-flow.spec.ts e2e/lab-03/visual-inspection.spec.ts e2e/lab-03/reopen-ticket.spec.ts e2e/lab-03/search.spec.ts` | Pass after fix (§17) |
+| Lab 2/3 screenshot specs | `npx playwright test e2e/lab-02/screenshots.create-ticket.spec.ts e2e/lab-02/screenshots.requester-ticket-flow.spec.ts e2e/lab-02/screenshots.requester-ticket-detail.spec.ts e2e/lab-02/screenshots.my-tickets.spec.ts e2e/lab-02/screenshots.login.spec.ts e2e/lab-03/screenshots.staff-ticket-detail.spec.ts e2e/lab-03/screenshots.user-management.spec.ts` | Pass |
+| Typecheck (server) | `cd server && npx tsc --noEmit` | 0 errors |
+| Typecheck (client) | `cd client && npx tsc --noEmit` | 0 errors |
+
+**Pass in this issue:** E2E-01..E2E-10, API-24, REG-01, STYLE-01, STYLE-03.
+
+Notes:
+- All Lab 4 E2E was run against the post-migration database with `globalSetup`/`globalTeardown`
+  re-seeding, and on a dedicated client port (as recorded for Issue #55) because port 5173 is held
+  by an unrelated local server on the verification machine.
+- E2E-03 asserts the crafted invalid transition is `400 INVALID_TRANSITION` specifically, not `409`;
+  E2E-09 asserts the **absence** of both the conflict banner and the error toast on the retried
+  already-applied status change, not merely that a response arrived.
+- E2E-10 clicks a real metric card and a real Recent Tickets row on each dashboard and asserts the
+  landing screen and its applied filter (FR-12), not just that the card/row rendered.
+- RESP-01/RESP-02 originally measured `documentElement.scrollWidth - clientWidth`. That is not a
+  valid proxy for "no page-level horizontal scrollbar": Chromium inflates the root `scrollWidth`
+  when a descendant lives inside an `overflow-x: auto` container (here the Actions Taken table
+  wrapper), even though nothing is reachable off-screen and `window.scrollX` stays 0. The helpers
+  now assert what ui-spec §6 actually requires — the page cannot be scrolled sideways, and no
+  element outside a horizontally scrollable ancestor escapes the viewport.
+
 ## 16. Known Limitations or Deferred Tests
 
 - STYLE-03 (visual sweep) is a manual checklist tracked in `reviewer.md`, not a fully automated
@@ -391,3 +429,17 @@ Notes:
 - `e2e/lab-04/dashboards.spec.ts` (RESP-01, A11Y-01) was verified with the client `webServer` on
   a dedicated port because 5173 was occupied on the verification machine; the command in §14 is
   unchanged for a clean machine.
+- **BR-16 "Requester edits the Ticket" has no implementation to test.** BR-16/AC-14 name two
+  triggers for resetting `appearsResolved` to `false`: a transition to `Reopened`, and "the
+  Requester edits the Ticket". The first is implemented and covered (API-24, E2E-08). The second
+  is unreachable: there is no Requester edit-Ticket endpoint anywhere in the app — no
+  `PATCH/PUT /api/tickets/:id` route exists in `server/src/routes/tickets.route.ts`, and
+  `tickets.service.ts` exposes only `createTicket`, `listTickets` and `getTicketById`. API-24 is
+  therefore marked **Pass (Reopen branch only)** rather than Pass, and this gap is recorded here
+  instead of being implemented, because Issue #58 is scoped to regression/cleanup/E2E only and
+  must not add new product features. A follow-up issue should either add the edit endpoint (with
+  the BR-16 reset) or amend BR-16 to the Reopen trigger alone.
+- **`documentElement.scrollWidth` is not a valid horizontal-overflow assertion.** See the Issue
+  #58 note in §15. Any future responsive test should assert `window.scrollX === 0` after a
+  `scrollTo` attempt, plus viewport escape by elements that are *not* inside an `overflow-x`
+  ancestor.
